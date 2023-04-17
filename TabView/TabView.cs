@@ -190,13 +190,13 @@ namespace TabViewMaui
             {
                 HeightRequest = 1,
                 Margin = new Thickness(0, 2, 0, 12),
-                BackgroundColor = SeparatorColor,
+                Color = SeparatorColor,
                 IsVisible = false,
                 VerticalOptions = LayoutOptions.Start
             };
 
             Binding binding = new Binding("SeparatorColor", source: this);
-            separator.SetBinding(BoxView.BackgroundColorProperty, binding);
+            separator.SetBinding(BoxView.ColorProperty, binding);
         }
 
         private void SetViewPager()
@@ -344,7 +344,7 @@ namespace TabViewMaui
             {
                 var label = new Label()
                 {
-                    Padding = new Thickness(10, 13, 10, 13),
+                    Padding = new Thickness(10, 15, 10, 15),
                     HorizontalOptions = LayoutOptions.Fill,
                     HorizontalTextAlignment = TextAlignment.Center,
                 };

@@ -2,24 +2,19 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
+             xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              x:Class="TestApplicationMaui.Views.MainPage">
 
     <ContentPage.BindingContext>
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
-
-    <ScrollView>
-        <VerticalStackLayout
-            Spacing="25"
-            Padding="30,0"
-            VerticalOptions="Center">
-
-            <tb:TabView ItemsSource="{Binding People}">
-                
-            </tb:TabView>
-
-        </VerticalStackLayout>
-    </ScrollView>
-
+    <Grid RowDefinitions="*" ColumnDefinitions="*">
+        <tb:TabView Grid.Row="0"
+                    Grid.Column="0"
+                    ItemsSource="{Binding People}"
+                    ContentItemBindingPath="Name"
+                    TabsItemBindingPath="Name">
+        </tb:TabView>
+    </Grid>
 </ContentPage>
