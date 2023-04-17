@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewPagerMaui", "ViewPagerMaui.csproj", "{16FCF48F-1769-4E82-BD03-9B6768A9417B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewPagerMaui", "ViewPager\ViewPagerMaui.csproj", "{16FCF48F-1769-4E82-BD03-9B6768A9417B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabViewMaui", "..\TabView\TabViewMaui.csproj", "{CBA043F5-7D79-43FC-A837-A64889DF2756}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabViewMaui", "TabView\TabViewMaui.csproj", "{CBA043F5-7D79-43FC-A837-A64889DF2756}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApplicationMaui", "TestApplicationMaui\TestApplicationMaui.csproj", "{DAE91156-9540-436F-B85E-2B33AFB66586}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,12 @@ Global
 		{CBA043F5-7D79-43FC-A837-A64889DF2756}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBA043F5-7D79-43FC-A837-A64889DF2756}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBA043F5-7D79-43FC-A837-A64889DF2756}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAE91156-9540-436F-B85E-2B33AFB66586}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAE91156-9540-436F-B85E-2B33AFB66586}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAE91156-9540-436F-B85E-2B33AFB66586}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{DAE91156-9540-436F-B85E-2B33AFB66586}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAE91156-9540-436F-B85E-2B33AFB66586}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAE91156-9540-436F-B85E-2B33AFB66586}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
