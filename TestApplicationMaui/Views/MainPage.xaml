@@ -4,17 +4,33 @@
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
              xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
+             xmlns:views="clr-namespace:TestApplicationMaui.Views"
              x:Class="TestApplicationMaui.Views.MainPage">
 
     <ContentPage.BindingContext>
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
-    <Grid RowDefinitions="*" ColumnDefinitions="*">
-        <tb:TabView Grid.Row="0"
-                    Grid.Column="0"
-                    ItemsSource="{Binding People}"
-                    ContentItemBindingPath="Name"
-                    TabsItemBindingPath="Name">
-        </tb:TabView>
-    </Grid>
+    <VerticalStackLayout Margin="10" Spacing="20">
+
+        <views:CustomGraphicsView x:Name="gv" HeightRequest="45">
+
+        </views:CustomGraphicsView>
+
+        <Entry/>
+
+        <Picker/>
+
+        <DatePicker/>
+
+        <views:RSInputView Placeholder="Placeholder">
+            <Entry Placeholder="Placeholder"/>
+        </views:RSInputView>
+
+        <views:RSInputView Placeholder="PickerPlaceholder">
+            <Picker/>
+        </views:RSInputView>
+
+        <DatePicker/>
+
+    </VerticalStackLayout>
 </ContentPage>
