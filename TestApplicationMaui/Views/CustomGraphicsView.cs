@@ -1,4 +1,7 @@
-﻿namespace TestApplicationMaui.Views
+﻿using Microsoft.Maui.Platform;
+using System.ComponentModel;
+
+namespace TestApplicationMaui.Views
 {
     [ContentProperty("Content")]
     public class RSInputView : Grid, IDisposable
@@ -15,6 +18,22 @@
         }
 
 
+        public static readonly BindableProperty TrailingIconProperty = BindableProperty.Create(nameof(TrailingIcon), typeof(Image), typeof(RSInputView), null, propertyChanged: TrailingIconChanged);
+        public Image TrailingIcon
+        {
+            get { return (Image)GetValue(TrailingIconProperty); }
+            set { SetValue(TrailingIconProperty, value); }
+        }
+        private static void TrailingIconChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            (bindable as RSInputView).TrailingIcon.HorizontalOptions = LayoutOptions.End;
+            (bindable as RSInputView).TrailingIcon.WidthRequest = 30;
+            (bindable as RSInputView).TrailingIcon.HeightRequest = 30;
+            (bindable as RSInputView).Add((bindable as RSInputView).TrailingIcon, 0, 0);
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+
         public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(RSInputView), default, propertyChanged: PlaceholderChanged);
         public string Placeholder
         {
@@ -23,12 +42,12 @@
         }
         private static void PlaceholderChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).Graphics.Placeholder = newValue.ToString();
+            (bindable as RSInputView).graphicsDrawable.Placeholder = newValue.ToString();
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
 
-        public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(RSInputView), default, propertyChanged: PlaceholderColorChanged);
+        public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(RSInputView), Colors.LightGray, propertyChanged: PlaceholderColorChanged);
         public Color PlaceholderColor
         {
             get { return (Color)GetValue(PlaceholderColorProperty); }
@@ -36,11 +55,12 @@
         }
         private static void PlaceholderColorChanged(BindableObject bindable, object oldValue, object newValue)
         {
+            (bindable as RSInputView).graphicsDrawable.PlaceholderColor = (Color)newValue;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
 
-        public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(RSInputView), default, propertyChanged: BorderColorChanged);
+        public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(RSInputView), Colors.LightGray, propertyChanged: BorderColorChanged);
         public Color BorderColor
         {
             get { return (Color)GetValue(BorderColorProperty); }
@@ -48,11 +68,25 @@
         }
         private static void BorderColorChanged(BindableObject bindable, object oldValue, object newValue)
         {
+            (bindable as RSInputView).graphicsDrawable.BorderColor = (Color)newValue;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
 
-        public CustomGraphicsView Graphics { get; set; }
+        public static readonly BindableProperty BorderThiknessProperty = BindableProperty.Create(nameof(BorderThikness), typeof(float), typeof(RSInputView), 1f, propertyChanged: BorderThiknessChanged);
+        public float BorderThikness
+        {
+            get { return (float)GetValue(BorderThiknessProperty); }
+            set { SetValue(BorderThiknessProperty, value); }
+        }
+        private static void BorderThiknessChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            (bindable as RSInputView).graphicsDrawable.BorderThikness = (float)newValue;
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+        private GraphicsDrawable graphicsDrawable;
+        public GraphicsView Graphics { get; set; }
 
 
 
@@ -62,30 +96,109 @@
             RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
-            Graphics = new CustomGraphicsView();
+            Graphics = new GraphicsView();
+            graphicsDrawable = new GraphicsDrawable(Graphics);
+            Graphics.Drawable = graphicsDrawable;
             this.Add(Graphics, 0, 0);
+            
         }
 
         private void SetContent()
         {
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("BorderlessEntry", (handler, view) =>
+            {
+                if (view == Content)
+                {
+#if __ANDROID__
+                handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
+#elif __IOS__ || __MACCATALYST__
+                handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                handler.PlatformView.FontWeight = Microsoft.UI.Text.FontWeights.Thin;
+#endif
+                }
+            });
+
+            Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("BorderlessPicker", (handler, view) =>
+            {
+                if (view == Content)
+                {
+#if __ANDROID__
+                    handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
+#elif __IOS__ || __MACCATALYST__ 
+                handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                handler.PlatformView.FontWeight = Microsoft.UI.Text.FontWeights.Thin;
+#endif
+                }
+            });
+
+            Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("BorderlessDatePicker", (handler, view) =>
+            {
+                if (view == Content)
+                {
+#if __ANDROID__
+                    handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
+#elif __IOS__ || __MACCATALYST__
+                handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                    handler.PlatformView.FontWeight = Microsoft.UI.Text.FontWeights.Thin;
+#endif
+                }
+            });
+
+
+
             this.Add(Content, 0, 0);
+            Content.Margin = new Thickness(8, 0, 8, 0);
             Content.Focused += Content_Focused;
             Content.Unfocused += Content_Unfocused;
+            Content.PropertyChanged += Content_PropertyChanged;
 
-            //if (Content is Entry)
-            //    (Content as Entry).PlaceholderColor = Colors.Transparent;
+            if (Content is Entry)
+                (Content as Entry).PlaceholderColor = Colors.Transparent;
+
+            SetDrawableProperties();
         }
 
         private void Content_Focused(object sender, FocusEventArgs e)
         {
             if(CheckIfShouldAnimate())
-                Graphics.StartFocusedAnimation();
+                graphicsDrawable.StartFocusedAnimation();
         }
 
         private void Content_Unfocused(object sender, FocusEventArgs e)
         {
             if (CheckIfShouldAnimate())
-                Graphics.StartUnFocusedAnimation();
+                graphicsDrawable.StartUnFocusedAnimation();
+        }
+
+        private void Content_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Microsoft.Maui.Controls.Internals.IFontElement.FontSize))
+            {
+                if (graphicsDrawable.FontSize != (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize)
+                {
+                    graphicsDrawable.InitialPlaceholderSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
+                    graphicsDrawable.SetCurrentPlaceholderSize();
+                    Graphics.Invalidate();
+                }
+            }
+        }
+        private void SetDrawableProperties()
+        {
+            var textElement = (Content as Microsoft.Maui.Controls.Internals.IFontElement);
+
+            graphicsDrawable.Placeholder = Placeholder;
+            graphicsDrawable.PlaceholderColor = PlaceholderColor;
+            graphicsDrawable.BorderColor = BorderColor;
+            graphicsDrawable.BorderThikness = BorderThikness;
+            graphicsDrawable.InitialPlaceholderSize = (float)textElement.FontSize;
+            graphicsDrawable.SetCurrentPlaceholderSize();
+
+            var fnt = textElement.ToFont(textElement.FontSize);
+            Microsoft.Maui.Graphics.Font font = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType : (int)FontSlant.Default);
+            graphicsDrawable.TextFont = font;
         }
 
         private bool CheckIfShouldAnimate()
@@ -117,45 +230,96 @@
         {
             Content.Focused -= Content_Focused;
             Content.Unfocused -= Content_Unfocused;
+            Content.PropertyChanged -= Content_PropertyChanged;
         }
     }
 
-    public class CustomGraphicsView : GraphicsView
+    public class GraphicsDrawable : IDrawable
     {
-        private const double InitialPlaceholderSize = 15;
-        private const double FinalPlaceholderSize = 12;
-        private const double AnimationDuration = 200; // milliseconds
-        public double currentPlaceholderX;
-        public double currentPlaceholderY;
-        private double startX = 0;
-        private double endX = 0;
-        private double startY = 0;
-        private double endY = 0;
-
-        public double currentPlaceholderSize = 14;
-        private DateTime _animationStartTime;
+        public float InitialPlaceholderSize { get; set; }   
+        private float finalPlaceholderSize = 12;
+        private float currentPlaceholderSize;
+        private const float AnimationDuration = 200; // milliseconds
+        private float currentPlaceholderX;
+        private float currentPlaceholderY;
+        private float startX = 12;
+        private float endX = 12;
+        private float startY = 0;
+        private float endY = 0;
+        private bool isFloating = false;
+        private bool updateFloatingPosition = false;
+        private DateTime animationStartTime;
         public bool GapVisible { get; set; }
         public string Placeholder { get; set; }
+        public Color PlaceholderColor { get;set; }
+        public Color BorderColor { get; set; }
+        public float BorderThikness { get; set; }
+        public float FontSize { get; set; }
+        public Microsoft.Maui.Graphics.Font TextFont { get; set; }
+        private Microsoft.Maui.Graphics.IImage trailingIcon;
 
 
-        public CustomGraphicsView() 
+        public GraphicsView Holder { get;set; }
+
+        public void SetCurrentPlaceholderSize()
         {
-            Drawable = new GraphicsDrawable(this);
+            if(isFloating)
+            {
+                finalPlaceholderSize = InitialPlaceholderSize;
+            }
+            else
+            {
+                currentPlaceholderSize = InitialPlaceholderSize;
+                finalPlaceholderSize = 15;
+            }
+
+            updateFloatingPosition = true;
+        }
+
+        private void setValuesBeforeAnimation()
+        {
+            if(isFloating)
+            {
+                finalPlaceholderSize = 15;
+                InitialPlaceholderSize = currentPlaceholderSize;
+                startX = 12;
+                endX = 12;
+                startY = 0;
+                endY = (float)-Holder.Height / 2;
+                GapVisible = true;
+            }
+            else
+            {
+                finalPlaceholderSize = InitialPlaceholderSize;
+                InitialPlaceholderSize = currentPlaceholderSize;
+                startX = currentPlaceholderX;
+                endX = 12;
+                startY = currentPlaceholderY;
+                endY = 0;
+                GapVisible = false;
+            }
+        }
+
+        public GraphicsDrawable(GraphicsView graphicsView)
+        {
+            Holder = graphicsView;
+            currentPlaceholderX = startX;
+            currentPlaceholderY = startY;   
         }
 
         public bool FocusedAnimation()
         {
-            double progress = (double)(DateTime.UtcNow - _animationStartTime).TotalMilliseconds / AnimationDuration;
+            float progress = (float)(DateTime.UtcNow - animationStartTime).TotalMilliseconds / AnimationDuration;
             if (progress > 1)
                 progress = 1;
 
             // Update placeholder position and size
             currentPlaceholderX = startX + (endX - startX) * progress;
             currentPlaceholderY = startY + (endY - startY) * progress;
-            currentPlaceholderSize = InitialPlaceholderSize + (FinalPlaceholderSize - InitialPlaceholderSize) * progress;
+            currentPlaceholderSize = InitialPlaceholderSize + (finalPlaceholderSize - InitialPlaceholderSize) * progress;
 
             // Invalidate to redraw the control
-            this.Invalidate();
+            Holder.Invalidate();
 
             // Stop the animation if progress is 1 (100%)
             return progress < 1;
@@ -163,17 +327,17 @@
 
         public bool UnfocusedAnimation()
         {
-            double progress = (double)(DateTime.UtcNow - _animationStartTime).TotalMilliseconds / AnimationDuration;
+            float progress = (float)(DateTime.UtcNow - animationStartTime).TotalMilliseconds / AnimationDuration;
             if (progress > 1)
                 progress = 1;
 
             // Update placeholder position and size
             currentPlaceholderX = startX + (endX - startX) * progress;
             currentPlaceholderY = startY + (endY - startY) * progress;
-            currentPlaceholderSize = InitialPlaceholderSize + (FinalPlaceholderSize - InitialPlaceholderSize) * progress;
+            currentPlaceholderSize = InitialPlaceholderSize + (finalPlaceholderSize - InitialPlaceholderSize) * progress;
 
             // Invalidate to redraw the control
-            this.Invalidate();
+            Holder.Invalidate();
 
             // Stop the animation if progress is 1 (100%)
             return progress < 1;
@@ -181,52 +345,48 @@
 
         public void StartFocusedAnimation()
         {
-            //var animation = new Animation(v => { currentPlaceholderY = v; this.Invalidate(); }, currentPlaceholderY, -10);
-            //animation.Commit(this, "lol");
-
-            startX = 0;
-            endX = 12;
-            startY = 0;
-            endY = -this.Height / 2;
-            GapVisible = true;
-            _animationStartTime = DateTime.UtcNow;
-            Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
+            isFloating = true;
+            setValuesBeforeAnimation();
+            animationStartTime = DateTime.UtcNow;
+            Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
         }
 
         public void StartUnFocusedAnimation()
         {
-            startX = currentPlaceholderX;
-            endX = 0;
-            startY = currentPlaceholderY;
-            endY = 0;
-            GapVisible = false;
-            _animationStartTime = DateTime.UtcNow;
-            Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), UnfocusedAnimation);
-        }
-    }
-
-    public class GraphicsDrawable : IDrawable
-    {
-        public CustomGraphicsView CustomGraphicsView { get; set; } 
-
-        public GraphicsDrawable(CustomGraphicsView CustomGraphicsView) 
-        {
-            this.CustomGraphicsView = CustomGraphicsView;
+            isFloating = false;
+            setValuesBeforeAnimation();
+            animationStartTime = DateTime.UtcNow;
+            Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), UnfocusedAnimation);
         }
 
         public void Draw(ICanvas canvas, RectF dirtyRect)
         {
-            canvas.StrokeSize = 1;
-            canvas.StrokeColor = Colors.White;
-            canvas.Antialias = true;
-            canvas.FontColor = Colors.LightGray;
-            canvas.FontSize = (float)CustomGraphicsView.currentPlaceholderSize;
-            string text = CustomGraphicsView.Placeholder;
-            canvas.DrawString(text, (float)CustomGraphicsView.currentPlaceholderX, (float)CustomGraphicsView.currentPlaceholderY, dirtyRect.Width, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+            // Update when FontSize changes at runtime
+            if(updateFloatingPosition)
+            {
+                if (isFloating)
+                    endY = (float)-Holder.Height / 2;
+                else
+                    endY = 0;
 
-            float size = CustomGraphicsView.GapVisible ? canvas.GetStringSize(text, Microsoft.Maui.Graphics.Font.Default, (float)CustomGraphicsView.currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width : 0;
+                currentPlaceholderY = endY;
+                updateFloatingPosition = false;
+            }
+
+
+            canvas.StrokeSize = BorderThikness;
+            canvas.StrokeColor = BorderColor;
+            canvas.Antialias = true;
+            canvas.FontColor = PlaceholderColor;
+            canvas.Font = TextFont;
+            canvas.FontSize = currentPlaceholderSize;
+            canvas.DrawString(Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+            float size = GapVisible ? canvas.GetStringSize(Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width : 0;
             PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height, 12, size);
             canvas.DrawPath(pathF);
+
+            if(trailingIcon != null)
+                canvas.DrawImage(trailingIcon, dirtyRect.Width - 50, 0, 50, 50);
         }
 
         public PathF CreateEntryOutlinePath(float x, float y, float width, float height, float cornerRadius, float gapWidth)

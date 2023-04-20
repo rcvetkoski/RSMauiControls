@@ -11,8 +11,6 @@ namespace TestApplicationMaui.Views
 
         private void Button_Clicked(object sender, EventArgs e)
         {
-            gv.GapVisible = true;
-            gv.StartFocusedAnimation();
         }
     }
 }
