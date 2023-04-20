@@ -19,7 +19,7 @@
             <DatePicker/>
         </views:RSInputView>
 
-        <views:RSInputView Placeholder="Placeholder" BackgroundColor="Red" >
+        <views:RSInputView Placeholder="Placeholder" BackgroundColor="Red">
             <Entry/>
         </views:RSInputView>
 
