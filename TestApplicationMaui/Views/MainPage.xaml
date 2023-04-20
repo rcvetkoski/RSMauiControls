@@ -15,11 +15,11 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <views:RSInputView Placeholder="Placeholder">
+        <views:RSInputView Placeholder="Placeholder" TrailingIcon="dotnet_bot.png">
             <DatePicker/>
         </views:RSInputView>
 
-        <views:RSInputView Placeholder="Placeholder" BackgroundColor="Red">
+        <views:RSInputView Placeholder="Placeholder">
             <Entry/>
         </views:RSInputView>
 

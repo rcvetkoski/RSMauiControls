@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using System;
 using System.ComponentModel;
 
@@ -19,18 +21,23 @@ namespace TestApplicationMaui.Views
         }
 
 
-        public static readonly BindableProperty TrailingIconProperty = BindableProperty.Create(nameof(TrailingIcon), typeof(Image), typeof(RSInputView), null, propertyChanged: TrailingIconChanged);
-        public Image TrailingIcon
+        public static readonly BindableProperty TrailingIconProperty = BindableProperty.Create(nameof(TrailingIcon), typeof(string), typeof(RSInputView), null, propertyChanged: TrailingIconChanged);
+        public string TrailingIcon
         {
-            get { return (Image)GetValue(TrailingIconProperty); }
+            get { return (string)GetValue(TrailingIconProperty); }
             set { SetValue(TrailingIconProperty, value); }
         }
         private static void TrailingIconChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).TrailingIcon.HorizontalOptions = LayoutOptions.End;
-            (bindable as RSInputView).TrailingIcon.WidthRequest = 30;
-            (bindable as RSInputView).TrailingIcon.HeightRequest = 30;
-            (bindable as RSInputView).Add((bindable as RSInputView).TrailingIcon, 0, 0);
+            Image image = new Image()
+            {
+                HorizontalOptions = LayoutOptions.End,
+                Margin = new Thickness(0, 0, 8, 0),
+                WidthRequest = 55,
+                HeightRequest = 55, 
+                Source = (bindable as RSInputView).TrailingIcon
+            };
+            (bindable as RSInputView).Add(image, 0, 0);
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -127,7 +134,8 @@ namespace TestApplicationMaui.Views
 #elif __IOS__ || __MACCATALYST__
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
-                handler.PlatformView.FontWeight = Microsoft.UI.Text.FontWeights.Thin;
+                    handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+                    handler.PlatformView.Style = null;
 #endif
                 }
             });
@@ -141,7 +149,8 @@ namespace TestApplicationMaui.Views
 #elif __IOS__ || __MACCATALYST__ 
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
-                handler.PlatformView.FontWeight = Microsoft.UI.Text.FontWeights.Thin;
+                    handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+                    handler.PlatformView.Style = null;
 #endif
                 }
             });
@@ -155,7 +164,8 @@ namespace TestApplicationMaui.Views
 #elif __IOS__ || __MACCATALYST__
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
-                    handler.PlatformView.FontWeight = Microsoft.UI.Text.FontWeights.Thin;
+                    handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+                    handler.PlatformView.Style = null;
 #endif
                 }
             });
@@ -270,13 +280,14 @@ namespace TestApplicationMaui.Views
         public float FontSize { get; set; }
         public Thickness PlaceholderMargin { get; set; }    
         public Microsoft.Maui.Graphics.Font TextFont { get; set; }
-        private Microsoft.Maui.Graphics.IImage trailingIcon;
+        public Image TrailingIcon { get; set; }     
         public GraphicsView Holder { get;set; }
         public View Control { get; set; }    
         public void SetControl(View content)
         {
             Control = content;
-            Control.Margin = new Thickness(8, 0, 8, 0);
+            Control.Margin = new Thickness(8, borderPadding, 8, borderPadding);
+            Control.VerticalOptions = LayoutOptions.Center;
         }
 
         public GraphicsDrawable(GraphicsView graphicsView)
@@ -323,7 +334,7 @@ namespace TestApplicationMaui.Views
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = (float)-Holder.Height / 2;
+            endY = (float)-Holder.Height / 2 + borderPadding;
 
             animationStartTime = DateTime.UtcNow;
             Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
@@ -383,7 +394,7 @@ namespace TestApplicationMaui.Views
                 if (IsFloating())
                 {
                     currentPlaceholderX = CornerRadius + borderGapSpacing / 2;
-                    currentPlaceholderY = (float)-Holder.Height / 2;
+                    currentPlaceholderY = (float)-Holder.Height / 2 + borderPadding;
                     currentPlaceholderSize = 12;
                 }
                 else
@@ -402,11 +413,8 @@ namespace TestApplicationMaui.Views
             canvas.FontSize = currentPlaceholderSize;
             canvas.DrawString(Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
             float size = IsFloating() ? canvas.GetStringSize(Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
-            PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height, CornerRadius, size);
+            PathF pathF = CreateEntryOutlinePath(0, borderPadding, dirtyRect.Width, dirtyRect.Height - borderPadding * 2, CornerRadius, size);
             canvas.DrawPath(pathF);
-
-            if(trailingIcon != null)
-                canvas.DrawImage(trailingIcon, dirtyRect.Width - 50, 0, 50, 50);
         }
 
         public PathF CreateEntryOutlinePath(float x, float y, float width, float height, float cornerRadius, float gapWidth)
