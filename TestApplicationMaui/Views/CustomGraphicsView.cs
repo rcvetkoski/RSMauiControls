@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Platform;
+using System;
 using System.ComponentModel;
 
 namespace TestApplicationMaui.Views
@@ -85,6 +86,19 @@ namespace TestApplicationMaui.Views
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+
+        public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(RSInputView), 12f, propertyChanged: CornerRadiusChanged);
+        public float CornerRadius
+        {
+            get { return (float)GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
+        }
+        private static void CornerRadiusChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            (bindable as RSInputView).graphicsDrawable.CornerRadius = (float)newValue;
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
         private GraphicsDrawable graphicsDrawable;
         public GraphicsView Graphics { get; set; }
 
@@ -100,7 +114,6 @@ namespace TestApplicationMaui.Views
             graphicsDrawable = new GraphicsDrawable(Graphics);
             Graphics.Drawable = graphicsDrawable;
             this.Add(Graphics, 0, 0);
-            
         }
 
         private void SetContent()
@@ -148,9 +161,8 @@ namespace TestApplicationMaui.Views
             });
 
 
-
             this.Add(Content, 0, 0);
-            Content.Margin = new Thickness(8, 0, 8, 0);
+            graphicsDrawable.SetControl(Content);
             Content.Focused += Content_Focused;
             Content.Unfocused += Content_Unfocused;
             Content.PropertyChanged += Content_PropertyChanged;
@@ -160,6 +172,7 @@ namespace TestApplicationMaui.Views
 
             SetDrawableProperties();
         }
+
 
         private void Content_Focused(object sender, FocusEventArgs e)
         {
@@ -179,12 +192,16 @@ namespace TestApplicationMaui.Views
             {
                 if (graphicsDrawable.FontSize != (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize)
                 {
-                    graphicsDrawable.InitialPlaceholderSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
-                    graphicsDrawable.SetCurrentPlaceholderSize();
+                    graphicsDrawable.FontSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
                     Graphics.Invalidate();
                 }
             }
+            else if(e.PropertyName == nameof(Entry.Text) || e.PropertyName == nameof(Picker.SelectedItem) || e.PropertyName == nameof(Picker.SelectedIndex))
+            {
+                Graphics.Invalidate();
+            }
         }
+
         private void SetDrawableProperties()
         {
             var textElement = (Content as Microsoft.Maui.Controls.Internals.IFontElement);
@@ -193,8 +210,8 @@ namespace TestApplicationMaui.Views
             graphicsDrawable.PlaceholderColor = PlaceholderColor;
             graphicsDrawable.BorderColor = BorderColor;
             graphicsDrawable.BorderThikness = BorderThikness;
-            graphicsDrawable.InitialPlaceholderSize = (float)textElement.FontSize;
-            graphicsDrawable.SetCurrentPlaceholderSize();
+            graphicsDrawable.CornerRadius = CornerRadius;   
+            graphicsDrawable.FontSize = (float)textElement.FontSize;
 
             var fnt = textElement.ToFont(textElement.FontSize);
             Microsoft.Maui.Graphics.Font font = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType : (int)FontSlant.Default);
@@ -203,22 +220,17 @@ namespace TestApplicationMaui.Views
 
         private bool CheckIfShouldAnimate()
         {
-            if (Content is Entry)
+            if (Content is Entry || Content is Editor || Content is SearchBar)
             {
                 if (!string.IsNullOrEmpty((Content as Entry).Text))
                     return false;
             }
             else if (Content is Picker)
             {
-                if ((Content as Picker).SelectedItem != null)
+                if ((Content as Picker).SelectedItem != null || (Content as Picker).SelectedIndex >= 0)
                     return false;
             }
-            else if (Content is SearchBar)
-            {
-                if (!string.IsNullOrEmpty((Content as SearchBar).Text))
-                    return false;
-            }
-            else if (Content is DatePicker)
+            else if (Content is DatePicker || Content is TimePicker)
             {
                 return false;
             }
@@ -236,143 +248,151 @@ namespace TestApplicationMaui.Views
 
     public class GraphicsDrawable : IDrawable
     {
-        public float InitialPlaceholderSize { get; set; }   
-        private float finalPlaceholderSize = 12;
+        private float startPlaceholderSize;  
+        private float endPlaceholderSize;
         private float currentPlaceholderSize;
-        private const float AnimationDuration = 200; // milliseconds
+        private float startX;
+        private float endX;
         private float currentPlaceholderX;
+        private float startY;
+        private float endY;
         private float currentPlaceholderY;
-        private float startX = 12;
-        private float endX = 12;
-        private float startY = 0;
-        private float endY = 0;
-        private bool isFloating = false;
-        private bool updateFloatingPosition = false;
+        private float borderGapSpacing = 10;
+        private float borderPadding = 5;   
         private DateTime animationStartTime;
-        public bool GapVisible { get; set; }
+        private const float AnimationDuration = 200; // milliseconds
+        private bool isAnimating = false;
         public string Placeholder { get; set; }
         public Color PlaceholderColor { get;set; }
         public Color BorderColor { get; set; }
         public float BorderThikness { get; set; }
+        public float CornerRadius { get; set; }
         public float FontSize { get; set; }
+        public Thickness PlaceholderMargin { get; set; }    
         public Microsoft.Maui.Graphics.Font TextFont { get; set; }
         private Microsoft.Maui.Graphics.IImage trailingIcon;
-
-
         public GraphicsView Holder { get;set; }
-
-        public void SetCurrentPlaceholderSize()
+        public View Control { get; set; }    
+        public void SetControl(View content)
         {
-            if(isFloating)
-            {
-                finalPlaceholderSize = InitialPlaceholderSize;
-            }
-            else
-            {
-                currentPlaceholderSize = InitialPlaceholderSize;
-                finalPlaceholderSize = 15;
-            }
-
-            updateFloatingPosition = true;
-        }
-
-        private void setValuesBeforeAnimation()
-        {
-            if(isFloating)
-            {
-                finalPlaceholderSize = 15;
-                InitialPlaceholderSize = currentPlaceholderSize;
-                startX = 12;
-                endX = 12;
-                startY = 0;
-                endY = (float)-Holder.Height / 2;
-                GapVisible = true;
-            }
-            else
-            {
-                finalPlaceholderSize = InitialPlaceholderSize;
-                InitialPlaceholderSize = currentPlaceholderSize;
-                startX = currentPlaceholderX;
-                endX = 12;
-                startY = currentPlaceholderY;
-                endY = 0;
-                GapVisible = false;
-            }
+            Control = content;
+            Control.Margin = new Thickness(8, 0, 8, 0);
         }
 
         public GraphicsDrawable(GraphicsView graphicsView)
         {
             Holder = graphicsView;
-            currentPlaceholderX = startX;
-            currentPlaceholderY = startY;   
+            PlaceholderMargin = new Thickness(8, 0, 8, 0);
+            currentPlaceholderX = (float)PlaceholderMargin.Left;
+            currentPlaceholderY = 0;
+            currentPlaceholderSize = FontSize;
         }
 
-        public bool FocusedAnimation()
+        public bool IsFloating()
         {
-            float progress = (float)(DateTime.UtcNow - animationStartTime).TotalMilliseconds / AnimationDuration;
-            if (progress > 1)
-                progress = 1;
+            if(Control.IsFocused)
+                return true;    
 
-            // Update placeholder position and size
-            currentPlaceholderX = startX + (endX - startX) * progress;
-            currentPlaceholderY = startY + (endY - startY) * progress;
-            currentPlaceholderSize = InitialPlaceholderSize + (finalPlaceholderSize - InitialPlaceholderSize) * progress;
+            if (Control is Entry || Control is Editor || Control is SearchBar)
+            {
+                if (!string.IsNullOrEmpty((Control as Entry).Text))
+                    return true;
+            }
+            else if (Control is Picker)
+            {
+                if ((Control as Picker).SelectedItem != null || (Control as Picker).SelectedIndex >= 0)
+                    return true;
+            }
+            else if (Control is DatePicker || Control is TimePicker)
+            {
+                return true;
+            }
 
-            // Invalidate to redraw the control
-            Holder.Invalidate();
-
-            // Stop the animation if progress is 1 (100%)
-            return progress < 1;
-        }
-
-        public bool UnfocusedAnimation()
-        {
-            float progress = (float)(DateTime.UtcNow - animationStartTime).TotalMilliseconds / AnimationDuration;
-            if (progress > 1)
-                progress = 1;
-
-            // Update placeholder position and size
-            currentPlaceholderX = startX + (endX - startX) * progress;
-            currentPlaceholderY = startY + (endY - startY) * progress;
-            currentPlaceholderSize = InitialPlaceholderSize + (finalPlaceholderSize - InitialPlaceholderSize) * progress;
-
-            // Invalidate to redraw the control
-            Holder.Invalidate();
-
-            // Stop the animation if progress is 1 (100%)
-            return progress < 1;
+            return false;
         }
 
         public void StartFocusedAnimation()
         {
-            isFloating = true;
-            setValuesBeforeAnimation();
+            // Set font size 
+            startPlaceholderSize = currentPlaceholderSize;
+            endPlaceholderSize = 12;
+
+            // Set X start and end position
+            startX = currentPlaceholderX;
+            endX = CornerRadius + borderGapSpacing / 2;
+
+            // Set Y start and end position
+            startY = currentPlaceholderY;
+            endY = (float)-Holder.Height / 2;
+
             animationStartTime = DateTime.UtcNow;
             Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
         }
 
         public void StartUnFocusedAnimation()
         {
-            isFloating = false;
-            setValuesBeforeAnimation();
+            // Set font size 
+            startPlaceholderSize = currentPlaceholderSize;
+            endPlaceholderSize = FontSize;
+
+            // Set X start and end position
+            startX = currentPlaceholderX;
+            endX = (float)PlaceholderMargin.Left;
+
+            // Set Y start and end position
+            startY = currentPlaceholderY;
+            endY = 0;
+
             animationStartTime = DateTime.UtcNow;
-            Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), UnfocusedAnimation);
+            Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
+        }
+
+        public bool FocusedAnimation()
+        {
+            isAnimating = true;
+
+            float progress = (float)(DateTime.UtcNow - animationStartTime).TotalMilliseconds / AnimationDuration;
+            if (progress > 1)
+                progress = 1;
+
+            // Update placeholder position and size
+            currentPlaceholderX = startX + (endX - startX) * progress;
+            currentPlaceholderY = startY + (endY - startY) * progress;
+            currentPlaceholderSize = startPlaceholderSize + (endPlaceholderSize - startPlaceholderSize) * progress;
+
+            // Invalidate to redraw the control
+            Holder.Invalidate();
+
+            // Stop the animation if progress is 1 (100%)
+            if(progress < 1)
+            {
+                return true;
+            }
+            else
+            {
+                isAnimating = false;
+                return false;      
+            }
         }
 
         public void Draw(ICanvas canvas, RectF dirtyRect)
         {
-            // Update when FontSize changes at runtime
-            if(updateFloatingPosition)
+            // If it's not animating set placement here where all the measurement has been finished and ready to draw
+            if (!isAnimating)
             {
-                if (isFloating)
-                    endY = (float)-Holder.Height / 2;
+                if (IsFloating())
+                {
+                    currentPlaceholderX = CornerRadius + borderGapSpacing / 2;
+                    currentPlaceholderY = (float)-Holder.Height / 2;
+                    currentPlaceholderSize = 12;
+                }
                 else
-                    endY = 0;
-
-                currentPlaceholderY = endY;
-                updateFloatingPosition = false;
+                {
+                    currentPlaceholderX = (float)PlaceholderMargin.Left;
+                    currentPlaceholderY = 0;
+                    currentPlaceholderSize = FontSize;
+                }
             }
-
 
             canvas.StrokeSize = BorderThikness;
             canvas.StrokeColor = BorderColor;
@@ -381,7 +401,7 @@ namespace TestApplicationMaui.Views
             canvas.Font = TextFont;
             canvas.FontSize = currentPlaceholderSize;
             canvas.DrawString(Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
-            float size = GapVisible ? canvas.GetStringSize(Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width : 0;
+            float size = IsFloating() ? canvas.GetStringSize(Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
             PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height, 12, size);
             canvas.DrawPath(pathF);
 

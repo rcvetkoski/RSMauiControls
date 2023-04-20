@@ -14,19 +14,14 @@
 
         <Entry Placeholder="Stock Entry" />
 
+
         <views:RSInputView Placeholder="Placeholder">
-            <views:RSInputView.TrailingIcon>
-                <Image Source="dotnet_bot.svg" HeightRequest="25" Margin="0, 0, 5, 0"/>
-            </views:RSInputView.TrailingIcon>
-            <Entry Placeholder="Placeholder"/>
+            <DatePicker/>
         </views:RSInputView>
 
-        <views:RSInputView Placeholder="PickerPlaceholder">
-            <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
+        <views:RSInputView Placeholder="Placeholder" BackgroundColor="Red" >
+            <Entry/>
         </views:RSInputView>
-
-
-
 
     </VerticalStackLayout>
 </ContentPage>
