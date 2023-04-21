@@ -19,12 +19,16 @@
             <DatePicker/>
         </views:RSInputView>
 
-        <views:RSInputView Placeholder="Label" Design="Filled" FilledBorderColor="WhiteSmoke">
+        <views:RSInputView Placeholder="Label" Design="Filled" FilledBorderColor="Transparent">
             <Entry/>
         </views:RSInputView>
 
         <views:RSInputView Placeholder="Label*">
             <Entry/>
+        </views:RSInputView>
+
+        <views:RSInputView Placeholder="Label*">
+            <Picker/>
         </views:RSInputView>
 
     </VerticalStackLayout>

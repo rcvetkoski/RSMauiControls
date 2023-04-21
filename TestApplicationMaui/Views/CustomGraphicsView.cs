@@ -198,8 +198,8 @@ namespace TestApplicationMaui.Views
                 {
 #if __ANDROID__
                     handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
-#elif __IOS__ || __MACCATALYST__
-                handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif __IOS__ 
+                    handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
                     handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
                     handler.PlatformView.Style = null;
@@ -296,7 +296,7 @@ namespace TestApplicationMaui.Views
         protected float borderPadding = 5;
         protected Thickness PlaceholderMargin;
         protected DateTime animationStartTime;
-        protected const float AnimationDuration = 80; // milliseconds
+        protected const float AnimationDuration = 100; // milliseconds
         protected bool isAnimating = false;
         public RSInputView InputView { get; set; }  
 
