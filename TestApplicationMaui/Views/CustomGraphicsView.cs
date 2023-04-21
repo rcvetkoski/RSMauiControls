@@ -51,7 +51,6 @@ namespace TestApplicationMaui.Views
         }
         private static void PlaceholderChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).graphicsDrawable.Placeholder = newValue.ToString();
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -64,7 +63,6 @@ namespace TestApplicationMaui.Views
         }
         private static void PlaceholderColorChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).graphicsDrawable.PlaceholderColor = (Color)newValue;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -77,7 +75,28 @@ namespace TestApplicationMaui.Views
         }
         private static void BorderColorChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).graphicsDrawable.BorderColor = (Color)newValue;
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+
+        public static readonly BindableProperty DesignProperty = BindableProperty.Create(nameof(Design), typeof(RSInputViewDesign), typeof(RSInputView), RSInputViewDesign.Outlined, propertyChanged: DesignChanged);
+        public RSInputViewDesign Design
+        {
+            get { return (RSInputViewDesign)GetValue(DesignProperty); }
+            set { SetValue(DesignProperty, value); }
+        }
+        private static void DesignChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if((RSInputViewDesign)newValue == RSInputViewDesign.Outlined)
+            {
+                (bindable as RSInputView).graphicsDrawable = new OutlineDrawable(bindable as RSInputView);
+            }
+            else if((RSInputViewDesign)newValue == RSInputViewDesign.Filled)
+            {
+                (bindable as RSInputView).graphicsDrawable = new FilledDrawable(bindable as RSInputView);
+            }
+
+            (bindable as RSInputView).Graphics.Drawable = (bindable as RSInputView).graphicsDrawable;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -90,7 +109,6 @@ namespace TestApplicationMaui.Views
         }
         private static void FilledBorderColorChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).graphicsDrawable.FilledBorderColor = (Color)newValue;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -103,7 +121,6 @@ namespace TestApplicationMaui.Views
         }
         private static void BorderThiknessChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).graphicsDrawable.BorderThikness = (float)newValue;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -116,7 +133,6 @@ namespace TestApplicationMaui.Views
         }
         private static void CornerRadiusChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSInputView).graphicsDrawable.CornerRadius = (float)newValue;
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
@@ -132,13 +148,14 @@ namespace TestApplicationMaui.Views
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
             Graphics = new GraphicsView();
-            graphicsDrawable = new FilledDrawable(Graphics);
-            Graphics.Drawable = graphicsDrawable;
             this.Add(Graphics, 0, 0);
         }
 
         private void SetContent()
         {
+            if (Content == null)
+                return;
+
             Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("BorderlessEntry", (handler, view) =>
             {
                 if (view == Content)
@@ -184,19 +201,19 @@ namespace TestApplicationMaui.Views
                 }
             });
 
+            // Set drawable
+            graphicsDrawable = Design == RSInputViewDesign.Outlined ? new OutlineDrawable(this) : new FilledDrawable(this);
+            Graphics.Drawable = graphicsDrawable;
 
             this.Add(Content, 0, 0);
-            graphicsDrawable.SetControl(Content);
+            Content.VerticalOptions = LayoutOptions.Center;
             Content.Focused += Content_Focused;
             Content.Unfocused += Content_Unfocused;
             Content.PropertyChanged += Content_PropertyChanged;
 
             if (Content is Entry)
                 (Content as Entry).PlaceholderColor = Colors.Transparent;
-
-            SetDrawableProperties();
         }
-
 
         private void Content_Focused(object sender, FocusEventArgs e)
         {
@@ -214,9 +231,9 @@ namespace TestApplicationMaui.Views
         {
             if (e.PropertyName == nameof(Microsoft.Maui.Controls.Internals.IFontElement.FontSize))
             {
-                if (graphicsDrawable.FontSize != (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize)
+                if (graphicsDrawable.fontSize != (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize)
                 {
-                    graphicsDrawable.FontSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
+                    graphicsDrawable.fontSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
                     Graphics.Invalidate();
                 }
             }
@@ -224,22 +241,6 @@ namespace TestApplicationMaui.Views
             {
                 Graphics.Invalidate();
             }
-        }
-
-        private void SetDrawableProperties()
-        {
-            var textElement = (Content as Microsoft.Maui.Controls.Internals.IFontElement);
-
-            graphicsDrawable.Placeholder = Placeholder;
-            graphicsDrawable.PlaceholderColor = PlaceholderColor;
-            graphicsDrawable.BorderColor = BorderColor;
-            graphicsDrawable.BorderThikness = BorderThikness;
-            graphicsDrawable.CornerRadius = CornerRadius;
-            graphicsDrawable.FontSize = (float)textElement.FontSize;
-
-            var fnt = textElement.ToFont(textElement.FontSize);
-            Microsoft.Maui.Graphics.Font font = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType: (int)FontSlant.Default);
-            graphicsDrawable.TextFont = font;
         }
 
         private bool CheckIfShouldAnimate()
@@ -272,6 +273,8 @@ namespace TestApplicationMaui.Views
 
     public abstract class GraphicsDrawable : IDrawable
     {
+        public Microsoft.Maui.Graphics.Font textFont;
+        public float fontSize;
         protected float startPlaceholderSize;
         protected float endPlaceholderSize;
         protected float currentPlaceholderSize;
@@ -283,45 +286,60 @@ namespace TestApplicationMaui.Views
         protected float currentPlaceholderY;
         protected float borderGapSpacing = 10;
         protected float borderPadding = 5;
+        protected Thickness PlaceholderMargin;
         protected DateTime animationStartTime;
         protected const float AnimationDuration = 100; // milliseconds
         protected bool isAnimating = false;
-        public string Placeholder { get; set; }
-        public Color PlaceholderColor { get; set; }
-        public Color BorderColor { get; set; }
-        public Color FilledBorderColor { get; set; }
+        public RSInputView InputView { get; set; }  
 
-        public float BorderThikness { get; set; }
-        public float CornerRadius { get; set; }
-        public float FontSize { get; set; }
-        public Thickness PlaceholderMargin { get; set; }
-        public Microsoft.Maui.Graphics.Font TextFont { get; set; }
-        public Image TrailingIcon { get; set; }
-        public GraphicsView Holder { get; set; }
-        public View Control { get; set; }
-
-        public virtual void SetControl(View content)
+        public GraphicsDrawable(RSInputView inputView)
         {
-            Control = content;
-            Control.VerticalOptions = LayoutOptions.Center;
+            InputView = inputView;
+            PlaceholderMargin = new Thickness(16, 0, 8, 0);
+            currentPlaceholderX = (float)PlaceholderMargin.Left;
+            currentPlaceholderY = 0;
+
+            if (InputView.Content != null)
+            {
+                // Font
+                var textElement = (InputView.Content as Microsoft.Maui.Controls.Internals.IFontElement);
+                var fnt = textElement.ToFont(textElement.FontSize);
+                textFont = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType: (int)FontSlant.Default);
+
+                // Font size
+                fontSize = (float)textElement.FontSize;
+            }
+            else
+            {
+                // Font
+                textFont = new Microsoft.Maui.Graphics.Font();
+
+                // Font size
+                fontSize = endPlaceholderSize;
+            }
+
+            currentPlaceholderSize = fontSize;
         }
 
         protected bool IsFloating()
         {
-            if (Control.IsFocused)
+            if(InputView.Content == null)
+                return false;       
+
+            if (InputView.Content.IsFocused)
                 return true;
 
-            if (Control is Entry || Control is Editor || Control is SearchBar)
+            if (InputView.Content is Entry || InputView.Content is Editor || InputView.Content is SearchBar)
             {
-                if (!string.IsNullOrEmpty((Control as Entry).Text))
+                if (!string.IsNullOrEmpty((InputView.Content as Entry).Text))
                     return true;
             }
-            else if (Control is Picker)
+            else if (InputView.Content is Picker)
             {
-                if ((Control as Picker).SelectedItem != null || (Control as Picker).SelectedIndex >= 0)
+                if ((InputView.Content as Picker).SelectedItem != null || (InputView.Content as Picker).SelectedIndex >= 0)
                     return true;
             }
-            else if (Control is DatePicker || Control is TimePicker)
+            else if (InputView.Content is DatePicker || InputView.Content is TimePicker)
             {
                 return true;
             }
@@ -332,13 +350,13 @@ namespace TestApplicationMaui.Views
         public virtual void StartFocusedAnimation()
         {
             animationStartTime = DateTime.UtcNow;
-            Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
+            InputView.Graphics.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
         }
 
         public virtual void StartUnFocusedAnimation()
         {
             animationStartTime = DateTime.UtcNow;
-            Holder.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
+            InputView.Graphics.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), FocusedAnimation);
         }
 
         private bool FocusedAnimation()
@@ -355,7 +373,7 @@ namespace TestApplicationMaui.Views
             currentPlaceholderSize = startPlaceholderSize + (endPlaceholderSize - startPlaceholderSize) * progress;
 
             // Invalidate to redraw the control
-            Holder.Invalidate();
+            InputView.Graphics.Invalidate();
 
             // Stop the animation if progress is 1 (100%)
             if (progress < 1)
@@ -372,23 +390,14 @@ namespace TestApplicationMaui.Views
         public abstract void Draw(ICanvas canvas, RectF dirtyRect);
     }
 
-
-
     public class OutlineDrawable : GraphicsDrawable
     {
-        public OutlineDrawable(GraphicsView graphicsView)
+        public OutlineDrawable(RSInputView inputView) : base(inputView)
         {
-            Holder = graphicsView;
-            PlaceholderMargin = new Thickness(8, 0, 8, 0);
-            currentPlaceholderX = (float)PlaceholderMargin.Left;
-            currentPlaceholderY = 0;
-            currentPlaceholderSize = FontSize;
-        }
+            if (InputView == null)
+                return;
 
-        public override void SetControl(View content)
-        {
-            base.SetControl(content);
-            Control.Margin = new Thickness(8, borderPadding, 8, borderPadding);
+            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, borderPadding, PlaceholderMargin.Right, borderPadding);
         }
 
         public override void StartFocusedAnimation()
@@ -399,11 +408,11 @@ namespace TestApplicationMaui.Views
 
             // Set X start and end position
             startX = currentPlaceholderX;
-            endX = CornerRadius + borderGapSpacing / 2;
+            endX = InputView.CornerRadius + borderGapSpacing / 2;
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = (float)-Holder.Height / 2 + borderPadding;
+            endY = (float)-InputView.Graphics.Height / 2 + borderPadding;
 
 
             base.StartFocusedAnimation();
@@ -413,7 +422,7 @@ namespace TestApplicationMaui.Views
         {
             // Set font size 
             startPlaceholderSize = currentPlaceholderSize;
-            endPlaceholderSize = FontSize;
+            endPlaceholderSize = fontSize;
 
             // Set X start and end position
             startX = currentPlaceholderX;
@@ -434,27 +443,27 @@ namespace TestApplicationMaui.Views
             {
                 if (IsFloating())
                 {
-                    currentPlaceholderX = CornerRadius + borderGapSpacing / 2;
-                    currentPlaceholderY = (float)-Holder.Height / 2 + borderPadding;
+                    currentPlaceholderX = InputView.CornerRadius + borderGapSpacing / 2;
+                    currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + borderPadding;
                     currentPlaceholderSize = 12;
                 }
                 else
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
                     currentPlaceholderY = 0;
-                    currentPlaceholderSize = FontSize;
+                    currentPlaceholderSize = fontSize;
                 }
             }
 
-            canvas.StrokeSize = BorderThikness;
-            canvas.StrokeColor = BorderColor;
+            canvas.StrokeSize = InputView.BorderThikness;
+            canvas.StrokeColor = InputView.BorderColor;
             canvas.Antialias = true;
-            canvas.FontColor = PlaceholderColor;
-            canvas.Font = TextFont;
+            canvas.FontColor = InputView.PlaceholderColor;
+            canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
-            canvas.DrawString(Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
-            float size = IsFloating() ? canvas.GetStringSize(Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
-            PathF pathF = CreateEntryOutlinePath(0, borderPadding, dirtyRect.Width, dirtyRect.Height - borderPadding * 2, CornerRadius, size);
+            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+            float size = IsFloating() ? canvas.GetStringSize(InputView.Placeholder, textFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
+            PathF pathF = CreateEntryOutlinePath(0, borderPadding, dirtyRect.Width, dirtyRect.Height - borderPadding * 2, InputView.CornerRadius, size);
             canvas.DrawPath(pathF);
         }
 
@@ -485,22 +494,14 @@ namespace TestApplicationMaui.Views
         }
     }
 
-
     public class FilledDrawable : GraphicsDrawable
     {
-        public FilledDrawable(GraphicsView graphicsView)
+        public FilledDrawable(RSInputView inputView) : base(inputView)
         {
-            Holder = graphicsView;
-            PlaceholderMargin = new Thickness(8, 0, 8, 0);
-            currentPlaceholderX = (float)PlaceholderMargin.Left;
-            currentPlaceholderY = 0;
-            currentPlaceholderSize = FontSize;
-        }
+            if (InputView == null)
+                return;
 
-        public override void SetControl(View content)
-        {
-            base.SetControl(content);
-            Control.Margin = new Thickness(8, 15, 8, 0);
+            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, 15, PlaceholderMargin.Right, 0);
         }
 
         public PathF CreateEntryOutlinePath(float x, float y, float width, float height, float cornerRadius, float gapWidth)
@@ -534,35 +535,42 @@ namespace TestApplicationMaui.Views
                 if (IsFloating())
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = (float)-Holder.Height / 2 + 20;
+                    currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + 15;
                     currentPlaceholderSize = 12;
                 }
                 else
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
                     currentPlaceholderY = 0;
-                    currentPlaceholderSize = FontSize;
+                    currentPlaceholderSize = fontSize;
                 }
             }
 
-            canvas.StrokeSize = BorderThikness;
-            canvas.StrokeColor = BorderColor;
+            canvas.StrokeSize = InputView.BorderThikness;
+            canvas.StrokeColor = InputView.FilledBorderColor;
             canvas.Antialias = true;
-            canvas.FontColor = PlaceholderColor;
-            canvas.Font = TextFont;
+            canvas.FontColor = InputView.PlaceholderColor;
+            canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
-            float size = IsFloating() ? canvas.GetStringSize(Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
-            PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height, CornerRadius, size);
+            float size = IsFloating() ? canvas.GetStringSize(InputView.Placeholder, textFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
+            PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height, InputView.CornerRadius, size);
             canvas.DrawPath(pathF);
-            canvas.FillColor = BorderColor;
+            canvas.FillColor = InputView.FilledBorderColor;
             canvas.FillPath(pathF, WindingMode.NonZero);
-            canvas.DrawString(Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
 
 
-            canvas.StrokeColor = Colors.Blue;
+            canvas.StrokeColor = InputView.BorderColor;
             canvas.StrokeSize = 2;
-            canvas.FillColor = Colors.Blue;
+            canvas.FillColor = InputView.BorderColor;
             canvas.DrawLine(0, dirtyRect.Height, dirtyRect.Width, dirtyRect.Height);
         }
+    }
+
+
+    public enum RSInputViewDesign
+    {
+        Outlined,
+        Filled
     }
 }
