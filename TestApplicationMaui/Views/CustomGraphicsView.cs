@@ -67,6 +67,23 @@ namespace TestApplicationMaui.Views
         }
 
 
+        public static readonly BindableProperty HelperProperty = BindableProperty.Create(nameof(Helper), typeof(string), typeof(RSInputView), default, propertyChanged: HelperChanged);
+        public string Helper
+        {
+            get { return (string)GetValue(HelperProperty); }
+            set { SetValue(HelperProperty, value); }
+        }
+        private static void HelperChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if ((bindable as RSInputView).Content == null)
+                return;
+
+            (bindable as RSInputView).Content.Margin = new Thickness((bindable as RSInputView).Content.Margin.Left,
+                (bindable as RSInputView).Content.Margin.Top, (bindable as RSInputView).Content.Margin.Right, 30);
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+
         public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(RSInputView), Colors.LightGray, propertyChanged: BorderColorChanged);
         public Color BorderColor
         {
@@ -469,10 +486,13 @@ namespace TestApplicationMaui.Views
             canvas.FontColor = InputView.PlaceholderColor;
             canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
-            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
             float size = IsFloating() ? canvas.GetStringSize(InputView.Placeholder, textFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
             PathF pathF = CreateEntryOutlinePath(0, borderPadding, dirtyRect.Width, dirtyRect.Height - borderPadding * 2, InputView.CornerRadius, size);
             canvas.DrawPath(pathF);
+
+            canvas.DrawString(InputView.Helper, currentPlaceholderX, dirtyRect.Height / 2, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+
         }
 
         public PathF CreateEntryOutlinePath(float x, float y, float width, float height, float cornerRadius, float gapWidth)
@@ -601,7 +621,7 @@ namespace TestApplicationMaui.Views
             canvas.DrawPath(pathF);
             canvas.FillColor = InputView.FilledBorderColor;
             canvas.FillPath(pathF, WindingMode.NonZero);
-            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
+            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
 
 
             canvas.StrokeColor = InputView.BorderColor;

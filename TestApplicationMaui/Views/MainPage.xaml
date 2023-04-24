@@ -10,12 +10,16 @@
     <ContentPage.BindingContext>
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
-    <VerticalStackLayout Margin="10" Spacing="20">
+    <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
         <Entry Placeholder="Stock Entry" />
 
+        <views:RSInputView Placeholder="Placeholder" Helper="Helper" BackgroundColor="Red">
+            <Entry Margin="8, 8, 8, 0"/>
+        </views:RSInputView>
 
-        <views:RSInputView Placeholder="Placeholder" TrailingIcon="dotnet_bot.png">
+
+        <!--<views:RSInputView Placeholder="Placeholder" TrailingIcon="dotnet_bot.png">
             <DatePicker/>
         </views:RSInputView>
 
@@ -29,7 +33,7 @@
 
         <views:RSInputView Placeholder="Label*">
             <Picker/>
-        </views:RSInputView>
+        </views:RSInputView>-->
 
     </VerticalStackLayout>
 </ContentPage>
