@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using System.ComponentModel;
 
 namespace TestApplicationMaui.Views
@@ -372,7 +373,7 @@ namespace TestApplicationMaui.Views
                 // Font size
                 fontSize = endPlaceholderSize;
             }
-            fontSizeFloating = 10;
+            fontSizeFloating = 11;
             currentPlaceholderSize = fontSize;
         }
 
@@ -614,7 +615,7 @@ namespace TestApplicationMaui.Views
 
             double bottomMargin = 0;
             if (!string.IsNullOrEmpty(InputView.Helper))
-                bottomMargin = 11 + messageSpacing;
+                bottomMargin = 13 + messageSpacing;
 
             PlaceholderMargin = new Thickness(12, 10, 12, bottomMargin);
 
@@ -651,7 +652,7 @@ namespace TestApplicationMaui.Views
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = 0;
+            endY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
 
 
             base.StartUnFocusedAnimation();
@@ -694,7 +695,7 @@ namespace TestApplicationMaui.Views
                 else
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = 0;
+                    currentPlaceholderY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
                     currentPlaceholderSize = fontSize;
                 }
             }
@@ -705,7 +706,7 @@ namespace TestApplicationMaui.Views
             canvas.FontColor = InputView.PlaceholderColor;
             canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
-            PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height, InputView.CornerRadius);
+            PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom, InputView.CornerRadius);
             canvas.DrawPath(pathF);
             canvas.FillColor = InputView.FilledBorderColor;
             canvas.FillPath(pathF, WindingMode.NonZero);
@@ -715,7 +716,36 @@ namespace TestApplicationMaui.Views
             canvas.StrokeColor = InputView.BorderColor;
             canvas.StrokeSize = 1;
             canvas.FillColor = InputView.BorderColor;
-            canvas.DrawLine(0, dirtyRect.Height, dirtyRect.Width, dirtyRect.Height);
+            canvas.DrawLine(0, dirtyRect.Height - (float)PlaceholderMargin.Bottom, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom);
+
+
+            // Error or Helper
+            DrawMessage(canvas, dirtyRect);
+
+            this.canvas = canvas;
+        }
+
+        private void DrawMessage(ICanvas canvas, RectF dirtyRect)
+        {
+            if (string.IsNullOrEmpty(InputView.Error) && string.IsNullOrEmpty(InputView.Helper))
+                return;
+
+            bool isError = !string.IsNullOrEmpty(InputView.Error);
+            string message = isError ? InputView.Error : InputView.Helper;
+
+            canvas.FontSize = fontSizeFloating;
+            canvas.FontColor = isError ? Colors.Red : InputView.BorderColor;
+
+            var messageSize = canvas.GetStringSize(message, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
+            var multiplier = Math.Floor(messageSize.Width / (dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right) + 1);
+
+            canvas.DrawString(message,
+                    currentPlaceholderX,
+                    dirtyRect.Height / 2 + (float)(messageSize.Height * multiplier) / 2 - (float)PlaceholderMargin.Bottom + messageSpacing,
+                    dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height,
+                    HorizontalAlignment.Left,
+                    VerticalAlignment.Center,
+                    TextFlow.ClipBounds);
         }
     }
 

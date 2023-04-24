@@ -14,9 +14,9 @@
 
         <Entry Placeholder="Stock Entry" />
 
-        <views:RSInputView Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
+        <!--<views:RSInputView Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
             <Entry/>
-        </views:RSInputView>
+        </views:RSInputView>-->
 
         <views:RSInputView Design="Filled" Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
             <Entry/>
