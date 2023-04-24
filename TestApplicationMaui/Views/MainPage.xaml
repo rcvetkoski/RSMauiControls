@@ -14,8 +14,12 @@
 
         <Entry Placeholder="Stock Entry" />
 
-        <views:RSInputView Placeholder="Placeholder" Helper="Helper" BackgroundColor="Red">
-            <Entry Margin="8, 8, 8, 0"/>
+        <views:RSInputView Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
+            <Entry/>
+        </views:RSInputView>
+
+        <views:RSInputView Design="Filled" Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
+            <Entry/>
         </views:RSInputView>
 
 

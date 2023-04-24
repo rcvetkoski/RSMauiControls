@@ -1,8 +1,4 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
-using System;
+﻿using Microsoft.Maui.Platform;
 using System.ComponentModel;
 
 namespace TestApplicationMaui.Views
@@ -67,20 +63,51 @@ namespace TestApplicationMaui.Views
         }
 
 
-        public static readonly BindableProperty HelperProperty = BindableProperty.Create(nameof(Helper), typeof(string), typeof(RSInputView), default, propertyChanged: HelperChanged);
+        public static readonly BindableProperty HelperProperty = BindableProperty.Create(nameof(Helper), typeof(string), typeof(RSInputView), default, propertyChanged: MessageChanged);
         public string Helper
         {
             get { return (string)GetValue(HelperProperty); }
             set { SetValue(HelperProperty, value); }
         }
-        private static void HelperChanged(BindableObject bindable, object oldValue, object newValue)
+
+        public static readonly BindableProperty ErrorProperty = BindableProperty.Create(nameof(Error), typeof(string), typeof(RSInputView), default, propertyChanged: MessageChanged);
+        public string Error
         {
-            if ((bindable as RSInputView).Content == null)
+            get { return (string)GetValue(ErrorProperty); }
+            set { SetValue(ErrorProperty, value); }
+        }
+
+        private static void MessageChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if ((bindable as RSInputView).graphicsDrawable == null)
                 return;
 
-            (bindable as RSInputView).Content.Margin = new Thickness((bindable as RSInputView).Content.Margin.Left,
-                (bindable as RSInputView).Content.Margin.Top, (bindable as RSInputView).Content.Margin.Right, 30);
-            (bindable as RSInputView).Graphics.Invalidate();
+            var rsInput = (bindable as RSInputView);
+            var Graphics = (bindable as RSInputView).Graphics;
+
+            // Do not update if new message is null or empty but one of error or helper is still active
+            if (string.IsNullOrEmpty((string)newValue))
+            {
+                if (string.IsNullOrEmpty(rsInput.Error) && !string.IsNullOrEmpty(rsInput.Helper))
+                {
+                    Graphics.Invalidate();
+                    return;
+                }
+                else if (string.IsNullOrEmpty(rsInput.Helper) && !string.IsNullOrEmpty(rsInput.Error))
+                {
+                    Graphics.Invalidate();
+                    return;
+                }
+            }
+
+            var graphicsDrawable = (bindable as RSInputView).graphicsDrawable;
+            string newHelperText = newValue != null ? newValue.ToString() : string.Empty;
+            var size = graphicsDrawable.GetCanvasStringSize(newHelperText);
+            var multiplier = Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right) + 1);
+            var bottomMarging = size.Width > 0 ? size.Height * multiplier : 0;
+
+            graphicsDrawable.SetPlaceholderBottomMargin(bottomMarging);
+            Graphics.Invalidate();
         }
 
 
@@ -124,7 +151,7 @@ namespace TestApplicationMaui.Views
         }
 
 
-        public static readonly BindableProperty FilledBorderColorProperty = BindableProperty.Create(nameof(FilledBorderColor), typeof(Color), typeof(RSInputView), Colors.LightGray, propertyChanged: FilledBorderColorChanged);
+        public static readonly BindableProperty FilledBorderColorProperty = BindableProperty.Create(nameof(FilledBorderColor), typeof(Color), typeof(RSInputView), Colors.WhiteSmoke, propertyChanged: FilledBorderColorChanged);
         public Color FilledBorderColor
         {
             get { return (Color)GetValue(FilledBorderColorProperty); }
@@ -265,6 +292,11 @@ namespace TestApplicationMaui.Views
             {
                 Graphics.Invalidate();
             }
+            else if(e.PropertyName == nameof(View.Margin))
+            {
+                graphicsDrawable.SetPlaceholderMargin(Content.Margin);
+                Graphics.Invalidate();
+            }
         }
 
         private bool CheckIfShouldAnimate()
@@ -310,19 +342,17 @@ namespace TestApplicationMaui.Views
         protected float endY;
         protected float currentPlaceholderY;
         protected float borderGapSpacing = 8;
-        protected float borderPadding = 5;
-        protected Thickness PlaceholderMargin;
+        public float messageSpacing = 3;
+        public Thickness PlaceholderMargin { get; protected set; }
         protected DateTime animationStartTime;
         protected const float AnimationDuration = 100; // milliseconds
         protected bool isAnimating = false;
+        protected ICanvas canvas;
         public RSInputView InputView { get; set; }  
 
         public GraphicsDrawable(RSInputView inputView)
         {
             InputView = inputView;
-            PlaceholderMargin = new Thickness(12, 0, 12, 0);
-            currentPlaceholderX = (float)PlaceholderMargin.Left;
-            currentPlaceholderY = 0;
 
             if (InputView.Content != null)
             {
@@ -344,6 +374,23 @@ namespace TestApplicationMaui.Views
             }
             fontSizeFloating = 10;
             currentPlaceholderSize = fontSize;
+        }
+
+        public void SetPlaceholderMargin(Thickness thickness)
+        {
+            PlaceholderMargin = thickness;
+        }
+
+        public void SetPlaceholderBottomMargin(double bottom)
+        {
+            PlaceholderMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, bottom);
+            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+        }
+
+
+        public SizeF GetCanvasStringSize(string text)
+        {
+            return this.canvas.GetStringSize(text, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
         }
 
         protected bool IsFloating()
@@ -422,7 +469,16 @@ namespace TestApplicationMaui.Views
             if (InputView.Content == null)
                 return;
 
-            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, borderPadding, PlaceholderMargin.Right, borderPadding);
+            double bottomMargin = 0;
+            if(!string.IsNullOrEmpty(InputView.Helper))
+                bottomMargin = 11 + messageSpacing;
+
+            PlaceholderMargin = new Thickness(12, 5, 12, bottomMargin);
+
+            currentPlaceholderX = (float)PlaceholderMargin.Left;
+            currentPlaceholderY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
+
+            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
         }
 
         public override void StartFocusedAnimation()
@@ -437,7 +493,7 @@ namespace TestApplicationMaui.Views
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = (float)-InputView.Graphics.Height / 2 + borderPadding;
+            endY = (float)-InputView.Graphics.Height / 2 + (float)PlaceholderMargin.Top;
 
 
             base.StartFocusedAnimation();
@@ -455,7 +511,7 @@ namespace TestApplicationMaui.Views
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = 0;
+            endY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
 
 
             base.StartUnFocusedAnimation();
@@ -469,13 +525,13 @@ namespace TestApplicationMaui.Views
                 if (IsFloating())
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + borderPadding;
+                    currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + (float)PlaceholderMargin.Top;
                     currentPlaceholderSize = fontSizeFloating;
                 }
                 else
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = 0;
+                    currentPlaceholderY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
                     currentPlaceholderSize = fontSize;
                 }
             }
@@ -488,11 +544,37 @@ namespace TestApplicationMaui.Views
             canvas.FontSize = currentPlaceholderSize;
             canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
             float size = IsFloating() ? canvas.GetStringSize(InputView.Placeholder, textFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
-            PathF pathF = CreateEntryOutlinePath(0, borderPadding, dirtyRect.Width, dirtyRect.Height - borderPadding * 2, InputView.CornerRadius, size);
+            PathF pathF = CreateEntryOutlinePath(0, (float)PlaceholderMargin.Top, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Top - (float)PlaceholderMargin.Bottom, InputView.CornerRadius, size);
             canvas.DrawPath(pathF);
 
-            canvas.DrawString(InputView.Helper, currentPlaceholderX, dirtyRect.Height / 2, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
 
+            // Error or Helper
+            DrawMessage(canvas, dirtyRect);
+
+            this.canvas = canvas;
+        }
+
+        private void DrawMessage(ICanvas canvas, RectF dirtyRect)
+        {
+            if (string.IsNullOrEmpty(InputView.Error) && string.IsNullOrEmpty(InputView.Helper))
+                return;
+
+            bool isError = !string.IsNullOrEmpty(InputView.Error);
+            string message = isError ? InputView.Error : InputView.Helper;
+
+            canvas.FontSize = fontSizeFloating;
+            canvas.FontColor = isError ? Colors.Red : InputView.BorderColor;
+
+            var messageSize = canvas.GetStringSize(message, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
+            var multiplier = Math.Floor(messageSize.Width / (dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right) + 1);
+
+            canvas.DrawString(message,
+                    currentPlaceholderX,
+                    dirtyRect.Height / 2 + (float)(messageSize.Height * multiplier) / 2 - (float)PlaceholderMargin.Bottom + messageSpacing,
+                    dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height,
+                    HorizontalAlignment.Left,
+                    VerticalAlignment.Center,
+                    TextFlow.ClipBounds);
         }
 
         public PathF CreateEntryOutlinePath(float x, float y, float width, float height, float cornerRadius, float gapWidth)
@@ -530,7 +612,13 @@ namespace TestApplicationMaui.Views
             if (InputView.Content == null)
                 return;
 
-            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, 10, PlaceholderMargin.Right, 0);
+            double bottomMargin = 0;
+            if (!string.IsNullOrEmpty(InputView.Helper))
+                bottomMargin = 11 + messageSpacing;
+
+            PlaceholderMargin = new Thickness(12, 10, 12, bottomMargin);
+
+            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
         }
 
         public override void StartFocusedAnimation()
