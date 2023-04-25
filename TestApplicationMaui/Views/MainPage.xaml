@@ -14,14 +14,13 @@
 
         <Entry Placeholder="Stock Entry" />
 
-        <!--<views:RSInputView Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
-            <Entry/>
-        </views:RSInputView>-->
-
-        <views:RSInputView Design="Filled" Placeholder="Placeholder" Error="error" Helper="Helper" TrailingIcon="dotnet_bot.png">
+        <views:RSInputView Design="Outlined" Placeholder="Placeholder">
             <Entry/>
         </views:RSInputView>
 
+        <views:RSInputView Design="Filled" Helper="Helper message" Placeholder="Label">
+            <Entry Margin="12, 10, 12, 20"/>
+        </views:RSInputView>
 
         <!--<views:RSInputView Placeholder="Placeholder" TrailingIcon="dotnet_bot.png">
             <DatePicker/>
@@ -38,6 +37,8 @@
         <views:RSInputView Placeholder="Label*">
             <Picker/>
         </views:RSInputView>-->
+
+        
 
     </VerticalStackLayout>
 </ContentPage>

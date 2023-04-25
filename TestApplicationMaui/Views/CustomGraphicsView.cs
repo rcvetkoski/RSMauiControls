@@ -52,7 +52,7 @@ namespace TestApplicationMaui.Views
         }
 
 
-        public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(RSInputView), Colors.LightGray, propertyChanged: PlaceholderColorChanged);
+        public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(RSInputView), Colors.Gray, propertyChanged: PlaceholderColorChanged);
         public Color PlaceholderColor
         {
             get { return (Color)GetValue(PlaceholderColorProperty); }
@@ -112,7 +112,7 @@ namespace TestApplicationMaui.Views
         }
 
 
-        public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(RSInputView), Colors.LightGray, propertyChanged: BorderColorChanged);
+        public static readonly BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(RSInputView), Colors.Gray, propertyChanged: BorderColorChanged);
         public Color BorderColor
         {
             get { return (Color)GetValue(BorderColorProperty); }
@@ -187,6 +187,7 @@ namespace TestApplicationMaui.Views
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+        public bool IsActive { get; protected set; }
         private GraphicsDrawable graphicsDrawable;
         public GraphicsView Graphics { get; set; }
 
@@ -198,7 +199,7 @@ namespace TestApplicationMaui.Views
             RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
-            Graphics = new GraphicsView();
+            Graphics = new GraphicsView(); 
             this.Add(Graphics, 0, 0);
         }
 
@@ -269,14 +270,22 @@ namespace TestApplicationMaui.Views
 
         private void Content_Focused(object sender, FocusEventArgs e)
         {
+            IsActive = true;
+
             if (CheckIfShouldAnimate())
                 graphicsDrawable.StartFocusedAnimation();
+            else
+                Graphics.Invalidate();
         }
 
         private void Content_Unfocused(object sender, FocusEventArgs e)
         {
+            IsActive = false;
+
             if (CheckIfShouldAnimate())
                 graphicsDrawable.StartUnFocusedAnimation();
+            else
+                Graphics.Invalidate();
         }
 
         private void Content_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -387,7 +396,6 @@ namespace TestApplicationMaui.Views
             PlaceholderMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, bottom);
             InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
         }
-
 
         public SizeF GetCanvasStringSize(string text)
         {
@@ -537,10 +545,21 @@ namespace TestApplicationMaui.Views
                 }
             }
 
-            canvas.StrokeSize = InputView.BorderThikness;
-            canvas.StrokeColor = InputView.BorderColor;
+
+            var borderColor = InputView.IsActive ? Colors.Blue : InputView.BorderColor;
+            Color placeholderColor;
+
+            if (!string.IsNullOrEmpty(InputView.Error))
+                placeholderColor = Colors.Red;
+            else if(InputView.IsActive)
+                placeholderColor = Colors.Blue;
+            else
+                placeholderColor = InputView.PlaceholderColor;
+
             canvas.Antialias = true;
-            canvas.FontColor = InputView.PlaceholderColor;
+            canvas.StrokeSize = InputView.BorderThikness;
+            canvas.StrokeColor = borderColor;
+            canvas.FontColor = placeholderColor;
             canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
             canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
@@ -695,27 +714,40 @@ namespace TestApplicationMaui.Views
                 else
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
+                    currentPlaceholderY = (float)(PlaceholderMargin.Top / 2 - PlaceholderMargin.Bottom) / 2;
                     currentPlaceholderSize = fontSize;
                 }
             }
 
+
+            var borderColor = InputView.IsActive ? Colors.Blue : InputView.BorderColor;
+            var fillColor = InputView.IsActive ? Colors.LightGray : InputView.FilledBorderColor;
+            Color placeholderColor;
+
+            if (!string.IsNullOrEmpty(InputView.Error))
+                placeholderColor = Colors.Red;
+            else if (InputView.IsActive)
+                placeholderColor = Colors.Blue;
+            else
+                placeholderColor = InputView.PlaceholderColor;
+
+
+            canvas.Antialias = true;
             canvas.StrokeSize = InputView.BorderThikness;
             canvas.StrokeColor = InputView.FilledBorderColor;
-            canvas.Antialias = true;
-            canvas.FontColor = InputView.PlaceholderColor;
+            canvas.FontColor = placeholderColor;
             canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
             PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom, InputView.CornerRadius);
             canvas.DrawPath(pathF);
-            canvas.FillColor = InputView.FilledBorderColor;
+            canvas.FillColor = fillColor;
             canvas.FillPath(pathF, WindingMode.NonZero);
             canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
 
 
-            canvas.StrokeColor = InputView.BorderColor;
+            canvas.StrokeColor = borderColor;
             canvas.StrokeSize = 1;
-            canvas.FillColor = InputView.BorderColor;
+            canvas.FillColor = borderColor;
             canvas.DrawLine(0, dirtyRect.Height - (float)PlaceholderMargin.Bottom, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom);
 
 
