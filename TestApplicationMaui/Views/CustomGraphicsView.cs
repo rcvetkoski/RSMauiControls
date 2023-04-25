@@ -65,14 +65,14 @@ namespace TestApplicationMaui.Views
         }
 
 
-        public static readonly BindableProperty HelperProperty = BindableProperty.Create(nameof(Helper), typeof(string), typeof(RSInputView), default, propertyChanged: MessageChanged);
+        public static readonly BindableProperty HelperProperty = BindableProperty.Create(nameof(Helper), typeof(string), typeof(RSInputView), string.Empty, propertyChanged: MessageChanged);
         public string Helper
         {
             get { return (string)GetValue(HelperProperty); }
             set { SetValue(HelperProperty, value); }
         }
 
-        public static readonly BindableProperty ErrorProperty = BindableProperty.Create(nameof(Error), typeof(string), typeof(RSInputView), default, propertyChanged: MessageChanged);
+        public static readonly BindableProperty ErrorProperty = BindableProperty.Create(nameof(Error), typeof(string), typeof(RSInputView), string.Empty, propertyChanged: MessageChanged);
         public string Error
         {
             get { return (string)GetValue(ErrorProperty); }
@@ -105,6 +105,14 @@ namespace TestApplicationMaui.Views
             var graphicsDrawable = (bindable as RSInputView).graphicsDrawable;
             string newHelperText = newValue != null ? newValue.ToString() : string.Empty;
             var size = graphicsDrawable.GetCanvasStringSize(newHelperText);
+
+            if(size == SizeF.Zero && !string.IsNullOrEmpty((string)newValue))
+            {
+                graphicsDrawable.SetPlaceholderBottomMargin(graphicsDrawable.messageSpacing + 13);
+                Graphics.Invalidate();
+                return;
+            }
+
             var multiplier = Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right) + 1);
             var bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing: 0;
 
@@ -193,7 +201,6 @@ namespace TestApplicationMaui.Views
         public GraphicsView Graphics { get; set; }
 
 
-
         public RSInputView()
         {
             // Main Grid
@@ -201,7 +208,13 @@ namespace TestApplicationMaui.Views
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
             Graphics = new GraphicsView();
+            Graphics.StartInteraction += Graphics_StartInteraction;
             this.Add(Graphics, 0, 0);
+        }
+
+        private void Graphics_StartInteraction(object sender, TouchEventArgs e)
+        {
+            Content.Focus();
         }
 
         private void SetContent()
@@ -340,6 +353,7 @@ namespace TestApplicationMaui.Views
             Content.Focused -= Content_Focused;
             Content.Unfocused -= Content_Unfocused;
             Content.PropertyChanged -= Content_PropertyChanged;
+            Graphics.StartInteraction -= Graphics_StartInteraction;
         }
     }
 
@@ -402,6 +416,9 @@ namespace TestApplicationMaui.Views
 
         public SizeF GetCanvasStringSize(string text)
         {
+            if (this.canvas == null)
+                return SizeF.Zero;
+
             return this.canvas.GetStringSize(text, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
         }
 
@@ -630,7 +647,7 @@ namespace TestApplicationMaui.Views
 
     public class FilledDrawable : GraphicsDrawable
     {
-        private float PlaceholderYFloatingMargin = 15;
+        private float PlaceholderYFloatingMargin = 16;
         public float filledBorderMargin { get; private set; } = 10;
 
 
@@ -644,7 +661,7 @@ namespace TestApplicationMaui.Views
                 bottomMargin = 13 + messageSpacing;
 
             PlaceholderMargin = new Thickness(12, 0, 12, bottomMargin);
-            ContentMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top + filledBorderMargin, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            ContentMargin = new Thickness(PlaceholderMargin.Left, filledBorderMargin, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
             InputView.Content.Margin = ContentMargin;
         }
 

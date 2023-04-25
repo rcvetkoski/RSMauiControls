@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
+using TestApplicationMaui.ViewModels;
 
 namespace TestApplicationMaui.Views
 {
@@ -20,6 +21,12 @@ namespace TestApplicationMaui.Views
 
         private void Button_Clicked(object sender, EventArgs e)
         {
+            (BindingContext as MainViewModel).Error = "Error message !";
+        }
+
+        private void Button_Clicked2(object sender, EventArgs e)
+        {
+            (BindingContext as MainViewModel).Error = "";
         }
     }
 }
