@@ -19,24 +19,12 @@
         </views:RSInputView>
 
         <views:RSInputView Design="Filled" Helper="Helper message" Placeholder="Label">
-            <Entry Margin="12, 10, 12, 20"/>
-        </views:RSInputView>
-
-        <!--<views:RSInputView Placeholder="Placeholder" TrailingIcon="dotnet_bot.png">
-            <DatePicker/>
-        </views:RSInputView>
-
-        <views:RSInputView Placeholder="Label" Design="Filled" FilledBorderColor="Transparent">
             <Entry/>
         </views:RSInputView>
 
         <views:RSInputView Placeholder="Label*">
-            <Entry/>
+            <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
         </views:RSInputView>
-
-        <views:RSInputView Placeholder="Label*">
-            <Picker/>
-        </views:RSInputView>-->
 
         
 

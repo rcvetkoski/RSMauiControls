@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace TestApplicationMaui.Views
 {
@@ -105,7 +106,7 @@ namespace TestApplicationMaui.Views
             string newHelperText = newValue != null ? newValue.ToString() : string.Empty;
             var size = graphicsDrawable.GetCanvasStringSize(newHelperText);
             var multiplier = Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right) + 1);
-            var bottomMarging = size.Width > 0 ? size.Height * multiplier : 0;
+            var bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing: 0;
 
             graphicsDrawable.SetPlaceholderBottomMargin(bottomMarging);
             Graphics.Invalidate();
@@ -199,7 +200,7 @@ namespace TestApplicationMaui.Views
             RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
-            Graphics = new GraphicsView(); 
+            Graphics = new GraphicsView();
             this.Add(Graphics, 0, 0);
         }
 
@@ -304,8 +305,13 @@ namespace TestApplicationMaui.Views
             }
             else if(e.PropertyName == nameof(View.Margin))
             {
-                graphicsDrawable.SetPlaceholderMargin(Content.Margin);
-                Graphics.Invalidate();
+                //graphicsDrawable.SetPlaceholderMargin(Content.Margin);
+
+                // Prevent margin change from user side
+                if (Content.Margin != graphicsDrawable.ContentMargin)
+                    Content.Margin = graphicsDrawable.ContentMargin;
+
+                //Graphics.Invalidate();
             }
         }
 
@@ -354,6 +360,7 @@ namespace TestApplicationMaui.Views
         protected float borderGapSpacing = 8;
         public float messageSpacing = 3;
         public Thickness PlaceholderMargin { get; protected set; }
+        public Thickness ContentMargin { get; protected set; }
         protected DateTime animationStartTime;
         protected const float AnimationDuration = 100; // milliseconds
         protected bool isAnimating = false;
@@ -386,15 +393,11 @@ namespace TestApplicationMaui.Views
             currentPlaceholderSize = fontSize;
         }
 
-        public void SetPlaceholderMargin(Thickness thickness)
-        {
-            PlaceholderMargin = thickness;
-        }
-
         public void SetPlaceholderBottomMargin(double bottom)
         {
             PlaceholderMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, bottom);
-            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            ContentMargin = new Thickness(PlaceholderMargin.Left, InputView.Content.Margin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            InputView.Content.Margin = ContentMargin;
         }
 
         public SizeF GetCanvasStringSize(string text)
@@ -486,8 +489,8 @@ namespace TestApplicationMaui.Views
 
             currentPlaceholderX = (float)PlaceholderMargin.Left;
             currentPlaceholderY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
-
-            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            ContentMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            InputView.Content.Margin = ContentMargin;
         }
 
         public override void StartFocusedAnimation()
@@ -627,6 +630,10 @@ namespace TestApplicationMaui.Views
 
     public class FilledDrawable : GraphicsDrawable
     {
+        private float PlaceholderYFloatingMargin = 15;
+        public float filledBorderMargin { get; private set; } = 10;
+
+
         public FilledDrawable(RSInputView inputView) : base(inputView)
         {
             if (InputView.Content == null)
@@ -636,9 +643,9 @@ namespace TestApplicationMaui.Views
             if (!string.IsNullOrEmpty(InputView.Helper))
                 bottomMargin = 13 + messageSpacing;
 
-            PlaceholderMargin = new Thickness(12, 10, 12, bottomMargin);
-
-            InputView.Content.Margin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            PlaceholderMargin = new Thickness(12, 0, 12, bottomMargin);
+            ContentMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top + filledBorderMargin, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            InputView.Content.Margin = ContentMargin;
         }
 
         public override void StartFocusedAnimation()
@@ -653,7 +660,7 @@ namespace TestApplicationMaui.Views
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = (float)-InputView.Graphics.Height / 2 + 15;
+            endY = (float)-InputView.Graphics.Height / 2 + PlaceholderYFloatingMargin;
 
 
             base.StartFocusedAnimation();
@@ -671,7 +678,7 @@ namespace TestApplicationMaui.Views
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
+            endY = (float)(PlaceholderMargin.Top / 2 - PlaceholderMargin.Bottom) / 2;
 
 
             base.StartUnFocusedAnimation();
@@ -708,7 +715,7 @@ namespace TestApplicationMaui.Views
                 if (IsFloating())
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + 15;
+                    currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + PlaceholderYFloatingMargin;
                     currentPlaceholderSize = fontSizeFloating;
                 }
                 else
@@ -738,7 +745,7 @@ namespace TestApplicationMaui.Views
             canvas.FontColor = placeholderColor;
             canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
-            PathF pathF = CreateEntryOutlinePath(0, 0, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom, InputView.CornerRadius);
+            PathF pathF = CreateEntryOutlinePath(0, (float)PlaceholderMargin.Top, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Top - (float)PlaceholderMargin.Bottom, InputView.CornerRadius);
             canvas.DrawPath(pathF);
             canvas.FillColor = fillColor;
             canvas.FillPath(pathF, WindingMode.NonZero);
