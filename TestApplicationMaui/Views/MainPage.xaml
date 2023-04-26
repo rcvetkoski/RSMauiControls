@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
              xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
+             xmlns:rsInput="clr-namespace:RSInputViewMaui;assembly=RSInputViewMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
              x:Class="TestApplicationMaui.Views.MainPage">
@@ -15,9 +16,9 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <views:RSInputView Design="Filled" Error="{Binding Error}" Helper="Helper message" Placeholder="Label">
+        <rsInput:RSInputView Design="Filled" Error="{Binding Error}" Helper="Helper message " Placeholder="Label">
             <Entry/>
-        </views:RSInputView>
+        </rsInput:RSInputView>
 
 
 

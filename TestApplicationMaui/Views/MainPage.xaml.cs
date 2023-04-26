@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Shapes;
-using TestApplicationMaui.ViewModels;
+﻿using TestApplicationMaui.ViewModels;
 
 namespace TestApplicationMaui.Views
 {
