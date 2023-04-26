@@ -15,6 +15,8 @@
 
             currentPlaceholderX = (float)PlaceholderMargin.Left;
             currentPlaceholderY = (float)(PlaceholderMargin.Top - PlaceholderMargin.Bottom) / 2;
+
+            SetTrailingIconMargin(PlaceholderMargin.Top, PlaceholderMargin.Bottom);
             ContentMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
             InputView.Content.Margin = ContentMargin;
         }

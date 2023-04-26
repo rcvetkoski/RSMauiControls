@@ -26,18 +26,33 @@ namespace RSInputViewMaui
         }
         private static void TrailingIconChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            Image image = new Image()
-            {
-                HorizontalOptions = LayoutOptions.End,
-                Margin = new Thickness(0, 0, 8, 0),
-                WidthRequest = 25,
-                HeightRequest = 25,
-                Source = (bindable as RSInputView).TrailingIcon
-            };
-            (bindable as RSInputView).Add(image, 0, 0);
-            (bindable as RSInputView).Graphics.Invalidate();
-        }
+            var rsInput = bindable as RSInputView;
+            rsInput.TrailingIconSize = new Size(0, 0);
 
+            if (newValue == null && oldValue != null)
+            {
+                rsInput.Remove(rsInput.TrailingIconImage);
+                rsInput.TrailingIconImage = null;
+            }
+            else
+            {
+                rsInput.TrailingIconSize = new Size(30, 30);
+                rsInput.TrailingIconImage = new Image()
+                {
+                    BackgroundColor = Colors.Red,
+                    WidthRequest = rsInput.TrailingIconSize.Width,
+                    HeightRequest = rsInput.TrailingIconSize.Height,
+                    VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.End,
+                    Source = rsInput.TrailingIcon
+                };
+                rsInput.Add(rsInput.TrailingIconImage, 0, 0);
+            }
+
+            rsInput.Graphics.Invalidate();
+        }
+        public Image TrailingIconImage { get; set; }
+        public Size TrailingIconSize { get; set; } 
 
         public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(RSInputView), default, propertyChanged: PlaceholderChanged);
         public string Placeholder
@@ -280,6 +295,9 @@ namespace RSInputViewMaui
 
             if (Content is Entry)
                 (Content as Entry).PlaceholderColor = Colors.Transparent;
+
+
+            TrailingIconSize = new Size(0, 0);
         }
 
         private void Content_Focused(object sender, FocusEventArgs e)

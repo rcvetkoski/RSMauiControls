@@ -15,7 +15,9 @@
             if (!string.IsNullOrEmpty(InputView.Helper))
                 bottomMargin = 13 + messageSpacing;
 
+
             PlaceholderMargin = new Thickness(12, 0, 12, bottomMargin);
+            SetTrailingIconMargin(PlaceholderMargin.Top + filledBorderMargin, PlaceholderMargin.Bottom);
             ContentMargin = new Thickness(PlaceholderMargin.Left, filledBorderMargin, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
             InputView.Content.Margin = ContentMargin;
         }
@@ -50,7 +52,7 @@
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = (float)(PlaceholderMargin.Top / 2 - PlaceholderMargin.Bottom) / 2;
+            endY = -(float)(PlaceholderMargin.Bottom / 2);
 
 
             base.StartUnFocusedAnimation();
@@ -93,7 +95,7 @@
                 else
                 {
                     currentPlaceholderX = (float)PlaceholderMargin.Left;
-                    currentPlaceholderY = (float)(PlaceholderMargin.Top / 2 - PlaceholderMargin.Bottom) / 2;
+                    currentPlaceholderY = -(float)(PlaceholderMargin.Bottom / 2);
                     currentPlaceholderSize = fontSize;
                 }
             }

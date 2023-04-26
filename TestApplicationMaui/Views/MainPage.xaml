@@ -16,11 +16,13 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView Design="Filled" Error="{Binding Error}" Helper="Helper message " Placeholder="Label">
-            <Entry/>
+        <rsInput:RSInputView Design="Filled" BackgroundColor="Pink" TrailingIcon="dotnet_bot.png" Helper="Helper message" Placeholder="Label">
+            <Entry />
         </rsInput:RSInputView>
 
-
+        <rsInput:RSInputView BackgroundColor="Pink" TrailingIcon="dotnet_bot.png" Helper="Helper message" Placeholder="Label">
+            <Entry/>
+        </rsInput:RSInputView>
 
 
         <Button Text="Add Error" Clicked="Button_Clicked"/>

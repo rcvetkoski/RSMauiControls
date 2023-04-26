@@ -53,8 +53,28 @@
         public void SetPlaceholderBottomMargin(double bottom)
         {
             PlaceholderMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, bottom);
-            ContentMargin = new Thickness(PlaceholderMargin.Left, InputView.Content.Margin.Top, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
+            ContentMargin = new Thickness(PlaceholderMargin.Left, 
+                                          InputView.Content.Margin.Top, 
+                                          PlaceholderMargin.Right + InputView.TrailingIconSize.Width + InputView.TrailingIconImage.Margin.Right,
+                                          PlaceholderMargin.Bottom);
+
+            SetTrailingIconMargin(ContentMargin.Top, ContentMargin.Bottom);
             InputView.Content.Margin = ContentMargin;
+        }
+
+        public void SetTrailingIconMargin(double top = 0, double bottom = 0)
+        {
+            if (InputView.TrailingIconImage == null)
+                return;
+
+            // Substract top margin for filled drawable
+            top -= InputView.Design == RSInputViewDesign.Filled ? (this as FilledDrawable).filledBorderMargin : 0;
+            double offset = top - bottom;
+
+            if (offset >= 0)
+                InputView.TrailingIconImage.Margin = new Thickness(0, offset, PlaceholderMargin.Right, 0);
+            else
+                InputView.TrailingIconImage.Margin = new Thickness(0, 0, PlaceholderMargin.Right, Math.Abs(offset));
         }
 
         public SizeF GetCanvasStringSize(string text)
