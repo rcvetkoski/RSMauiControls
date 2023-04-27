@@ -1,4 +1,5 @@
-﻿using TestApplicationMaui.ViewModels;
+﻿using RSInputViewMaui;
+using TestApplicationMaui.ViewModels;
 
 namespace TestApplicationMaui.Views
 {

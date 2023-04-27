@@ -15,9 +15,8 @@
         protected float endY;
         protected float currentPlaceholderY;
         protected float borderGapSpacing = 8;
-        public float messageSpacing = 3;
+        public float messageSpacing = 4;
         public Thickness PlaceholderMargin { get; protected set; }
-        public Thickness ContentMargin { get; protected set; }
         protected DateTime animationStartTime;
         protected const float AnimationDuration = 100; // milliseconds
         protected bool isAnimating = false;
@@ -48,34 +47,11 @@
             }
             fontSizeFloating = 11;
             currentPlaceholderSize = fontSize;
+
+            SetPlaceholderMargin(0);
         }
 
-        public void SetPlaceholderBottomMargin(double bottom)
-        {
-            PlaceholderMargin = new Thickness(PlaceholderMargin.Left, PlaceholderMargin.Top, PlaceholderMargin.Right, bottom);
-            ContentMargin = new Thickness(PlaceholderMargin.Left, 
-                                          InputView.Content.Margin.Top, 
-                                          PlaceholderMargin.Right + InputView.TrailingIconSize.Width + InputView.TrailingIconImage.Margin.Right,
-                                          PlaceholderMargin.Bottom);
-
-            SetTrailingIconMargin(ContentMargin.Top, ContentMargin.Bottom);
-            InputView.Content.Margin = ContentMargin;
-        }
-
-        public void SetTrailingIconMargin(double top = 0, double bottom = 0)
-        {
-            if (InputView.TrailingIconImage == null)
-                return;
-
-            // Substract top margin for filled drawable
-            top -= InputView.Design == RSInputViewDesign.Filled ? (this as FilledDrawable).filledBorderMargin : 0;
-            double offset = top - bottom;
-
-            if (offset >= 0)
-                InputView.TrailingIconImage.Margin = new Thickness(0, offset, PlaceholderMargin.Right, 0);
-            else
-                InputView.TrailingIconImage.Margin = new Thickness(0, 0, PlaceholderMargin.Right, Math.Abs(offset));
-        }
+        public abstract void SetPlaceholderMargin(double bottomMargin);
 
         public SizeF GetCanvasStringSize(string text)
         {
@@ -83,32 +59,6 @@
                 return SizeF.Zero;
 
             return this.canvas.GetStringSize(text, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
-        }
-
-        protected bool IsFloating()
-        {
-            if (InputView.Content == null)
-                return false;
-
-            if (InputView.Content.IsFocused)
-                return true;
-
-            if (InputView.Content is Entry || InputView.Content is Editor || InputView.Content is SearchBar)
-            {
-                if (!string.IsNullOrEmpty((InputView.Content as Entry).Text))
-                    return true;
-            }
-            else if (InputView.Content is Picker)
-            {
-                if ((InputView.Content as Picker).SelectedItem != null || (InputView.Content as Picker).SelectedIndex >= 0)
-                    return true;
-            }
-            else if (InputView.Content is DatePicker || InputView.Content is TimePicker)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public virtual void StartFocusedAnimation()

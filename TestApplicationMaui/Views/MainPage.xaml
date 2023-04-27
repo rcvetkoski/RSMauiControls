@@ -16,13 +16,31 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView Design="Filled" BackgroundColor="Pink" TrailingIcon="dotnet_bot.png" Helper="Helper message" Placeholder="Label">
+        <rsInput:RSInputView Design="Filled" BackgroundColor="Pink" Helper="rrfewffe" Placeholder="Label">
             <Entry />
         </rsInput:RSInputView>
 
-        <rsInput:RSInputView BackgroundColor="Pink" TrailingIcon="dotnet_bot.png" Helper="Helper message" Placeholder="Label">
+        <rsInput:RSInputView LeadingIcon="dotnet_bot.png" TrailingIcon="dotnet_bot.png" Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>
+
+        <Grid RowDefinitions="Auto" ColumnDefinitions="*, *, *" ColumnSpacing="15" BackgroundColor="Green">
+            <rsInput:RSInputView Grid.Row="0" Grid.Column="0" Design="Filled" BackgroundColor="Pink" Placeholder="Label">
+                <Entry />
+            </rsInput:RSInputView>
+
+            <rsInput:RSInputView Grid.Row="0" Grid.Column="1" BackgroundColor="Pink" Placeholder="Label">
+                <Entry/>
+            </rsInput:RSInputView>
+
+            <Entry Grid.Row="0" Grid.Column="2" BackgroundColor="Pink"/>
+        </Grid>
+
+        <Grid RowDefinitions="Auto" ColumnDefinitions="*" ColumnSpacing="15" BackgroundColor="Green" Padding="5, 0, 5, 0">
+            <rsInput:RSInputView Grid.Row="0" Grid.Column="0" BackgroundColor="Pink" Helper="wefwewef" Placeholder="Label">
+                <Entry/>
+            </rsInput:RSInputView>
+        </Grid>
 
 
         <Button Text="Add Error" Clicked="Button_Clicked"/>

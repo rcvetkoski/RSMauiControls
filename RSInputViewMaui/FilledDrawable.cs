@@ -8,18 +8,11 @@
 
         public FilledDrawable(RSInputView inputView) : base(inputView)
         {
-            if (InputView.Content == null)
-                return;
+        }
 
-            double bottomMargin = 0;
-            if (!string.IsNullOrEmpty(InputView.Helper))
-                bottomMargin = 13 + messageSpacing;
-
-
+        public override void SetPlaceholderMargin(double bottomMargin)
+        {
             PlaceholderMargin = new Thickness(12, 0, 12, bottomMargin);
-            SetTrailingIconMargin(PlaceholderMargin.Top + filledBorderMargin, PlaceholderMargin.Bottom);
-            ContentMargin = new Thickness(PlaceholderMargin.Left, filledBorderMargin, PlaceholderMargin.Right, PlaceholderMargin.Bottom);
-            InputView.Content.Margin = ContentMargin;
         }
 
         public override void StartFocusedAnimation()
@@ -30,7 +23,7 @@
 
             // Set X start and end position
             startX = currentPlaceholderX;
-            endX = (float)PlaceholderMargin.Left;
+            endX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
 
             // Set Y start and end position
             startY = currentPlaceholderY;
@@ -48,7 +41,7 @@
 
             // Set X start and end position
             startX = currentPlaceholderX;
-            endX = (float)PlaceholderMargin.Left;
+            endX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
 
             // Set Y start and end position
             startY = currentPlaceholderY;
@@ -86,15 +79,15 @@
             // If it's not animating set placement here where all the measurement has been finished and ready to draw
             if (!isAnimating)
             {
-                if (IsFloating())
+                if (InputView.IsFloating())
                 {
-                    currentPlaceholderX = (float)PlaceholderMargin.Left;
+                    currentPlaceholderX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
                     currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + PlaceholderYFloatingMargin;
                     currentPlaceholderSize = fontSizeFloating;
                 }
                 else
                 {
-                    currentPlaceholderX = (float)PlaceholderMargin.Left;
+                    currentPlaceholderX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
                     currentPlaceholderY = -(float)(PlaceholderMargin.Bottom / 2);
                     currentPlaceholderSize = fontSize;
                 }
@@ -127,7 +120,7 @@
 
 
             canvas.StrokeColor = borderColor;
-            canvas.StrokeSize = 1;
+            canvas.StrokeSize = InputView.IsActive ? 2 : 1;
             canvas.FillColor = borderColor;
             canvas.DrawLine(0, dirtyRect.Height - (float)PlaceholderMargin.Bottom, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom);
 
@@ -153,12 +146,13 @@
             var multiplier = Math.Floor(messageSize.Width / (dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right) + 1);
 
             canvas.DrawString(message,
-                    currentPlaceholderX,
-                    dirtyRect.Height / 2 + (float)(messageSize.Height * multiplier) / 2 - (float)PlaceholderMargin.Bottom + messageSpacing,
-                    dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height,
-                    HorizontalAlignment.Left,
-                    VerticalAlignment.Center,
-                    TextFlow.ClipBounds);
+                             (float)PlaceholderMargin.Left,
+                             dirtyRect.Height / 2 + (float)(messageSize.Height * multiplier) / 2 - (float)PlaceholderMargin.Bottom + messageSpacing,
+                             dirtyRect.Width - (float)PlaceholderMargin.Left - (float)PlaceholderMargin.Right,
+                             dirtyRect.Height,
+                             HorizontalAlignment.Left,
+                             VerticalAlignment.Center,
+                             TextFlow.ClipBounds);
         }
     }
 }
