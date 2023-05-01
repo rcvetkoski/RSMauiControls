@@ -328,7 +328,7 @@ namespace RSInputViewMaui
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
-        private ICommand? IconCommand { get; set; }
+        private ICommand IconCommand { get; set; }
 
         public bool IsActive { get; protected set; }
 
