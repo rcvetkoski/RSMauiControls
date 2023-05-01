@@ -23,7 +23,7 @@ namespace TestApplicationMaui.ViewModels
 
             Error = "Error message !";
 
-            TrailingIconCommand = new Command(TrailingIconMethod);
+            TrailingIconCommand = new Command<object>(TrailingIconMethod);
         }
 
         private string error;
@@ -42,8 +42,13 @@ namespace TestApplicationMaui.ViewModels
 
 
         public ICommand TrailingIconCommand { get; set; }
-        private void TrailingIconMethod()
+        private void TrailingIconMethod(object obj)
         {
+            if(obj is Entry)
+            {
+                (obj as Entry).IsPassword = (obj as Entry).IsPassword ? false : true;
+            }
+
             Console.WriteLine("TrailingIconMethod");
         }
     }
