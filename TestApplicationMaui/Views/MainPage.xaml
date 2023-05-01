@@ -15,37 +15,34 @@
 
         <Entry Placeholder="Stock Entry" />
 
-        <Grid RowDefinitions="Auto" ColumnDefinitions="*, *" ColumnSpacing="15" BackgroundColor="Green">
-            <rsInput:RSInputView Grid.Row="0" Grid.Column="0" Design="Filled" BackgroundColor="Pink" Placeholder="Label">
-                <Entry />
-            </rsInput:RSInputView>
 
-            <rsInput:RSInputView Grid.Row="0" Grid.Column="1" BackgroundColor="Pink" Placeholder="Label">
-                <Entry/>
-            </rsInput:RSInputView>
-        </Grid>
-
-        <!--<rsInput:RSInputView  TrailingIcon="dotnet_bot.png" Placeholder="Label">
+        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" Helper="Helper" Design="Filled"  Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>
 
-        <Grid RowDefinitions="Auto" ColumnDefinitions="*, *, *" ColumnSpacing="15" BackgroundColor="Green">
-            <rsInput:RSInputView Grid.Row="0" Grid.Column="0" Design="Filled" BackgroundColor="Pink" Placeholder="Label">
-                <Entry />
-            </rsInput:RSInputView>
+        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" Helper="Helper" Design="Outlined"  Placeholder="Label">
+            <Entry/>
+        </rsInput:RSInputView>
 
-            <rsInput:RSInputView Grid.Row="0" Grid.Column="1" BackgroundColor="Pink" Placeholder="Label">
-                <Entry/>
-            </rsInput:RSInputView>
 
-            <Entry Grid.Row="0" Grid.Column="2" BackgroundColor="Pink"/>
+
+        <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper " Design="Outlined"  Placeholder="Label">
+            <Entry/>
+        </rsInput:RSInputView>-->
+        
+        <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper" Placeholder="IIIII">
+            <Entry/>
+        </rsInput:RSInputView>
+
+        <rsInput:RSInputView Helper="Helper" Placeholder="IIIII" BackgroundColor="Pink">
+            <Editor/>
+        </rsInput:RSInputView>
+
+
+        <Grid RowDefinitions="Auto" ColumnDefinitions="*" BackgroundColor="Pink">
+            <GraphicsView BackgroundColor="Yellow" Grid.Row="0" Grid.Column="0" VerticalOptions="Start"/>
+            <Editor x:Name="editor" Grid.Row="0" Grid.Column="0" VerticalOptions="Center" Margin="0,5,0,5" Placeholder="qwdwq" BackgroundColor="Green" AutoSize="TextChanges"/>
         </Grid>
-
-        <Grid RowDefinitions="Auto" ColumnDefinitions="*" ColumnSpacing="15" BackgroundColor="Green" Padding="5, 0, 5, 0">
-            <rsInput:RSInputView Grid.Row="0" Grid.Column="0" BackgroundColor="Pink" Helper="wefwewef" Placeholder="Label">
-                <Entry/>
-            </rsInput:RSInputView>
-        </Grid>-->
 
 
         <Button Text="Add Error" Clicked="Button_Clicked"/>
@@ -53,6 +50,13 @@
         <Button Text="Remove Error" Clicked="Button_Clicked2"/>
 
         <Label Text="{Binding Error}" TextColor="Green"/>
+
+
+
+        <Button Text="Check height" Clicked="Button_Clicked3"/>
+        <Label x:Name="filledLabel"/>
+        <Label x:Name="outlinedLabel"/>-->
+
 
     </VerticalStackLayout>
 </ContentPage>

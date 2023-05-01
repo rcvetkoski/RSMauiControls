@@ -10,9 +10,29 @@
         {
         }
 
-        public override void SetPlaceholderMargin(double bottomMargin)
+        public override void SetBorderMargin(float bottomMargin)
         {
-            PlaceholderMargin = new Thickness(12, 0, 12, bottomMargin);
+            BorderMargin = new FloatThickness(0, 0, 0, bottomMargin);
+        }
+
+        public override void SetPlaceholderMargin(float bottomMargin)
+        {
+            PlaceholderMargin = new FloatThickness(baseSidesMargin, BorderMargin.Top, baseSidesMargin, bottomMargin);
+        }
+
+        public override void SetIconMargin(double bottomMargin)
+        {
+            if (InputView.LeadingIcon != null)
+                InputView.LeadingIconImage.Margin = new Thickness(baseSidesMargin, 0, 0, bottomMargin);
+
+            if (InputView.TrailingIconImage != null)
+                InputView.TrailingIconImage.Margin = new Thickness(0, 0, baseSidesMargin, bottomMargin);
+        }
+
+        public override void SetContentMargin(double bottomMargin)
+        {
+            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth, filledBorderMargin, baseSidesMargin + InputView.TrailingIconTotalWidth, bottomMargin);
+            InputView.Content.Margin = InputView.ContentMargin;
         }
 
         public override void StartFocusedAnimation()
@@ -23,7 +43,7 @@
 
             // Set X start and end position
             startX = currentPlaceholderX;
-            endX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
+            endX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
 
             // Set Y start and end position
             startY = currentPlaceholderY;
@@ -41,11 +61,11 @@
 
             // Set X start and end position
             startX = currentPlaceholderX;
-            endX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
+            endX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
 
             // Set Y start and end position
             startY = currentPlaceholderY;
-            endY = -(float)(PlaceholderMargin.Bottom / 2);
+            endY = -(PlaceholderMargin.Bottom / 2);
 
 
             base.StartUnFocusedAnimation();
@@ -81,54 +101,68 @@
             {
                 if (InputView.IsFloating())
                 {
-                    currentPlaceholderX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
+                    currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
                     currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + PlaceholderYFloatingMargin;
                     currentPlaceholderSize = fontSizeFloating;
                 }
                 else
                 {
-                    currentPlaceholderX = (float)PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
-                    currentPlaceholderY = -(float)(PlaceholderMargin.Bottom / 2);
+                    currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
+                    currentPlaceholderY = -BorderMargin.Bottom / 2;
                     currentPlaceholderSize = fontSize;
                 }
             }
 
+            base.Draw(canvas, dirtyRect);
 
-            var borderColor = InputView.IsActive ? Colors.Blue : InputView.BorderColor;
-            var fillColor = InputView.IsActive ? Colors.LightGray : InputView.FilledBorderColor;
-            Color placeholderColor;
+            // Draw Border
+            DrawBorder(canvas, dirtyRect);
 
-            if (!string.IsNullOrEmpty(InputView.Error))
-                placeholderColor = Colors.Red;
-            else if (InputView.IsActive)
-                placeholderColor = Colors.Blue;
-            else
-                placeholderColor = InputView.PlaceholderColor;
-
-
-            canvas.Antialias = true;
-            canvas.StrokeSize = InputView.BorderThikness;
-            canvas.StrokeColor = InputView.FilledBorderColor;
-            canvas.FontColor = placeholderColor;
-            canvas.Font = textFont;
-            canvas.FontSize = currentPlaceholderSize;
-            PathF pathF = CreateEntryOutlinePath(0, (float)PlaceholderMargin.Top, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Top - (float)PlaceholderMargin.Bottom, InputView.CornerRadius);
-            canvas.DrawPath(pathF);
-            canvas.FillColor = fillColor;
-            canvas.FillPath(pathF, WindingMode.NonZero);
-            canvas.DrawString(InputView.Placeholder, currentPlaceholderX, currentPlaceholderY, dirtyRect.Width - (float)PlaceholderMargin.Right * 2, dirtyRect.Height, HorizontalAlignment.Left, VerticalAlignment.Center, TextFlow.ClipBounds);
-
-
-            canvas.StrokeColor = borderColor;
-            canvas.StrokeSize = InputView.IsActive ? 2 : 1;
-            canvas.FillColor = borderColor;
-            canvas.DrawLine(0, dirtyRect.Height - (float)PlaceholderMargin.Bottom, dirtyRect.Width, dirtyRect.Height - (float)PlaceholderMargin.Bottom);
-
+            // Draw Placeholder
+            DrawPlaceholder(canvas, dirtyRect);
 
             // Error or Helper
             DrawMessage(canvas, dirtyRect);
 
-            this.canvas = canvas;
+            this.Canvas = canvas;
+        }
+
+        private void DrawBorder(ICanvas canvas, RectF dirtyRect)
+        {
+            // Border
+            PathF pathF = CreateEntryOutlinePath(x: BorderMargin.Left + InputView.BorderThikness,
+                                                 y: BorderMargin.Top + InputView.BorderThikness,
+                                                 width: dirtyRect.Width - BorderMargin.Right - InputView.BorderThikness * 2,
+                                                 height: dirtyRect.Height - BorderMargin.Top - BorderMargin.Bottom - InputView.BorderThikness * 2,
+                                                 cornerRadius: InputView.CornerRadius);
+
+            var fillColor = InputView.IsActive ? Colors.LightGray : InputView.FilledBorderColor;
+            canvas.StrokeColor = fillColor;
+            canvas.FillColor = fillColor;
+            canvas.FillPath(pathF, WindingMode.NonZero);
+            canvas.DrawPath(pathF);
+
+
+            // Underline
+            canvas.StrokeColor = borderColor;
+            canvas.FillColor = borderColor;
+
+            canvas.DrawLine(x1: BorderMargin.Left + InputView.BorderThikness / 2,
+                            y1: dirtyRect.Height - BorderMargin.Bottom - InputView.BorderThikness,
+                            x2: dirtyRect.Width - BorderMargin.Right - InputView.BorderThikness / 2,
+                            y2: dirtyRect.Height - BorderMargin.Bottom - InputView.BorderThikness);
+        }
+
+        private void DrawPlaceholder(ICanvas canvas, RectF dirtyRect)
+        {
+            canvas.DrawString(value: InputView.Placeholder,
+                              x: currentPlaceholderX,
+                              y: currentPlaceholderY,
+                              width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right,
+                              height: dirtyRect.Height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
+                              TextFlow.ClipBounds);
         }
 
         private void DrawMessage(ICanvas canvas, RectF dirtyRect)
@@ -141,18 +175,16 @@
 
             canvas.FontSize = fontSizeFloating;
             canvas.FontColor = isError ? Colors.Red : InputView.BorderColor;
-
-            var messageSize = canvas.GetStringSize(message, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
-            var multiplier = Math.Floor(messageSize.Width / (dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right) + 1);
+            float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
 
             canvas.DrawString(message,
-                             (float)PlaceholderMargin.Left,
-                             dirtyRect.Height / 2 + (float)(messageSize.Height * multiplier) / 2 - (float)PlaceholderMargin.Bottom + messageSpacing,
-                             dirtyRect.Width - (float)PlaceholderMargin.Left - (float)PlaceholderMargin.Right,
-                             dirtyRect.Height,
-                             HorizontalAlignment.Left,
-                             VerticalAlignment.Center,
-                             TextFlow.ClipBounds);
+                              MessageMargin.Left,
+                              dirtyRect.Height - MessageMargin.Bottom + messageSpacing,
+                              dirtyRect.Width - MessageMargin.Left - MessageMargin.Right,
+                              height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
+                              TextFlow.ClipBounds);
         }
     }
 }

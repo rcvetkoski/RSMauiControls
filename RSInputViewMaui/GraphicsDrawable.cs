@@ -1,4 +1,6 @@
-﻿namespace RSInputViewMaui
+﻿using Microsoft.Maui.Graphics;
+
+namespace RSInputViewMaui
 {
     public abstract class GraphicsDrawable : IDrawable
     {
@@ -14,14 +16,29 @@
         protected float startY;
         protected float endY;
         protected float currentPlaceholderY;
+        /// <summary>
+        /// Base left and righ margin, default value is 12
+        /// </summary>
+        protected float baseSidesMargin = 12;
         protected float borderGapSpacing = 8;
         public float messageSpacing = 4;
-        public Thickness PlaceholderMargin { get; protected set; }
+        public FloatThickness BorderMargin { get; protected set; }
+
+        public FloatThickness PlaceholderMargin { get; protected set; }
         protected DateTime animationStartTime;
         protected const float AnimationDuration = 100; // milliseconds
         protected bool isAnimating = false;
-        protected ICanvas canvas;
+        public ICanvas Canvas { get; protected set; }
+        protected Color borderColor;
         public RSInputView InputView { get; set; }
+
+        public FloatThickness MessageMargin
+        {
+            get
+            {
+                return new FloatThickness(baseSidesMargin, 0, baseSidesMargin, BorderMargin.Bottom);
+            }
+        }
 
         public GraphicsDrawable(RSInputView inputView)
         {
@@ -48,17 +65,26 @@
             fontSizeFloating = 11;
             currentPlaceholderSize = fontSize;
 
+            SetIconMargin(0);
+            SetContentMargin(0);
+            SetBorderMargin(0);
             SetPlaceholderMargin(0);
         }
 
-        public abstract void SetPlaceholderMargin(double bottomMargin);
+        public abstract void SetBorderMargin(float bottomMargin);
 
-        public SizeF GetCanvasStringSize(string text)
+        public abstract void SetPlaceholderMargin(float bottomMargin);
+
+        public abstract void SetContentMargin(double bottomMargin);
+
+        public abstract void SetIconMargin(double bottomMargin);
+
+        public SizeF GetCanvasStringSize(ICanvas canvas, string text)
         {
-            if (this.canvas == null)
+            if (canvas == null)
                 return SizeF.Zero;
 
-            return this.canvas.GetStringSize(text, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
+            return canvas.GetStringSize(text, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
         }
 
         public virtual void StartFocusedAnimation()
@@ -101,6 +127,47 @@
             }
         }
 
-        public abstract void Draw(ICanvas canvas, RectF dirtyRect);
+        public virtual void Draw(ICanvas canvas, RectF dirtyRect)
+        {
+            Color placeholderColor;
+
+            if (!string.IsNullOrEmpty(InputView.Error))
+                placeholderColor = Colors.Red;
+            else if (InputView.IsActive)
+                placeholderColor = Colors.Blue;
+            else
+                placeholderColor = InputView.PlaceholderColor;
+
+            canvas.Antialias = true;
+            canvas.StrokeSize = InputView.IsActive ? 2 : InputView.BorderThikness;
+            canvas.FontColor = placeholderColor;
+            borderColor = InputView.IsActive ? Colors.Blue : InputView.BorderColor;
+            canvas.Font = textFont;
+            canvas.FontSize = currentPlaceholderSize;
+
+            // Used to measure message label size and add margin to control accordingly
+            SetMessageMargin(canvas, dirtyRect.Width);
+
+            this.Canvas = canvas;
+        }
+
+        private void SetMessageMargin(ICanvas canvas, float widthAvailable)
+        {
+            if (this.Canvas != null)
+                return;
+
+            if (string.IsNullOrEmpty(InputView.Error) && string.IsNullOrEmpty(InputView.Helper))
+                return;
+
+            string message = !string.IsNullOrEmpty(InputView.Error) ? InputView.Error : InputView.Helper;
+            var size = GetCanvasStringSize(canvas, message);
+            var multiplier = Math.Floor(size.Width / (widthAvailable - PlaceholderMargin.Left - PlaceholderMargin.Right) + 1);
+            var bottomMarging = size.Width > 0 ? size.Height * multiplier + messageSpacing : 0;
+
+            SetIconMargin(bottomMarging);
+            SetContentMargin(bottomMarging);
+            SetBorderMargin((float)bottomMarging);
+            SetPlaceholderMargin((float)bottomMarging);
+        }
     }
 }

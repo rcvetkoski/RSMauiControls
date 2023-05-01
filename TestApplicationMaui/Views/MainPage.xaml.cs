@@ -9,11 +9,12 @@ namespace TestApplicationMaui.Views
         {
             InitializeComponent();
 
-            //for(int i = 0; i < 1; i++) 
+            //for (int i = 0; i < 500; i++)
             //{
             //    stack.Add(new RSInputView()
             //    {
             //        Placeholder = "Placeholder",
+            //        Helper = "Helper",
             //        Content = new Entry()
             //    });
             //}
@@ -27,6 +28,12 @@ namespace TestApplicationMaui.Views
         private void Button_Clicked2(object sender, EventArgs e)
         {
             (BindingContext as MainViewModel).Error = "";
+        }
+
+        private void Button_Clicked3(object sender, EventArgs e)
+        {
+            //filledLabel.Text = filled.Height.ToString();
+            //outlinedLabel.Text = outlined.Height.ToString();
         }
     }
 }

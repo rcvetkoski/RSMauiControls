@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Platform;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace RSInputViewMaui
 {
@@ -28,39 +28,44 @@ namespace RSInputViewMaui
         {
             var rsInput = bindable as RSInputView;
 
-            if (rsInput.leadingIconImage != null)
+            if (rsInput.LeadingIconImage != null)
             {
-                rsInput.Remove(rsInput.leadingIconImage);
-                rsInput.leadingIconImage = null;
+                rsInput.Remove(rsInput.LeadingIconImage);
+                rsInput.LeadingIconImage = null;
             }
 
             if (string.IsNullOrEmpty((string)newValue))
             {
+                // Adjust input control margin
+                if (rsInput.graphicsDrawable != null)
+                {
+                    rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
+                    rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+                }
                 rsInput.Graphics.Invalidate();
                 return;
             }
 
-            rsInput.leadingIconImage = new Image()
+            rsInput.LeadingIconImage = new Image()
             {
-                BackgroundColor = Colors.Red,
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.Start,
                 Source = rsInput.LeadingIcon
             };
 
-            rsInput.leadingIconImage.SetBinding(Image.WidthRequestProperty, new Binding("IconWidthRequest", source: rsInput));
-            rsInput.leadingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
+            rsInput.LeadingIconImage.SetBinding(Image.WidthRequestProperty, new Binding("IconWidthRequest", source: rsInput));
+            rsInput.LeadingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
             if (rsInput.graphicsDrawable != null)
             {
-                rsInput.SetLeadingIconMargin(rsInput.ContentMargin.Top, rsInput.ContentMargin.Bottom);
-                rsInput.SetTrailingIconMargin(rsInput.ContentMargin.Top, rsInput.ContentMargin.Bottom);
+                rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
+                rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
             }
 
-            rsInput.Add(rsInput.leadingIconImage, 0, 0);
+            rsInput.Add(rsInput.LeadingIconImage, 0, 0);
 
             rsInput.Graphics.Invalidate();
         }
-        private Image leadingIconImage { get; set; }
+        internal Image LeadingIconImage { get; set; }
 
 
         public static readonly BindableProperty TrailingIconProperty = BindableProperty.Create(nameof(TrailingIcon), typeof(string), typeof(RSInputView), null, propertyChanged: TrailingIconChanged);
@@ -73,40 +78,44 @@ namespace RSInputViewMaui
         {
             var rsInput = bindable as RSInputView;
 
-            if (rsInput.trailingIconImage != null)
+            if (rsInput.TrailingIconImage != null)
             {
-                rsInput.Remove(rsInput.trailingIconImage);
-                rsInput.trailingIconImage = null;
+                rsInput.Remove(rsInput.TrailingIconImage);
+                rsInput.TrailingIconImage = null;
             }
 
             if (string.IsNullOrEmpty((string)newValue))
             {
                 // Adjust input control margin
+                if (rsInput.graphicsDrawable != null)
+                {
+                    rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
+                    rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+                }
                 rsInput.Graphics.Invalidate();
                 return;
             }
 
-            rsInput.trailingIconImage = new Image()
+            rsInput.TrailingIconImage = new Image()
             {
-                BackgroundColor = Colors.Red,
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.End,
                 Source = rsInput.TrailingIcon
             };
 
-            rsInput.trailingIconImage.SetBinding(Image.WidthRequestProperty, new Binding("IconWidthRequest", source: rsInput));
-            rsInput.trailingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
+            rsInput.TrailingIconImage.SetBinding(Image.WidthRequestProperty, new Binding("IconWidthRequest", source: rsInput));
+            rsInput.TrailingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
 
             if (rsInput.graphicsDrawable != null)
             {
-                rsInput.SetLeadingIconMargin(rsInput.ContentMargin.Top, rsInput.ContentMargin.Bottom);
-                rsInput.SetTrailingIconMargin(rsInput.ContentMargin.Top, rsInput.ContentMargin.Bottom);
+                rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
+                rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);   
             }
-            rsInput.Add(rsInput.trailingIconImage, 0, 0);
+            rsInput.Add(rsInput.TrailingIconImage, 0, 0);
 
             rsInput.Graphics.Invalidate();
         }
-        private Image trailingIconImage { get; set; }
+        internal Image TrailingIconImage { get; set; }
 
 
         public static readonly BindableProperty IconWidthRequestProperty = BindableProperty.Create(nameof(IconWidthRequest), typeof(double), typeof(RSInputView), (double)30, propertyChanged: IconWidthRequestChanged);
@@ -194,31 +203,16 @@ namespace RSInputViewMaui
             }
 
             var graphicsDrawable = (bindable as RSInputView).graphicsDrawable;
-            string newHelperText = newValue != null ? newValue.ToString() : string.Empty;
-            var size = graphicsDrawable.GetCanvasStringSize(newHelperText);
-
-            if (size == SizeF.Zero && !string.IsNullOrEmpty((string)newValue))
-            {
-                graphicsDrawable.SetPlaceholderMargin(graphicsDrawable.messageSpacing + 13);
-
-                Graphics.Invalidate();
-                return;
-            }
-
+            string message = newValue != null ? newValue.ToString() : string.Empty;
+            var size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message);
             var multiplier = Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right) + 1);
             var bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing : 0;
+            graphicsDrawable.SetIconMargin(bottomMarging);
+            graphicsDrawable.SetContentMargin(bottomMarging);
+            graphicsDrawable.SetBorderMargin((float)bottomMarging);
+            graphicsDrawable.SetPlaceholderMargin((float)bottomMarging);
 
-            graphicsDrawable.SetPlaceholderMargin(bottomMarging);
-
-            rsInput.SetContentMargin(new Thickness(rsInput.ContentMargin.Left,
-                                                   rsInput.ContentMargin.Top,
-                                                   rsInput.ContentMargin.Right,
-                                                   graphicsDrawable.PlaceholderMargin.Bottom));
-
-            rsInput.SetLeadingIconMargin(rsInput.ContentMargin.Top, rsInput.ContentMargin.Bottom);
-            rsInput.SetTrailingIconMargin(rsInput.ContentMargin.Top , rsInput.ContentMargin.Bottom);
-
-            //Graphics.Invalidate();
+            Graphics.Invalidate();
         }
 
 
@@ -298,7 +292,7 @@ namespace RSInputViewMaui
         }
 
         public bool IsActive { get; protected set; }
-        public Thickness ContentMargin { get; protected set; }
+        public Thickness ContentMargin { get; internal set; }
 
         private GraphicsDrawable graphicsDrawable;
         public GraphicsView Graphics { get; set; }
@@ -307,7 +301,6 @@ namespace RSInputViewMaui
         public RSInputView()
         {
             // Main Grid
-            this.VerticalOptions = LayoutOptions.Center;
             RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
@@ -331,7 +324,7 @@ namespace RSInputViewMaui
                 if (view == Content)
                 {
 #if __ANDROID__
-                    handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
+                    handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 #elif __IOS__ || __MACCATALYST__
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
@@ -341,12 +334,26 @@ namespace RSInputViewMaui
                 }
             });
 
+            Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping("BorderlessEditor", (handler, view) =>
+            {
+                if (view == Content)
+                {
+#if __ANDROID__
+                    handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+#elif WINDOWS
+                    handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+                    handler.PlatformView.Style = null;
+#endif
+                }
+            });
+
+
             Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("BorderlessPicker", (handler, view) =>
             {
                 if (view == Content)
                 {
 #if __ANDROID__
-                    handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
+                    handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 #elif __IOS__ || __MACCATALYST__ 
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
@@ -361,7 +368,7 @@ namespace RSInputViewMaui
                 if (view == Content)
                 {
 #if __ANDROID__
-                    handler.PlatformView.SetBackgroundColor(Colors.Transparent.ToPlatform());
+                    handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 #elif IOS 
                     handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif __MACCATALYST__
@@ -375,31 +382,22 @@ namespace RSInputViewMaui
 
             // Set drawable
             graphicsDrawable = Design == RSInputViewDesign.Outlined ? new OutlineDrawable(this) : new FilledDrawable(this);
-
-            // Margin init
-            double top = Design == RSInputViewDesign.Outlined ? graphicsDrawable.PlaceholderMargin.Top: graphicsDrawable.PlaceholderMargin.Top + (graphicsDrawable as FilledDrawable).filledBorderMargin;
-            double bottom = graphicsDrawable.PlaceholderMargin.Bottom;
-            double left = graphicsDrawable.PlaceholderMargin.Left;
-            double right = graphicsDrawable.PlaceholderMargin.Right;
-
-            // Adjust icons margin if any
-            SetLeadingIconMargin(top, bottom);
-            SetTrailingIconMargin(top, bottom);
-
-            // Adjust input control margin
-            SetContentMargin(new Thickness(left + LeadingIconTotalWidth, top, right + TrailingIconTotalWidth, bottom));
-
             Graphics.Drawable = graphicsDrawable;
+            //Graphics.SetBinding(View.HeightRequestProperty, new Binding("Height", converter: new HeightConverter(), source: Content));
             isDesignSet = true;
-
+           
             this.Add(Content, 0, 0);
             Content.VerticalOptions = LayoutOptions.Center;
             Content.Focused += Content_Focused;
             Content.Unfocused += Content_Unfocused;
             Content.PropertyChanged += Content_PropertyChanged;
 
-            if (Content is Entry)
-                (Content as Entry).PlaceholderColor = Colors.Transparent;
+            if (Content is InputView)
+                (Content as InputView).PlaceholderColor = Colors.Transparent;
+
+            // Must enable this, otherwise there is graphical bug when margin is applied to Editor
+            if (Content is Editor)
+                (Content as Editor).AutoSize = EditorAutoSizeOption.TextChanges;
         }
 
         private void Content_Focused(object sender, FocusEventArgs e)
@@ -448,52 +446,11 @@ namespace RSInputViewMaui
             }
         }
 
-        internal void SetContentMargin(Thickness thickness)
-        {
-            ContentMargin = thickness;
-            Content.Margin = ContentMargin;
-        }
-
-        internal void SetTrailingIconMargin(double top = 0, double bottom = 0)
-        {
-            if (trailingIconImage == null)
-                return;
-
-            // Substract top margin for filled drawable
-            top -= Design == RSInputViewDesign.Filled ? (graphicsDrawable as FilledDrawable).filledBorderMargin : 0;
-            bottom -= Design == RSInputViewDesign.Outlined ? (graphicsDrawable as OutlineDrawable).OutlinedBorderMargin : 0;
-            double offset = top - bottom;
-            double defaultTopBottomMargin = 5;
-
-            if (offset >= 0)
-                trailingIconImage.Margin = new Thickness(0, offset + defaultTopBottomMargin, graphicsDrawable.PlaceholderMargin.Right, defaultTopBottomMargin);
-            else
-                trailingIconImage.Margin = new Thickness(0, defaultTopBottomMargin, graphicsDrawable.PlaceholderMargin.Right, Math.Abs(offset) + defaultTopBottomMargin);
-        }
-
-        internal void SetLeadingIconMargin(double top = 0, double bottom = 0)
-        {
-            if (leadingIconImage == null)
-                return;
-
-            // Substract top margin for filled drawable
-            top -= Design == RSInputViewDesign.Filled ? (graphicsDrawable as FilledDrawable).filledBorderMargin : 0;
-            bottom -= Design == RSInputViewDesign.Outlined ? (graphicsDrawable as OutlineDrawable).OutlinedBorderMargin : 0;
-            double offset = top - bottom;
-            double defaultTopBottomMargin = 5;
-
-
-            if (offset >= 0)
-                leadingIconImage.Margin = new Thickness(graphicsDrawable.PlaceholderMargin.Left, offset + defaultTopBottomMargin, 0, defaultTopBottomMargin);
-            else
-                leadingIconImage.Margin = new Thickness(graphicsDrawable.PlaceholderMargin.Left, defaultTopBottomMargin, graphicsDrawable.PlaceholderMargin.Right, Math.Abs(offset) + defaultTopBottomMargin);
-        }
-
         internal double LeadingIconTotalWidth
         {
             get
             {
-                return leadingIconImage == null ? 0 : IconWidthRequest + leadingIconImage.Margin.Left;
+                return LeadingIconImage == null ? 0 : IconWidthRequest + LeadingIconImage.Margin.Left;
             }
         }
 
@@ -501,7 +458,7 @@ namespace RSInputViewMaui
         {
             get
             {
-                return trailingIconImage == null ? 0 : IconWidthRequest + trailingIconImage.Margin.Right;
+                return TrailingIconImage == null ? 0 : IconWidthRequest + TrailingIconImage.Margin.Right;
             }
         }
 
@@ -513,9 +470,9 @@ namespace RSInputViewMaui
             if (Content.IsFocused)
                 return true;
 
-            if (Content is Entry || Content is Editor || Content is SearchBar)
+            if (Content is InputView)
             {
-                if (!string.IsNullOrEmpty((Content as Entry).Text))
+                if (!string.IsNullOrEmpty((Content as InputView).Text))
                     return true;
             }
             else if (Content is Picker)
@@ -533,9 +490,9 @@ namespace RSInputViewMaui
 
         private bool CheckIfShouldAnimate()
         {
-            if (Content is Entry || Content is Editor || Content is SearchBar)
+            if (Content is InputView)
             {
-                if (!string.IsNullOrEmpty((Content as Entry).Text))
+                if (!string.IsNullOrEmpty((Content as InputView).Text))
                     return false;
             }
             else if (Content is Picker)
