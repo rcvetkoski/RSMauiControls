@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace RSInputViewMaui
 {
@@ -53,6 +53,12 @@ namespace RSInputViewMaui
                 Source = rsInput.LeadingIcon
             };
 
+            rsInput.LeadingIconImage.GestureRecognizers.Add(new TapGestureRecognizer()
+            {
+                Command = rsInput.IconCommand,
+                CommandParameter = rsInput.LeadingIconImage
+            });
+
             rsInput.LeadingIconImage.SetBinding(Image.WidthRequestProperty, new Binding("IconWidthRequest", source: rsInput));
             rsInput.LeadingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
             if (rsInput.graphicsDrawable != null)
@@ -66,6 +72,18 @@ namespace RSInputViewMaui
             rsInput.Graphics.Invalidate();
         }
         internal Image LeadingIconImage { get; set; }
+        public static readonly BindableProperty LeadingIconCommandProperty = BindableProperty.Create(nameof(LeadingIconCommand), typeof(ICommand), typeof(RSInputView), null);
+        public ICommand LeadingIconCommand
+        {
+            get { return (ICommand)GetValue(LeadingIconCommandProperty); }
+            set { SetValue(LeadingIconCommandProperty, value); }
+        }
+        public static readonly BindableProperty LeadingIconCommandParameterProperty = BindableProperty.Create(nameof(LeadingIconCommandParameter), typeof(object), typeof(RSInputView), null);
+        public object LeadingIconCommandParameter
+        {
+            get { return (object)GetValue(LeadingIconCommandParameterProperty); }
+            set { SetValue(LeadingIconCommandParameterProperty, value); }
+        }
 
 
         public static readonly BindableProperty TrailingIconProperty = BindableProperty.Create(nameof(TrailingIcon), typeof(string), typeof(RSInputView), null, propertyChanged: TrailingIconChanged);
@@ -100,8 +118,14 @@ namespace RSInputViewMaui
             {
                 VerticalOptions = LayoutOptions.Center,
                 HorizontalOptions = LayoutOptions.End,
-                Source = rsInput.TrailingIcon
+                Source = rsInput.TrailingIcon,
             };
+
+            rsInput.TrailingIconImage.GestureRecognizers.Add(new TapGestureRecognizer()
+            {
+                Command = rsInput.IconCommand,
+                CommandParameter = rsInput.TrailingIconImage
+            });
 
             rsInput.TrailingIconImage.SetBinding(Image.WidthRequestProperty, new Binding("IconWidthRequest", source: rsInput));
             rsInput.TrailingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
@@ -116,6 +140,19 @@ namespace RSInputViewMaui
             rsInput.Graphics.Invalidate();
         }
         internal Image TrailingIconImage { get; set; }
+
+        public static readonly BindableProperty TrailingIconCommandProperty = BindableProperty.Create(nameof(TrailingIconCommand), typeof(ICommand), typeof(RSInputView), null);
+        public ICommand TrailingIconCommand
+        {
+            get { return (ICommand)GetValue(TrailingIconCommandProperty); }
+            set { SetValue(TrailingIconCommandProperty, value); }
+        }
+        public static readonly BindableProperty TrailingIconCommandParameterProperty = BindableProperty.Create(nameof(TrailingIconCommandParameter), typeof(object), typeof(RSInputView), null);
+        public object TrailingIconCommandParameter
+        {
+            get { return (object)GetValue(TrailingIconCommandParameterProperty); }
+            set { SetValue(TrailingIconCommandParameterProperty, value); }
+        }
 
 
         public static readonly BindableProperty IconWidthRequestProperty = BindableProperty.Create(nameof(IconWidthRequest), typeof(double), typeof(RSInputView), (double)30, propertyChanged: IconWidthRequestChanged);
@@ -291,10 +328,14 @@ namespace RSInputViewMaui
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+        private ICommand? IconCommand { get; set; }
+
         public bool IsActive { get; protected set; }
+
         public Thickness ContentMargin { get; internal set; }
 
         private GraphicsDrawable graphicsDrawable;
+
         public GraphicsView Graphics { get; set; }
 
 
@@ -305,13 +346,18 @@ namespace RSInputViewMaui
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
             Graphics = new GraphicsView();
-            //Graphics.StartInteraction += Graphics_StartInteraction;
-            this.Add(Graphics, 0, 0);
-        }
+            Graphics.GestureRecognizers.Add(new TapGestureRecognizer()
+            {
+                Command = new Command( () =>
+                {
+                    if(!Content.IsFocused) 
+                        Content.Focus();
+                })
+            });
 
-        private void Graphics_StartInteraction(object sender, TouchEventArgs e)
-        {
-            Content.Focus();
+            this.Add(Graphics, 0, 0);
+
+            IconCommand = new Command<Image>(IconCommandInvoke);
         }
 
         private void SetContent()
@@ -385,7 +431,7 @@ namespace RSInputViewMaui
             Graphics.Drawable = graphicsDrawable;
             //Graphics.SetBinding(View.HeightRequestProperty, new Binding("Height", converter: new HeightConverter(), source: Content));
             isDesignSet = true;
-           
+
             this.Add(Content, 0, 0);
             Content.VerticalOptions = LayoutOptions.Center;
             Content.Focused += Content_Focused;
@@ -462,6 +508,34 @@ namespace RSInputViewMaui
             }
         }
 
+        private async void IconCommandInvoke(Image image)
+        {
+            if (image == LeadingIconImage)
+            {
+                if (LeadingIconCommand == null)
+                {
+                    Content.Focus();
+                    return;
+                }
+            }
+            else if (image == TrailingIconImage)
+            {
+                if (TrailingIconCommand == null)
+                {
+                    Content.Focus();
+                    return;
+                }
+            }
+
+            image.Opacity = 0.5;
+            await image.ScaleTo(0.8, 100);
+            await image.ScaleTo(1, 100);
+            image.Opacity = 1;
+
+            TrailingIconCommand?.Execute(TrailingIconCommandParameter);
+            LeadingIconCommand?.Execute(LeadingIconCommandParameter);
+        }
+
         internal bool IsFloating()
         {
             if (Content == null)
@@ -513,7 +587,6 @@ namespace RSInputViewMaui
             Content.Focused -= Content_Focused;
             Content.Unfocused -= Content_Unfocused;
             Content.PropertyChanged -= Content_PropertyChanged;
-            Graphics.StartInteraction -= Graphics_StartInteraction;
         }
     }
 }

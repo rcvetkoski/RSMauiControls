@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using TestApplicationMaui.Models;
 
 namespace TestApplicationMaui.ViewModels
@@ -21,6 +22,8 @@ namespace TestApplicationMaui.ViewModels
             };
 
             Error = "Error message !";
+
+            TrailingIconCommand = new Command(TrailingIconMethod);
         }
 
         private string error;
@@ -36,5 +39,12 @@ namespace TestApplicationMaui.ViewModels
                 }
             }
         }       
+
+
+        public ICommand TrailingIconCommand { get; set; }
+        private void TrailingIconMethod()
+        {
+            Console.WriteLine("TrailingIconMethod");
+        }
     }
 }

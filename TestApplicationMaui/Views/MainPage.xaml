@@ -16,7 +16,7 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" Helper="Helper" Design="Filled"  Placeholder="Label">
+        <rsInput:RSInputView TrailingIconCommand="{Binding TrailingIconCommand}" TrailingIcon="dotnet_bot.png" Helper="Helper" Design="Filled" Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>
 
