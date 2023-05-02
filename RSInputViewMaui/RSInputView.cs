@@ -202,54 +202,132 @@ namespace RSInputViewMaui
         }
 
 
-        public static readonly BindableProperty HelperProperty = BindableProperty.Create(nameof(Helper), typeof(string), typeof(RSInputView), string.Empty, propertyChanged: MessageChanged);
-        public string Helper
+        public static readonly BindableProperty HelperMessageProperty = BindableProperty.Create(nameof(HelperMessage), typeof(string), typeof(RSInputView), string.Empty, propertyChanged: HelperMessageChanged);
+        public string HelperMessage
         {
-            get { return (string)GetValue(HelperProperty); }
-            set { SetValue(HelperProperty, value); }
+            get { return (string)GetValue(HelperMessageProperty); }
+            set { SetValue(HelperMessageProperty, value); }
+        }
+        private static void HelperMessageChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+            rsInput.SetBottomMessageMargin(rsInput);
+            (bindable as RSInputView).Graphics.Invalidate();
         }
 
-        public static readonly BindableProperty ErrorProperty = BindableProperty.Create(nameof(Error), typeof(string), typeof(RSInputView), string.Empty, propertyChanged: MessageChanged);
-        public string Error
-        {
-            get { return (string)GetValue(ErrorProperty); }
-            set { SetValue(ErrorProperty, value); }
-        }
 
-        private static void MessageChanged(BindableObject bindable, object oldValue, object newValue)
+        public static readonly BindableProperty ErrorMessageProperty = BindableProperty.Create(nameof(ErrorMessage), typeof(string), typeof(RSInputView), string.Empty, propertyChanged: ErrorMessageChanged);
+        public string ErrorMessage
         {
-            if ((bindable as RSInputView).graphicsDrawable == null)
+            get { return (string)GetValue(ErrorMessageProperty); }
+            set { SetValue(ErrorMessageProperty, value); }
+        }
+        private static void ErrorMessageChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+            if (!rsInput.ErrorMessageEnabled)
                 return;
 
+            if (string.IsNullOrEmpty(newValue?.ToString()))
+                rsInput.GetCharacterCounterString();
+
+            rsInput.SetBottomMessageMargin(rsInput);
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+
+        public static readonly BindableProperty ErrorMessageEnabledProperty = BindableProperty.Create(nameof(ErrorMessageEnabled), typeof(bool), typeof(RSInputView), false, propertyChanged: ErrorMessageEnabledChanged);
+        public bool ErrorMessageEnabled
+        {
+            get { return (bool)GetValue(ErrorMessageEnabledProperty); }
+            set { SetValue(ErrorMessageEnabledProperty, value); }
+        }
+        private static void ErrorMessageEnabledChanged(BindableObject bindable, object oldValue, object newValue)
+        {
             var rsInput = (bindable as RSInputView);
-            var Graphics = (bindable as RSInputView).Graphics;
+            rsInput.SetBottomMessageMargin(rsInput);
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
 
-            // Do not update if new message is null or empty but one of error or helper is still active
-            if (string.IsNullOrEmpty((string)newValue))
-            {
-                if (string.IsNullOrEmpty(rsInput.Error) && !string.IsNullOrEmpty(rsInput.Helper))
-                {
-                    Graphics.Invalidate();
-                    return;
-                }
-                else if (string.IsNullOrEmpty(rsInput.Helper) && !string.IsNullOrEmpty(rsInput.Error))
-                {
-                    Graphics.Invalidate();
-                    return;
-                }
-            }
 
-            var graphicsDrawable = (bindable as RSInputView).graphicsDrawable;
-            string message = newValue != null ? newValue.ToString() : string.Empty;
-            var size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message);
+        /// <summary>
+        /// Adds bottom margin so that the bottom message can be seen
+        /// </summary>
+        /// <param name="bindable"></param>
+        internal void SetBottomMessageMargin(RSInputView rsInput)
+        {
+            var Graphics = rsInput.Graphics;
+            var graphicsDrawable = rsInput.graphicsDrawable;
+            double bottomMarging = 0;
+            SizeF size = SizeF.Zero;
+
+            if (graphicsDrawable == null)
+                return;
+
+            string message = string.Empty;
+
+            if (rsInput.ErrorMessageEnabled && !string.IsNullOrEmpty(rsInput.ErrorMessage))
+                message = rsInput.ErrorMessage;
+            else if (!string.IsNullOrEmpty(rsInput.HelperMessage))
+                message = rsInput.HelperMessage;
+            else
+                message = rsInput.characterCounterString;
+
+            size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message);
             var multiplier = Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right) + 1);
-            var bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing : 0;
+            bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing : 0;
+
             graphicsDrawable.SetIconMargin(bottomMarging);
             graphicsDrawable.SetContentMargin(bottomMarging);
             graphicsDrawable.SetBorderMargin((float)bottomMarging);
             graphicsDrawable.SetPlaceholderMargin((float)bottomMarging);
+        }
 
-            Graphics.Invalidate();
+
+        public static readonly BindableProperty CharacterCounterProperty = BindableProperty.Create(nameof(CharacterCounter), typeof(int), typeof(RSInputView), (int)-1, propertyChanged: CharacterCounterChanged);
+        public int CharacterCounter
+        {
+            get { return (int)GetValue(CharacterCounterProperty); }
+            set { SetValue(CharacterCounterProperty, value); }
+        }
+        internal string characterCounterString;
+        internal string GetCharacterCounterString()
+        {
+            string result = string.Empty;
+            int count = 0;
+
+            if (Content is InputView)
+                count = (Content as InputView).Text != null ? (Content as InputView).Text.Length : 0;
+            else if (Content is Picker)
+                count = (Content as Picker).SelectedItem != null ? (Content as Picker).SelectedItem.ToString().Length : 0;
+
+
+            if (count > CharacterCounter)
+            {
+                ErrorMessageEnabled = true;
+                if (string.IsNullOrEmpty(ErrorMessage))
+                    ErrorMessage = $"Error : Max 20 characters";
+            }
+            else if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                ErrorMessageEnabled = false;
+            }
+
+            result = $"{count} / {CharacterCounter}";
+
+            return result;
+        }
+        private static void CharacterCounterChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if((int)newValue >= 0)
+                rsInput.characterCounterString = $"0 / {newValue}";
+            else
+                rsInput.characterCounterString = string.Empty;
+
+            rsInput.SetBottomMessageMargin(rsInput);
+            (bindable as RSInputView).Graphics.Invalidate();
         }
 
 
@@ -263,6 +341,7 @@ namespace RSInputViewMaui
         {
             (bindable as RSInputView).Graphics.Invalidate();
         }
+
 
         private bool isDesignSet;
         public static readonly BindableProperty DesignProperty = BindableProperty.Create(nameof(Design), typeof(RSInputViewDesign), typeof(RSInputView), RSInputViewDesign.Outlined, propertyChanged: DesignChanged);
@@ -478,12 +557,13 @@ namespace RSInputViewMaui
             }
             else if (e.PropertyName == nameof(Entry.Text) || e.PropertyName == nameof(Picker.SelectedItem) || e.PropertyName == nameof(Picker.SelectedIndex))
             {
+                if(CharacterCounter >= 0) 
+                    characterCounterString = GetCharacterCounterString();
+
                 Graphics.Invalidate();
             }
             else if (e.PropertyName == nameof(View.Margin))
             {
-                //graphicsDrawable.SetPlaceholderMargin(Content.Margin);
-
                 // Prevent margin change from user side
                 if (Content.Margin != ContentMargin)
                     Content.Margin = ContentMargin;

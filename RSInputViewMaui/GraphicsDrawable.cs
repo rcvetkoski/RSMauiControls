@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
+using System.ComponentModel.Design;
 
 namespace RSInputViewMaui
 {
@@ -23,7 +24,6 @@ namespace RSInputViewMaui
         protected float borderGapSpacing = 8;
         public float messageSpacing = 4;
         public FloatThickness BorderMargin { get; protected set; }
-
         public FloatThickness PlaceholderMargin { get; protected set; }
         protected DateTime animationStartTime;
         protected const float AnimationDuration = 100; // milliseconds
@@ -131,43 +131,37 @@ namespace RSInputViewMaui
         {
             Color placeholderColor;
 
-            if (!string.IsNullOrEmpty(InputView.Error))
+            if (InputView.ErrorMessageEnabled)
+            {
                 placeholderColor = Colors.Red;
+                borderColor = Colors.Red;
+            }
             else if (InputView.IsActive)
+            {
                 placeholderColor = Colors.Blue;
+                borderColor = Colors.Blue;
+            }
             else
+            {
                 placeholderColor = InputView.PlaceholderColor;
+                borderColor = InputView.BorderColor;
+            }
 
-            canvas.Antialias = true;
             canvas.StrokeSize = InputView.IsActive ? 2 : InputView.BorderThikness;
+            canvas.Antialias = true;
             canvas.FontColor = placeholderColor;
-            borderColor = InputView.IsActive ? Colors.Blue : InputView.BorderColor;
             canvas.Font = textFont;
             canvas.FontSize = currentPlaceholderSize;
 
+
             // Used to measure message label size and add margin to control accordingly
-            SetMessageMargin(canvas, dirtyRect.Width);
+            if (this.Canvas == null)
+            {
+                this.Canvas = canvas;
 
-            this.Canvas = canvas;
-        }
-
-        private void SetMessageMargin(ICanvas canvas, float widthAvailable)
-        {
-            if (this.Canvas != null)
-                return;
-
-            if (string.IsNullOrEmpty(InputView.Error) && string.IsNullOrEmpty(InputView.Helper))
-                return;
-
-            string message = !string.IsNullOrEmpty(InputView.Error) ? InputView.Error : InputView.Helper;
-            var size = GetCanvasStringSize(canvas, message);
-            var multiplier = Math.Floor(size.Width / (widthAvailable - PlaceholderMargin.Left - PlaceholderMargin.Right) + 1);
-            var bottomMarging = size.Width > 0 ? size.Height * multiplier + messageSpacing : 0;
-
-            SetIconMargin(bottomMarging);
-            SetContentMargin(bottomMarging);
-            SetBorderMargin((float)bottomMarging);
-            SetPlaceholderMargin((float)bottomMarging);
+                if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
+                    InputView.SetBottomMessageMargin(InputView);
+            }
         }
     }
 }

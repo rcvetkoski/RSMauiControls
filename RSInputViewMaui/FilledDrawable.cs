@@ -124,6 +124,9 @@
             // Error or Helper
             DrawMessage(canvas, dirtyRect);
 
+            // Draw Counter
+            DrawCharacterCounter(canvas, dirtyRect);    
+
             this.Canvas = canvas;
         }
 
@@ -167,20 +170,36 @@
 
         private void DrawMessage(ICanvas canvas, RectF dirtyRect)
         {
-            if (string.IsNullOrEmpty(InputView.Error) && string.IsNullOrEmpty(InputView.Helper))
+            if (string.IsNullOrEmpty(InputView.ErrorMessage) && string.IsNullOrEmpty(InputView.HelperMessage))
                 return;
 
-            bool isError = !string.IsNullOrEmpty(InputView.Error);
-            string message = isError ? InputView.Error : InputView.Helper;
+            string message = InputView.ErrorMessageEnabled ? InputView.ErrorMessage : InputView.HelperMessage;
 
             canvas.FontSize = fontSizeFloating;
-            canvas.FontColor = isError ? Colors.Red : InputView.BorderColor;
+            canvas.FontColor = InputView.ErrorMessageEnabled ? Colors.Red : InputView.BorderColor;
             float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
 
             canvas.DrawString(message,
                               MessageMargin.Left,
                               dirtyRect.Height - MessageMargin.Bottom + messageSpacing,
                               dirtyRect.Width - MessageMargin.Left - MessageMargin.Right,
+                              height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
+                              TextFlow.ClipBounds);
+        }
+
+        private void DrawCharacterCounter(ICanvas canvas, RectF dirtyRect)
+        {
+            float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
+            var size = GetCanvasStringSize(canvas, InputView.characterCounterString);
+
+            canvas.FontColor = InputView.ErrorMessageEnabled ? Colors.Red : InputView.BorderColor;
+            canvas.FontSize = fontSizeFloating;
+            canvas.DrawString(InputView.characterCounterString,
+                              dirtyRect.Width - MessageMargin.Left - size.Width,
+                              dirtyRect.Height - MessageMargin.Bottom + messageSpacing,
+                              size.Width,
                               height,
                               HorizontalAlignment.Left,
                               VerticalAlignment.Center,
