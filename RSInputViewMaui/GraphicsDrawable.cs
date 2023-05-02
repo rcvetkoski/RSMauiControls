@@ -163,5 +163,44 @@ namespace RSInputViewMaui
                     InputView.SetBottomMessageMargin(InputView);
             }
         }
+
+        protected void DrawMessage(ICanvas canvas, RectF dirtyRect)
+        {
+            if (!InputView.ErrorMessageEnabled && string.IsNullOrEmpty(InputView.HelperMessage))
+                return;
+
+            string message = InputView.ErrorMessageEnabled ? InputView.ErrorMessage : InputView.HelperMessage;
+
+            canvas.FontSize = fontSizeFloating;
+            canvas.FontColor = InputView.ErrorMessageEnabled ? Colors.Red : InputView.BorderColor;
+            float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
+            float characterCountSize = InputView.CharacterCounter >= 0 ? GetCanvasStringSize(canvas, InputView.characterCounterString).Width + PlaceholderMargin.Right : 0;
+
+            canvas.DrawString(message,
+                              MessageMargin.Left,
+                              dirtyRect.Height - MessageMargin.Bottom + messageSpacing,
+                              dirtyRect.Width - MessageMargin.Left - MessageMargin.Right - characterCountSize,
+                              height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Top,
+                              TextFlow.ClipBounds);
+        }
+
+        protected void DrawCharacterCounter(ICanvas canvas, RectF dirtyRect)
+        {
+            float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
+            var size = GetCanvasStringSize(canvas, InputView.characterCounterString);
+
+            canvas.FontColor = InputView.ErrorMessageEnabled ? Colors.Red : InputView.BorderColor;
+            canvas.FontSize = fontSizeFloating;
+            canvas.DrawString(InputView.characterCounterString,
+                              dirtyRect.Width - MessageMargin.Left - size.Width,
+                              dirtyRect.Height - MessageMargin.Bottom + messageSpacing,
+                              size.Width,
+                              height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Top,
+                              TextFlow.ClipBounds);
+        }
     }
 }

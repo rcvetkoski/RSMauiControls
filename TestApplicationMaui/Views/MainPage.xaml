@@ -16,19 +16,11 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView x:Name="pass" TrailingIconCommand="{Binding TrailingIconCommand}" TrailingIcon="dotnet_bot.png" CharacterCounter="20" ErrorMessageEnabled="False" Design="Filled" Placeholder="Label">
+        <rsInput:RSInputView x:Name="pass" TrailingIconCommand="{Binding TrailingIconCommand}" CharacterCounter="8" HelperMessage="dwqffwefewffwemffewfewfwefnnnhnnhnhfnfhnfnfgfgngfngfnnfgggg" TrailingIcon="dotnet_bot.png" Design="Filled" Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>
 
-        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" ErrorMessageEnabled="False" ErrorMessage="Error wqd
-                             wqd
-                             wdq
-                             wq
-                             qw
-                             q
-                             qw
-                             qw
-                             qw" Design="Outlined" CharacterCounter="20" Placeholder="Label">
+        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" Design="Outlined" CharacterCounter="20" Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>
 

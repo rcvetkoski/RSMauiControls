@@ -258,23 +258,32 @@ namespace RSInputViewMaui
         {
             var Graphics = rsInput.Graphics;
             var graphicsDrawable = rsInput.graphicsDrawable;
+            int multiplier = 1;
             double bottomMarging = 0;
             SizeF size = SizeF.Zero;
+            float CharacterCountSize = 0;
+            bool isCharacterCount = false;
 
             if (graphicsDrawable == null)
                 return;
 
             string message = string.Empty;
-
+            
             if (rsInput.ErrorMessageEnabled && !string.IsNullOrEmpty(rsInput.ErrorMessage))
                 message = rsInput.ErrorMessage;
             else if (!string.IsNullOrEmpty(rsInput.HelperMessage))
                 message = rsInput.HelperMessage;
             else
+            {
+                isCharacterCount = true;
                 message = rsInput.characterCounterString;
+            }
+
+            if(!isCharacterCount)
+                CharacterCountSize = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, rsInput.characterCounterString).Width + graphicsDrawable.PlaceholderMargin.Right;
 
             size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message);
-            var multiplier = Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right) + 1);
+            multiplier = (int)Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right - CharacterCountSize) + 1);
             bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing : 0;
 
             graphicsDrawable.SetIconMargin(bottomMarging);
@@ -293,6 +302,9 @@ namespace RSInputViewMaui
         internal string characterCounterString;
         internal string GetCharacterCounterString()
         {
+            if (CharacterCounter < 0)
+                return string.Empty;    
+
             string result = string.Empty;
             int count = 0;
 
