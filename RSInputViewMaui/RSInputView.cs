@@ -419,6 +419,41 @@ namespace RSInputViewMaui
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+
+        public static readonly BindableProperty PrefixProperty = BindableProperty.Create(nameof(Prefix), typeof(object), typeof(RSInputView), null, propertyChanged: PrefixChanged);
+        public object Prefix
+        {
+            get { return (object)GetValue(PrefixProperty); }
+            set { SetValue(PrefixProperty, value); }
+        }
+        private static void PrefixChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if (rsInput.graphicsDrawable == null)
+                return;
+
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+            rsInput.Graphics.Invalidate();
+        }
+
+        public static readonly BindableProperty SuffixProperty = BindableProperty.Create(nameof(Suffix), typeof(object), typeof(RSInputView), null, propertyChanged: SuffixChanged);
+        public object Suffix
+        {
+            get { return (object)GetValue(SuffixProperty); }
+            set { SetValue(SuffixProperty, value); }
+        }
+        private static void SuffixChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if (rsInput.graphicsDrawable == null)
+                return;
+
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+            rsInput.Graphics.Invalidate();
+        }
+
         private ICommand IconCommand { get; set; }
 
         public bool IsActive { get; protected set; }
@@ -529,8 +564,8 @@ namespace RSInputViewMaui
             Content.Unfocused += Content_Unfocused;
             Content.PropertyChanged += Content_PropertyChanged;
 
-            if (Content is InputView)
-                (Content as InputView).PlaceholderColor = Colors.Transparent;
+            //if (Content is InputView)
+            //    (Content as InputView).PlaceholderColor = Colors.Transparent;
 
             // Must enable this, otherwise there is graphical bug when margin is applied to Editor
             if (Content is Editor)
@@ -561,9 +596,9 @@ namespace RSInputViewMaui
         {
             if (e.PropertyName == nameof(Microsoft.Maui.Controls.Internals.IFontElement.FontSize))
             {
-                if (graphicsDrawable.fontSize != (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize)
+                if (graphicsDrawable.FontSize != (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize)
                 {
-                    graphicsDrawable.fontSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
+                    graphicsDrawable.FontSize = (float)(sender as Microsoft.Maui.Controls.Internals.IFontElement).FontSize;
                     Graphics.Invalidate();
                 }
             }

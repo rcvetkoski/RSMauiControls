@@ -1,4 +1,6 @@
-﻿namespace RSInputViewMaui
+﻿using Microsoft.Maui.Controls;
+
+namespace RSInputViewMaui
 {
     public class FilledDrawable : GraphicsDrawable
     {
@@ -31,7 +33,7 @@
 
         public override void SetContentMargin(double bottomMargin)
         {
-            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth, filledBorderMargin, baseSidesMargin + InputView.TrailingIconTotalWidth, bottomMargin);
+            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth + prefixWidth, filledBorderMargin, baseSidesMargin + InputView.TrailingIconTotalWidth + suffixWidth, bottomMargin);
             InputView.Content.Margin = InputView.ContentMargin;
         }
 
@@ -57,7 +59,7 @@
         {
             // Set font size 
             startPlaceholderSize = currentPlaceholderSize;
-            endPlaceholderSize = fontSize;
+            endPlaceholderSize = FontSize;
 
             // Set X start and end position
             startX = currentPlaceholderX;
@@ -109,7 +111,7 @@
                 {
                     currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
                     currentPlaceholderY = -BorderMargin.Bottom / 2;
-                    currentPlaceholderSize = fontSize;
+                    currentPlaceholderSize = FontSize;
                 }
             }
 
@@ -125,7 +127,13 @@
             DrawMessage(canvas, dirtyRect);
 
             // Draw Counter
-            DrawCharacterCounter(canvas, dirtyRect);    
+            DrawCharacterCounter(canvas, dirtyRect);
+
+            // Draw Prefix
+            DrawPrefix(canvas, dirtyRect);
+
+            // Draw Suffix
+            DrawSuffix(canvas, dirtyRect);
 
             this.Canvas = canvas;
         }
@@ -164,6 +172,40 @@
                               width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right,
                               height: dirtyRect.Height,
                               HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
+                              TextFlow.ClipBounds);
+        }
+
+        private void DrawPrefix(ICanvas canvas, RectF dirtyRect)
+        {
+            if (string.IsNullOrEmpty(InputView.Prefix?.ToString()))
+                return;
+
+            canvas.FontSize = FontSize;
+            canvas.DrawString(value: InputView.Prefix.ToString(),
+                              x: PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth,
+                              y: (float)(InputView.ContentMargin.Top - InputView.ContentMargin.Bottom) / 2,
+                              width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right,
+                              height: dirtyRect.Height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
+                              TextFlow.ClipBounds);
+        }
+
+        private void DrawSuffix(ICanvas canvas, RectF dirtyRect)
+        {
+            if (string.IsNullOrEmpty(InputView.Suffix?.ToString()))
+                return;
+
+            var size = GetCanvasStringSize(canvas, InputView.Suffix.ToString());
+
+            canvas.FontSize = FontSize;
+            canvas.DrawString(value: InputView.Suffix.ToString(),
+                              x: PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth,
+                              y: (float)(InputView.ContentMargin.Top - InputView.ContentMargin.Bottom) / 2,
+                              width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right - (float)InputView.LeadingIconTotalWidth - (float)InputView.TrailingIconTotalWidth,
+                              height: dirtyRect.Height,
+                              HorizontalAlignment.Right,
                               VerticalAlignment.Center,
                               TextFlow.ClipBounds);
         }

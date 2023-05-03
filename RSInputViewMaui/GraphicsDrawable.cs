@@ -1,12 +1,9 @@
-﻿using Microsoft.Maui.Graphics;
-using System.ComponentModel.Design;
-
-namespace RSInputViewMaui
+﻿namespace RSInputViewMaui
 {
     public abstract class GraphicsDrawable : IDrawable
     {
         public Microsoft.Maui.Graphics.Font textFont;
-        public float fontSize;
+        public float FontSize;
         protected float fontSizeFloating;
         protected float startPlaceholderSize;
         protected float endPlaceholderSize;
@@ -40,6 +37,28 @@ namespace RSInputViewMaui
             }
         }
 
+        protected float prefixWidth
+        {
+            get
+            {
+                if (InputView.Prefix == null)
+                    return 0;
+
+                return Canvas != null ? GetCanvasStringSize(Canvas, InputView.Prefix.ToString()).Width : 0;
+            }
+        }
+
+        protected float suffixWidth
+        {
+            get
+            {
+                if (InputView.Suffix == null)
+                    return 0;
+
+                return Canvas != null ? GetCanvasStringSize(Canvas, InputView.Suffix.ToString()).Width : 0;
+            }
+        }
+
         public GraphicsDrawable(RSInputView inputView)
         {
             InputView = inputView;
@@ -52,7 +71,7 @@ namespace RSInputViewMaui
                 textFont = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType: (int)FontSlant.Default);
 
                 // Font size
-                fontSize = (float)textElement.FontSize;
+                FontSize = (float)textElement.FontSize;
             }
             else
             {
@@ -60,10 +79,10 @@ namespace RSInputViewMaui
                 textFont = new Microsoft.Maui.Graphics.Font();
 
                 // Font size
-                fontSize = endPlaceholderSize;
+                FontSize = endPlaceholderSize;
             }
             fontSizeFloating = 11;
-            currentPlaceholderSize = fontSize;
+            currentPlaceholderSize = FontSize;
 
             SetIconMargin(0);
             SetContentMargin(0);
@@ -161,6 +180,8 @@ namespace RSInputViewMaui
 
                 if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
                     InputView.SetBottomMessageMargin(InputView);
+                else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
+                    SetContentMargin(InputView.ContentMargin.Bottom);
             }
         }
 

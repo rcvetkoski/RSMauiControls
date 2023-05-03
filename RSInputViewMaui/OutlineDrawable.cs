@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace RSInputViewMaui
 {
@@ -61,7 +62,7 @@ namespace RSInputViewMaui
         {
             // Set font size 
             startPlaceholderSize = currentPlaceholderSize;
-            endPlaceholderSize = fontSize;
+            endPlaceholderSize = FontSize;
 
             // Set X start and end position
             startX = currentPlaceholderX;
@@ -90,7 +91,7 @@ namespace RSInputViewMaui
                 {
                     currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
                     currentPlaceholderY = (BorderMargin.Top - BorderMargin.Bottom) / 2;
-                    currentPlaceholderSize = fontSize;
+                    currentPlaceholderSize = FontSize;
                 }
             }
 

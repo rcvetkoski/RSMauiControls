@@ -16,17 +16,17 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView x:Name="pass" TrailingIconCommand="{Binding TrailingIconCommand}" CharacterCounter="8" HelperMessage="dwqffwefewffwemffewfewfwefnnnhnnhnhfnfhnfnfgfgngfngfnnfgggg" TrailingIcon="dotnet_bot.png" Design="Filled" Placeholder="Label">
+        <rsInput:RSInputView x:Name="pass" Prefix="$" Suffix="GGGGGGGGGGGGG" HelperMessage="Helper" Design="Filled" Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>
 
-        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" Design="Outlined" CharacterCounter="20" Placeholder="Label">
-            <Entry/>
+        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" TrailingIconCommand="{Binding TrailingIconCommand}" Design="Outlined" CharacterCounter="20" Placeholder="Label">
+            <Entry Placeholder="Label" FontSize="60"/>
         </rsInput:RSInputView>
 
-        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" Design="Outlined" CharacterCounter="20" Placeholder="Label">
+        <!--<rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" Design="Outlined" CharacterCounter="20" Placeholder="Label">
             <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
-        </rsInput:RSInputView>
+        </rsInput:RSInputView>-->
 
 
         <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper " Design="Outlined"  Placeholder="Label">
