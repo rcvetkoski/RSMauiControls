@@ -1,8 +1,10 @@
-﻿namespace RSInputViewMaui
+﻿using Microsoft.Maui.Graphics;
+
+namespace RSInputViewMaui
 {
     public abstract class GraphicsDrawable : IDrawable
     {
-        public Microsoft.Maui.Graphics.Font textFont;
+        public Microsoft.Maui.Graphics.Font TextFont;
         public float FontSize;
         protected float fontSizeFloating;
         protected float startPlaceholderSize;
@@ -44,7 +46,15 @@
                 if (InputView.Prefix == null)
                     return 0;
 
-                return Canvas != null ? GetCanvasStringSize(Canvas, InputView.Prefix.ToString()).Width : 0;
+                float maxWidth = (float)(InputView.Graphics.Width -
+                                         PlaceholderMargin.Left -
+                                         InputView.ContentMargin.Right -
+                                         InputView.LeadingIconTotalWidth -
+                                         InputView.TrailingIconTotalWidth -
+                                         InputView.Content.MinimumWidthRequest);
+
+                float width = Canvas != null ? GetCanvasStringSize(Canvas, InputView.Prefix.ToString(), TextFont, FontSize).Width : 0;
+                return width <= maxWidth ? width : maxWidth;
             }
         }
 
@@ -55,7 +65,15 @@
                 if (InputView.Suffix == null)
                     return 0;
 
-                return Canvas != null ? GetCanvasStringSize(Canvas, InputView.Suffix.ToString()).Width : 0;
+                float maxWidth = (float)(InputView.Graphics.Width -
+                                         InputView.ContentMargin.Left - 
+                                         PlaceholderMargin.Right - 
+                                         InputView.LeadingIconTotalWidth - 
+                                         InputView.TrailingIconTotalWidth -
+                                         InputView.Content.MinimumWidthRequest);
+
+                float width = Canvas != null ? GetCanvasStringSize(Canvas, InputView.Suffix.ToString(), TextFont, FontSize).Width : 0;
+                return width <= maxWidth ? width : maxWidth;
             }
         }
 
@@ -68,7 +86,7 @@
                 // Font
                 var textElement = (InputView.Content as Microsoft.Maui.Controls.Internals.IFontElement);
                 var fnt = textElement.ToFont(textElement.FontSize);
-                textFont = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType: (int)FontSlant.Default);
+                TextFont = new Microsoft.Maui.Graphics.Font(fnt.Family, (int)fnt.Weight, styleType: (int)FontSlant.Default);
 
                 // Font size
                 FontSize = (float)textElement.FontSize;
@@ -76,7 +94,7 @@
             else
             {
                 // Font
-                textFont = new Microsoft.Maui.Graphics.Font();
+                TextFont = new Microsoft.Maui.Graphics.Font();
 
                 // Font size
                 FontSize = endPlaceholderSize;
@@ -98,12 +116,12 @@
 
         public abstract void SetIconMargin(double bottomMargin);
 
-        public SizeF GetCanvasStringSize(ICanvas canvas, string text)
+        public SizeF GetCanvasStringSize(ICanvas canvas, string text, IFont textFont, float fontSize)
         {
             if (canvas == null)
                 return SizeF.Zero;
 
-            return canvas.GetStringSize(text, textFont, fontSizeFloating, HorizontalAlignment.Left, VerticalAlignment.Center);
+            return canvas.GetStringSize(text, textFont, fontSize, HorizontalAlignment.Left, VerticalAlignment.Center);
         }
 
         public virtual void StartFocusedAnimation()
@@ -169,7 +187,7 @@
             canvas.StrokeSize = InputView.IsActive ? 2 : InputView.BorderThikness;
             canvas.Antialias = true;
             canvas.FontColor = placeholderColor;
-            canvas.Font = textFont;
+            canvas.Font = TextFont;
             canvas.FontSize = currentPlaceholderSize;
 
 
@@ -181,7 +199,7 @@
                 if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
                     InputView.SetBottomMessageMargin(InputView);
                 else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
-                    SetContentMargin(InputView.ContentMargin.Bottom);
+                    SetContentMargin(BorderMargin.Bottom);
             }
         }
 
@@ -195,7 +213,7 @@
             canvas.FontSize = fontSizeFloating;
             canvas.FontColor = InputView.ErrorMessageEnabled ? Colors.Red : InputView.BorderColor;
             float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
-            float characterCountSize = InputView.CharacterCounter >= 0 ? GetCanvasStringSize(canvas, InputView.characterCounterString).Width + PlaceholderMargin.Right : 0;
+            float characterCountSize = InputView.CharacterCounter >= 0 ? GetCanvasStringSize(canvas, InputView.characterCounterString, TextFont, fontSizeFloating).Width + PlaceholderMargin.Right : 0;
 
             canvas.DrawString(message,
                               MessageMargin.Left,
@@ -210,7 +228,7 @@
         protected void DrawCharacterCounter(ICanvas canvas, RectF dirtyRect)
         {
             float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
-            var size = GetCanvasStringSize(canvas, InputView.characterCounterString);
+            var size = GetCanvasStringSize(canvas, InputView.characterCounterString, TextFont, fontSizeFloating);
 
             canvas.FontColor = InputView.ErrorMessageEnabled ? Colors.Red : InputView.BorderColor;
             canvas.FontSize = fontSizeFloating;
@@ -221,6 +239,38 @@
                               height,
                               HorizontalAlignment.Left,
                               VerticalAlignment.Top,
+                              TextFlow.ClipBounds);
+        }
+
+        protected void DrawPrefix(ICanvas canvas, RectF dirtyRect)
+        {
+            if (!InputView.IsFloating() || string.IsNullOrEmpty(InputView.Prefix?.ToString()))
+                return;
+
+            canvas.FontSize = FontSize;
+            canvas.DrawString(value: InputView.Prefix.ToString(),
+                              x: PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth,
+                              y: (float)(InputView.ContentMargin.Top - InputView.ContentMargin.Bottom) / 2,
+                              width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right - (float)InputView.LeadingIconTotalWidth - (float)InputView.ContentMargin.Right - (float)InputView.TrailingIconTotalWidth - (float)InputView.Content.MinimumWidthRequest,
+                              height: dirtyRect.Height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
+                              TextFlow.ClipBounds);
+        }
+
+        protected void DrawSuffix(ICanvas canvas, RectF dirtyRect)
+        {
+            if (!InputView.IsFloating() || string.IsNullOrEmpty(InputView.Suffix?.ToString()))
+                return;
+
+            canvas.FontSize = FontSize;
+            canvas.DrawString(value: InputView.Suffix.ToString(),
+                              x: PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth + (float)InputView.Content.MinimumWidthRequest + (float)InputView.ContentMargin.Left,
+                              y: (float)(InputView.ContentMargin.Top - InputView.ContentMargin.Bottom) / 2,
+                              width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right - (float)InputView.LeadingIconTotalWidth - (float)InputView.TrailingIconTotalWidth - (float)InputView.ContentMargin.Left - (float)InputView.Content.MinimumWidthRequest,
+                              height: dirtyRect.Height,
+                              HorizontalAlignment.Right,
+                              VerticalAlignment.Center,
                               TextFlow.ClipBounds);
         }
     }

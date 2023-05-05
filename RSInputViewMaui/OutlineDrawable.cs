@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using System.Drawing;
 
 namespace RSInputViewMaui
 {
@@ -36,7 +37,7 @@ namespace RSInputViewMaui
 
         public override void SetContentMargin(double bottomMargin)
         {
-            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth, OutlinedBorderMargin + OutlinedBorderMargin / 2, baseSidesMargin + InputView.TrailingIconTotalWidth, OutlinedBorderMargin / 2 + bottomMargin);
+            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth + prefixWidth, OutlinedBorderMargin + OutlinedBorderMargin / 2, baseSidesMargin + InputView.TrailingIconTotalWidth + suffixWidth, OutlinedBorderMargin / 2 + bottomMargin);
             InputView.Content.Margin = InputView.ContentMargin;
         }
 
@@ -109,13 +110,19 @@ namespace RSInputViewMaui
             // Draw Counter
             DrawCharacterCounter(canvas, dirtyRect);
 
+            // Draw Prefix
+            DrawPrefix(canvas, dirtyRect);
+
+            // Draw Suffix
+            DrawSuffix(canvas, dirtyRect);
+
             this.Canvas = canvas;
         }
 
         private void DrawBorder(ICanvas canvas, RectF dirtyRect)
         {
             // Calculate gap size
-            float size = InputView.IsFloating() ? canvas.GetStringSize(InputView.Placeholder, textFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
+            float size = InputView.IsFloating() ? canvas.GetStringSize(InputView.Placeholder, TextFont, currentPlaceholderSize, HorizontalAlignment.Left, VerticalAlignment.Center).Width + borderGapSpacing : 0;
 
             PathF pathF = CreateEntryOutlinePath(x : BorderMargin.Left + InputView.BorderThikness, 
                                                  y : BorderMargin.Top + InputView.BorderThikness, 

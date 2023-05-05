@@ -16,13 +16,15 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView x:Name="pass" Prefix="$" Suffix="GGGGGGGGGGGGG" HelperMessage="Helper" Design="Filled" Placeholder="Label">
+        <rsInput:RSInputView x:Name="pass" Suffix="USD" Prefix="$" Design="Filled" Placeholder="Price">
             <Entry/>
         </rsInput:RSInputView>
 
-        <rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" TrailingIconCommand="{Binding TrailingIconCommand}" Design="Outlined" CharacterCounter="20" Placeholder="Label">
-            <Entry Placeholder="Label" FontSize="60"/>
+
+        <rsInput:RSInputView Suffix="@gmail.com" Placeholder="Email">
+            <Entry HorizontalTextAlignment="End"/>
         </rsInput:RSInputView>
+
 
         <!--<rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" Design="Outlined" CharacterCounter="20" Placeholder="Label">
             <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>

@@ -280,9 +280,9 @@ namespace RSInputViewMaui
             }
 
             if(!isCharacterCount)
-                CharacterCountSize = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, rsInput.characterCounterString).Width + graphicsDrawable.PlaceholderMargin.Right;
+                CharacterCountSize = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, rsInput.characterCounterString, rsInput.graphicsDrawable.TextFont, rsInput.graphicsDrawable.FontSize).Width + graphicsDrawable.PlaceholderMargin.Right;
 
-            size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message);
+            size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message, rsInput.graphicsDrawable.TextFont, rsInput.graphicsDrawable.FontSize);
             multiplier = (int)Math.Floor(size.Width / (Graphics.Width - graphicsDrawable.PlaceholderMargin.Left - graphicsDrawable.PlaceholderMargin.Right - CharacterCountSize) + 1);
             bottomMarging = size.Width > 0 ? size.Height * multiplier + graphicsDrawable.messageSpacing : 0;
 
@@ -336,7 +336,10 @@ namespace RSInputViewMaui
             if((int)newValue >= 0)
                 rsInput.characterCounterString = $"0 / {newValue}";
             else
+            {
                 rsInput.characterCounterString = string.Empty;
+                rsInput.ErrorMessageEnabled = false;
+            }
 
             rsInput.SetBottomMessageMargin(rsInput);
             (bindable as RSInputView).Graphics.Invalidate();
@@ -433,7 +436,7 @@ namespace RSInputViewMaui
             if (rsInput.graphicsDrawable == null)
                 return;
 
-            rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
             rsInput.Graphics.Invalidate();
         }
 
@@ -450,7 +453,7 @@ namespace RSInputViewMaui
             if (rsInput.graphicsDrawable == null)
                 return;
 
-            rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
             rsInput.Graphics.Invalidate();
         }
 
@@ -564,8 +567,8 @@ namespace RSInputViewMaui
             Content.Unfocused += Content_Unfocused;
             Content.PropertyChanged += Content_PropertyChanged;
 
-            //if (Content is InputView)
-            //    (Content as InputView).PlaceholderColor = Colors.Transparent;
+            if (Content is InputView)
+                (Content as InputView).PlaceholderColor = Colors.Transparent;
 
             // Must enable this, otherwise there is graphical bug when margin is applied to Editor
             if (Content is Editor)
