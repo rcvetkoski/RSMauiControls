@@ -16,12 +16,12 @@
         <Entry Placeholder="Stock Entry" />
 
 
-        <rsInput:RSInputView x:Name="pass" Suffix="USD" Prefix="$" Design="Filled" Placeholder="Price">
+        <rsInput:RSInputView x:Name="pass" Prefix="$" Design="Filled" Placeholder="Price">
             <Entry/>
         </rsInput:RSInputView>
 
 
-        <rsInput:RSInputView Suffix="@gmail.com" Placeholder="Email">
+        <rsInput:RSInputView Suffix="@gmail.com" SuffixSpacing="0" TrailingIcon="dotnet_bot.png" Placeholder="Email">
             <Entry HorizontalTextAlignment="End"/>
         </rsInput:RSInputView>
 

@@ -53,7 +53,7 @@ namespace RSInputViewMaui
                                          InputView.TrailingIconTotalWidth -
                                          InputView.Content.MinimumWidthRequest);
 
-                float width = Canvas != null ? GetCanvasStringSize(Canvas, InputView.Prefix.ToString(), TextFont, FontSize).Width : 0;
+                float width = Canvas != null ? GetCanvasStringSize(Canvas, InputView.Prefix.ToString(), TextFont, FontSize).Width + InputView.PrefixSpacing : 0;
                 return width <= maxWidth ? width : maxWidth;
             }
         }
@@ -72,7 +72,7 @@ namespace RSInputViewMaui
                                          InputView.TrailingIconTotalWidth -
                                          InputView.Content.MinimumWidthRequest);
 
-                float width = Canvas != null ? GetCanvasStringSize(Canvas, InputView.Suffix.ToString(), TextFont, FontSize).Width : 0;
+                float width = Canvas != null ? GetCanvasStringSize(Canvas, InputView.Suffix.ToString(), TextFont, FontSize).Width + InputView.SuffixSpacing : 0;
                 return width <= maxWidth ? width : maxWidth;
             }
         }

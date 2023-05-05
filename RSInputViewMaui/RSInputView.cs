@@ -39,8 +39,8 @@ namespace RSInputViewMaui
                 // Adjust input control margin
                 if (rsInput.graphicsDrawable != null)
                 {
-                    rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
-                    rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+                    rsInput.graphicsDrawable.SetIconMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
+                    rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
                 }
                 rsInput.Graphics.Invalidate();
                 return;
@@ -63,8 +63,8 @@ namespace RSInputViewMaui
             rsInput.LeadingIconImage.SetBinding(Image.HeightRequestProperty, new Binding("IconHeightRequest", source: rsInput));
             if (rsInput.graphicsDrawable != null)
             {
-                rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
-                rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+                rsInput.graphicsDrawable.SetIconMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
+                rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
             }
 
             rsInput.Add(rsInput.LeadingIconImage, 0, 0);
@@ -107,8 +107,8 @@ namespace RSInputViewMaui
                 // Adjust input control margin
                 if (rsInput.graphicsDrawable != null)
                 {
-                    rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
-                    rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+                    rsInput.graphicsDrawable.SetIconMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
+                    rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
                 }
                 rsInput.Graphics.Invalidate();
                 return;
@@ -132,8 +132,8 @@ namespace RSInputViewMaui
 
             if (rsInput.graphicsDrawable != null)
             {
-                rsInput.graphicsDrawable.SetIconMargin(rsInput.ContentMargin.Bottom);
-                rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);   
+                rsInput.graphicsDrawable.SetIconMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
+                rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);   
             }
             rsInput.Add(rsInput.TrailingIconImage, 0, 0);
 
@@ -447,6 +447,40 @@ namespace RSInputViewMaui
             set { SetValue(SuffixProperty, value); }
         }
         private static void SuffixChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if (rsInput.graphicsDrawable == null)
+                return;
+
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
+            rsInput.Graphics.Invalidate();
+        }
+
+        public static readonly BindableProperty PrefixSpacingProperty = BindableProperty.Create(nameof(PrefixSpacing), typeof(float), typeof(RSInputView), 1f, propertyChanged: PrefixSpacingChanged);
+        public float PrefixSpacing
+        {
+            get { return (float)GetValue(PrefixSpacingProperty); }
+            set { SetValue(PrefixSpacingProperty, value); }
+        }
+        private static void PrefixSpacingChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if (rsInput.graphicsDrawable == null)
+                return;
+
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
+            rsInput.Graphics.Invalidate();
+        }
+
+        public static readonly BindableProperty SuffixSpacingSpacingProperty = BindableProperty.Create(nameof(SuffixSpacing), typeof(float), typeof(RSInputView), 1f, propertyChanged: SuffixSpacingChanged);
+        public float SuffixSpacing
+        {
+            get { return (float)GetValue(SuffixSpacingSpacingProperty); }
+            set { SetValue(SuffixSpacingSpacingProperty, value); }
+        }
+        private static void SuffixSpacingChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var rsInput = (bindable as RSInputView);
 
