@@ -827,6 +827,7 @@ namespace RSInputViewMaui
 
         public void Dispose()
         {
+            Graphics.EndInteraction -= Graphics_EndInteraction;
             Content.Focused -= Content_Focused;
             Content.Unfocused -= Content_Unfocused;
             Content.PropertyChanged -= Content_PropertyChanged;

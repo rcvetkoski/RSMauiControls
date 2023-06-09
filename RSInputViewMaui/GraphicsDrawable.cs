@@ -315,7 +315,7 @@ namespace RSInputViewMaui
             path.LineTo(endX, startY);
             path.Close();
 
-
+            canvas.StrokeColor = borderColor;
             canvas.FillColor = borderColor;
             canvas.FillPath(path);
             canvas.DrawPath(path);
@@ -343,7 +343,7 @@ namespace RSInputViewMaui
             path.LineTo(startX, endY);
             path.Close();
 
-
+            canvas.StrokeColor = borderColor;
             canvas.FillColor = borderColor;
             canvas.FillPath(path);
             canvas.DrawPath(path);
