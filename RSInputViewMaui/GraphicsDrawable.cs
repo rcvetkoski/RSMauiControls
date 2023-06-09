@@ -206,18 +206,18 @@ namespace RSInputViewMaui
             if(InputView.IsClearIconVisible)
             {
                 CreateClearIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
-                                dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - ((float)InputView.IconHeightRequest) / 2,
-                                (float)InputView.IconWidthRequest ,
-                                (float)InputView.IconHeightRequest ,
+                                dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - (float)InputView.IconHeightRequest / 2,
+                                (float)InputView.IconWidthRequest,
+                                (float)InputView.IconHeightRequest,
                                 canvas);
             }
             // Drop down icon
             else if (InputView.HasDropDownIcon && string.IsNullOrEmpty(InputView.TrailingIcon) && !InputView.IsClearIconVisible)
             {
-                CreateDropDownIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest / 2,
-                                   dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - ((float)InputView.IconHeightRequest / 3) / 2,
-                                   (float)InputView.IconWidthRequest / 2,
-                                   (float)InputView.IconHeightRequest / 3,
+                CreateDropDownIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
+                                   dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - (float)InputView.IconHeightRequest / 2,
+                                   (float)InputView.IconWidthRequest,
+                                   (float)InputView.IconHeightRequest,
                                    canvas);
             }
         }
@@ -303,17 +303,16 @@ namespace RSInputViewMaui
             PathF path = new PathF();
 
             // Define the points for the dropdown icon
-            float startX = x;
-            float startY = y;
-            float endX = x + iconWidth;
-            float endY = y;
+            float startX = x + iconWidth / 4;
+            float startY = y + iconHeight / 3;
+            float endX = x + iconWidth - iconWidth / 4;
+            float endY = y + iconHeight - iconHeight / 3;
             float centerX = x + iconWidth / 2;
-            float centerY = y + iconHeight;
 
             // Draw the dropdown icon
             path.MoveTo(startX, startY);
-            path.LineTo(centerX, centerY);
-            path.LineTo(endX, endY);
+            path.LineTo(centerX, endY);
+            path.LineTo(endX, startY);
             path.Close();
 
 

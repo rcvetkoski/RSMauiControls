@@ -26,7 +26,7 @@
         </rsInput:RSInputView>
 
 
-        <rsInput:RSInputView HelperMessage="Helper" Design="Outlined" Placeholder="Label"  LeadingIcon="dotnet_bot.png">
+        <rsInput:RSInputView HelperMessage="Helper" Design="Outlined" Placeholder="Label" HasClearIcon="True" LeadingIcon="dotnet_bot.png">
             <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
         </rsInput:RSInputView>
 

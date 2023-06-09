@@ -199,35 +199,8 @@ namespace RSInputViewMaui
         private static void HasClearIconChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var rsInput = (bindable as RSInputView);
-
-            if ((bool)newValue)
-            {
-                if(rsInput.TrailingIconImage == null)
-                {
-                    rsInput.TrailingIconImage = new Image()
-                    {
-                        VerticalOptions = LayoutOptions.Center,
-                        HorizontalOptions = LayoutOptions.End,
-                        Source = rsInput.TrailingIcon,
-                    };
-                }
-
-                rsInput.clearIconTapGestureRecognizer = new TapGestureRecognizer()
-                {
-                    Command = new Command(rsInput.ClearText)
-                };
-
-                rsInput.TrailingIconImage.GestureRecognizers.Add(rsInput.clearIconTapGestureRecognizer);
-            }
-            else
-            {
-                rsInput.TrailingIconImage.GestureRecognizers.Remove(rsInput.clearIconTapGestureRecognizer);
-            }
-
             rsInput.Graphics.Invalidate();
         }
-
-        private TapGestureRecognizer clearIconTapGestureRecognizer;
         private void ClearText()
         {
             if (Content is Picker)
@@ -628,13 +601,15 @@ namespace RSInputViewMaui
 
         private void Graphics_EndInteraction(object sender, TouchEventArgs e)
         {
-            if (!Content.IsFocused)
-                Content.Focus();
-
             var touchLocation = e.Touches.Last();
 
             if (touchLocation.X >= this.Width - TrailingIconTotalWidth)
                 ClearText();
+            else
+            {
+                if (!Content.IsFocused)
+                    Content.Focus();
+            }
         }
 
         private void SetContent()
