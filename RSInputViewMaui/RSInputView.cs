@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Net.Http.Headers;
 using System.Windows.Input;
 
 namespace RSInputViewMaui
@@ -133,7 +134,7 @@ namespace RSInputViewMaui
             if (rsInput.graphicsDrawable != null)
             {
                 rsInput.graphicsDrawable.SetIconMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
-                rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);   
+                rsInput.graphicsDrawable.SetContentMargin(rsInput.graphicsDrawable.BorderMargin.Bottom);
             }
             rsInput.Add(rsInput.TrailingIconImage, 0, 0);
 
@@ -177,6 +178,63 @@ namespace RSInputViewMaui
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+
+        public static readonly BindableProperty HasDropDownIconProperty = BindableProperty.Create(nameof(HasDropDownIcon), typeof(bool), typeof(RSInputView), false, propertyChanged: HasDropDownIconChanged);
+        public bool HasDropDownIcon
+        {
+            get { return (bool)GetValue(HasDropDownIconProperty); }
+            set { SetValue(HasDropDownIconProperty, value); }
+        }
+        private static void HasDropDownIconChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+        public static readonly BindableProperty HasClearIconProperty = BindableProperty.Create(nameof(HasClearIcon), typeof(bool), typeof(RSInputView), false, propertyChanged: HasClearIconChanged);
+        public bool HasClearIcon
+        {
+            get { return (bool)GetValue(HasClearIconProperty); }
+            set { SetValue(HasClearIconProperty, value); }
+        }
+        private static void HasClearIconChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if ((bool)newValue)
+            {
+                if(rsInput.TrailingIconImage == null)
+                {
+                    rsInput.TrailingIconImage = new Image()
+                    {
+                        VerticalOptions = LayoutOptions.Center,
+                        HorizontalOptions = LayoutOptions.End,
+                        Source = rsInput.TrailingIcon,
+                    };
+                }
+
+                rsInput.clearIconTapGestureRecognizer = new TapGestureRecognizer()
+                {
+                    Command = new Command(rsInput.ClearText)
+                };
+
+                rsInput.TrailingIconImage.GestureRecognizers.Add(rsInput.clearIconTapGestureRecognizer);
+            }
+            else
+            {
+                rsInput.TrailingIconImage.GestureRecognizers.Remove(rsInput.clearIconTapGestureRecognizer);
+            }
+
+            rsInput.Graphics.Invalidate();
+        }
+
+        private TapGestureRecognizer clearIconTapGestureRecognizer;
+        private void ClearText()
+        {
+            if (Content is Picker)
+                (Content as Picker).SelectedItem = null;
+            else if (Content is InputView)
+                (Content as InputView).Text = string.Empty;
+        }
 
         public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(RSInputView), default, propertyChanged: PlaceholderChanged);
         public string Placeholder
@@ -268,7 +326,7 @@ namespace RSInputViewMaui
                 return;
 
             string message = string.Empty;
-            
+
             if (rsInput.ErrorMessageEnabled && !string.IsNullOrEmpty(rsInput.ErrorMessage))
                 message = rsInput.ErrorMessage;
             else if (!string.IsNullOrEmpty(rsInput.HelperMessage))
@@ -279,7 +337,7 @@ namespace RSInputViewMaui
                 message = rsInput.characterCounterString;
             }
 
-            if(!isCharacterCount)
+            if (!isCharacterCount)
                 CharacterCountSize = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, rsInput.characterCounterString, rsInput.graphicsDrawable.TextFont, rsInput.graphicsDrawable.FontSize).Width + graphicsDrawable.PlaceholderMargin.Right;
 
             size = graphicsDrawable.GetCanvasStringSize(graphicsDrawable.Canvas, message, rsInput.graphicsDrawable.TextFont, rsInput.graphicsDrawable.FontSize);
@@ -303,7 +361,7 @@ namespace RSInputViewMaui
         internal string GetCharacterCounterString()
         {
             if (CharacterCounter < 0)
-                return string.Empty;    
+                return string.Empty;
 
             string result = string.Empty;
             int count = 0;
@@ -333,7 +391,7 @@ namespace RSInputViewMaui
         {
             var rsInput = (bindable as RSInputView);
 
-            if((int)newValue >= 0)
+            if ((int)newValue >= 0)
                 rsInput.characterCounterString = $"0 / {newValue}";
             else
             {
@@ -491,6 +549,50 @@ namespace RSInputViewMaui
             rsInput.Graphics.Invalidate();
         }
 
+        internal double LeadingIconTotalWidth
+        {
+            get
+            {
+                return LeadingIconImage == null ? 0 : IconWidthRequest + LeadingIconImage.Margin.Left;
+            }
+        }
+
+        internal double TrailingIconTotalWidth
+        {
+            get
+            {
+                return TrailingIconImage == null ? 0 : IconWidthRequest + TrailingIconImage.Margin.Right;
+            }
+        }
+
+        internal bool IsClearIconVisible
+        {
+            get
+            {
+                bool res = false;
+
+                if (!HasClearIcon)
+                    res = false;
+
+                if(Content is Picker)
+                {
+                    if ((Content as Picker).SelectedItem != null)
+                        res = true;
+                }
+                else if(Content is InputView)
+                {
+                    if (!string.IsNullOrEmpty((Content as InputView).Text))
+                        res =  true;
+                }
+
+                // Hide or show TrailingIcon
+                if(TrailingIconImage != null)
+                    TrailingIconImage.IsVisible = res ? false : true;
+
+                return res;
+            }
+        }
+
         private ICommand IconCommand { get; set; }
 
         public bool IsActive { get; protected set; }
@@ -509,18 +611,30 @@ namespace RSInputViewMaui
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 
             Graphics = new GraphicsView();
-            Graphics.GestureRecognizers.Add(new TapGestureRecognizer()
-            {
-                Command = new Command( () =>
-                {
-                    if(!Content.IsFocused) 
-                        Content.Focus();
-                })
-            });
+            Graphics.EndInteraction += Graphics_EndInteraction;
+            //Graphics.GestureRecognizers.Add(new TapGestureRecognizer()
+            //{
+            //    Command = new Command( () =>
+            //    {
+            //        if(!Content.IsFocused) 
+            //            Content.Focus();
+            //    })
+            //});
 
             this.Add(Graphics, 0, 0);
 
             IconCommand = new Command<Image>(IconCommandInvoke);
+        }
+
+        private void Graphics_EndInteraction(object sender, TouchEventArgs e)
+        {
+            if (!Content.IsFocused)
+                Content.Focus();
+
+            var touchLocation = e.Touches.Last();
+
+            if (touchLocation.X >= this.Width - TrailingIconTotalWidth)
+                ClearText();
         }
 
         private void SetContent()
@@ -607,6 +721,12 @@ namespace RSInputViewMaui
             // Must enable this, otherwise there is graphical bug when margin is applied to Editor
             if (Content is Editor)
                 (Content as Editor).AutoSize = EditorAutoSizeOption.TextChanges;
+
+            if(Content is Picker && TrailingIconImage == null)
+            {
+                HasDropDownIcon = true;
+                TrailingIconImage = new Image() { WidthRequest = IconWidthRequest, HeightRequest = IconHeightRequest };
+            }
         }
 
         private void Content_Focused(object sender, FocusEventArgs e)
@@ -653,22 +773,6 @@ namespace RSInputViewMaui
                     Content.Margin = ContentMargin;
 
                 //Graphics.Invalidate();
-            }
-        }
-
-        internal double LeadingIconTotalWidth
-        {
-            get
-            {
-                return LeadingIconImage == null ? 0 : IconWidthRequest + LeadingIconImage.Margin.Left;
-            }
-        }
-
-        internal double TrailingIconTotalWidth
-        {
-            get
-            {
-                return TrailingIconImage == null ? 0 : IconWidthRequest + TrailingIconImage.Margin.Right;
             }
         }
 

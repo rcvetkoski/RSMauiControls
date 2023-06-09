@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace RSInputViewMaui
+﻿namespace RSInputViewMaui
 {
     public class FilledDrawable : GraphicsDrawable
     {

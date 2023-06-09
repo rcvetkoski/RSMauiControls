@@ -201,6 +201,25 @@ namespace RSInputViewMaui
                 else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
                     SetContentMargin(BorderMargin.Bottom);
             }
+
+            // Clear icon
+            if(InputView.IsClearIconVisible)
+            {
+                CreateClearIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
+                                dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - ((float)InputView.IconHeightRequest) / 2,
+                                (float)InputView.IconWidthRequest ,
+                                (float)InputView.IconHeightRequest ,
+                                canvas);
+            }
+            // Drop down icon
+            else if (InputView.HasDropDownIcon && string.IsNullOrEmpty(InputView.TrailingIcon) && !InputView.IsClearIconVisible)
+            {
+                CreateDropDownIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest / 2,
+                                   dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - ((float)InputView.IconHeightRequest / 3) / 2,
+                                   (float)InputView.IconWidthRequest / 2,
+                                   (float)InputView.IconHeightRequest / 3,
+                                   canvas);
+            }
         }
 
         protected void DrawMessage(ICanvas canvas, RectF dirtyRect)
@@ -272,6 +291,63 @@ namespace RSInputViewMaui
                               HorizontalAlignment.Right,
                               VerticalAlignment.Center,
                               TextFlow.ClipBounds);
+        }
+
+        protected void CreateDropDownIcon(float x, float y, float width, float height, ICanvas canvas)
+        {
+            // Set the dimensions and location for the dropdown icon
+            float iconWidth = width;
+            float iconHeight = height;
+
+            // Create the path
+            PathF path = new PathF();
+
+            // Define the points for the dropdown icon
+            float startX = x;
+            float startY = y;
+            float endX = x + iconWidth;
+            float endY = y;
+            float centerX = x + iconWidth / 2;
+            float centerY = y + iconHeight;
+
+            // Draw the dropdown icon
+            path.MoveTo(startX, startY);
+            path.LineTo(centerX, centerY);
+            path.LineTo(endX, endY);
+            path.Close();
+
+
+            canvas.FillColor = borderColor;
+            canvas.FillPath(path);
+            canvas.DrawPath(path);
+        }
+
+        protected void CreateClearIcon(float x, float y, float width, float height, ICanvas canvas)
+        {
+            // Set the dimensions and location for the dropdown icon
+            float iconWidth = width;
+            float iconHeight = height;
+
+            // Create the path
+            PathF path = new PathF();
+
+            // Define the points for the dropdown icon
+            float startX = x + iconWidth / 3;
+            float startY = y + iconHeight / 3;
+            float endX = x + iconWidth - iconWidth / 3;
+            float endY = y + iconHeight - iconHeight / 3;
+
+            // Draw the clear icon
+            path.MoveTo(startX, startY);
+            path.LineTo(endX, endY);
+            path.MoveTo(endX, startY);
+            path.LineTo(startX, endY);
+            path.Close();
+
+
+            canvas.FillColor = borderColor;
+            canvas.FillPath(path);
+            canvas.DrawPath(path);
         }
     }
 }

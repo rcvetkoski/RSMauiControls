@@ -21,14 +21,14 @@
         </rsInput:RSInputView>
 
 
-        <rsInput:RSInputView Suffix="@gmail.com" SuffixSpacing="0" TrailingIcon="dotnet_bot.png" Placeholder="Email">
+        <rsInput:RSInputView  HelperMessage="wefwe" Placeholder="Email" TrailingIcon="dotnet_bot.png">
             <Entry HorizontalTextAlignment="End"/>
         </rsInput:RSInputView>
 
 
-        <!--<rsInput:RSInputView TrailingIcon="dotnet_bot.png" HelperMessage="Helper" Design="Outlined" CharacterCounter="20" Placeholder="Label">
+        <rsInput:RSInputView HelperMessage="Helper" Design="Outlined" Placeholder="Label"  LeadingIcon="dotnet_bot.png">
             <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
-        </rsInput:RSInputView>-->
+        </rsInput:RSInputView>
 
 
         <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper " Design="Outlined"  Placeholder="Label">
