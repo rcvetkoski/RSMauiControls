@@ -284,7 +284,7 @@ namespace RSInputViewMaui
         /// <summary>
         /// Adds bottom margin so that the bottom message can be seen
         /// </summary>
-        /// <param name="bindable"></param>
+        /// <param name="rsInput"></param>
         internal void SetBottomMessageMargin(RSInputView rsInput)
         {
             var Graphics = rsInput.Graphics;
