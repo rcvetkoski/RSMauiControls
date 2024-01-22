@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
+             xmlns:rsGifLoader="clr-namespace:RSGifLoaderMaui;assembly=RSGifLoaderMaui"
              xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:rsInput="clr-namespace:RSInputViewMaui;assembly=RSInputViewMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
@@ -14,10 +15,12 @@
     <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
 
+        <rsGifLoader:RSGifLoader Path="standsquatsblack" WidthRequest="100" HeightRequest="100"/>
+
         <vp:ViewPager ItemsSource="{Binding People}" ItemBindingPath="Name">
         </vp:ViewPager>
 
-        <tb:TabView ItemsSource="{Binding People}" TabsItemBindingPath="Name" ContentItemBindingPath="Name">
+        <tb:TabView ItemsSource="{Binding People}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
             
         </tb:TabView>
         

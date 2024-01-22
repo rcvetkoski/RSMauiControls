@@ -53,6 +53,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\RSGifLoaderMaui\RSGifLoaderMaui.csproj" />
 	  <ProjectReference Include="..\RSInputViewMaui\RSInputViewMaui.csproj" />
 	  <ProjectReference Include="..\TabView\TabViewMaui.csproj" />
 	  <ProjectReference Include="..\ViewPager\ViewPagerMaui.csproj" />
