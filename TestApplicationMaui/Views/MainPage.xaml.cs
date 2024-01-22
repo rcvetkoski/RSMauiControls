@@ -36,4 +36,16 @@ namespace TestApplicationMaui.Views
             //outlinedLabel.Text = outlined.Height.ToString();
         }
     }
+
+
+    public class RSBasePicker : Picker
+    {
+
+    }
+
+
+    public class RSEnumPicker : RSBasePicker
+    {
+
+    }
 }

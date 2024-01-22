@@ -13,6 +13,15 @@
     </ContentPage.BindingContext>
     <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
+
+        <vp:ViewPager ItemsSource="{Binding People}" ItemBindingPath="Name">
+        </vp:ViewPager>
+
+        <tb:TabView ItemsSource="{Binding People}" TabsItemBindingPath="Name" ContentItemBindingPath="Name">
+            
+        </tb:TabView>
+        
+
         <Entry Placeholder="Stock Entry" />
 
 

@@ -199,7 +199,7 @@ namespace RSInputViewMaui
         private static void HasClearIconChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var rsInput = (bindable as RSInputView);
-            rsInput.Graphics.Invalidate();
+           rsInput.Graphics.Invalidate();
         }
         private void ClearText()
         {
@@ -544,22 +544,22 @@ namespace RSInputViewMaui
             {
                 bool res = false;
 
-                if (!HasClearIcon)
-                    res = false;
+                //if (!HasClearIcon)
+                //    res = false;
 
-                if(Content is Picker)
+                if (Content is Picker && HasClearIcon)
                 {
                     if ((Content as Picker).SelectedItem != null)
                         res = true;
                 }
-                else if(Content is InputView)
+                else if (Content is InputView && HasClearIcon)
                 {
                     if (!string.IsNullOrEmpty((Content as InputView).Text))
-                        res =  true;
+                        res = true;
                 }
 
                 // Hide or show TrailingIcon
-                if(TrailingIconImage != null)
+                if (TrailingIconImage != null)
                     TrailingIconImage.IsVisible = res ? false : true;
 
                 return res;
@@ -603,7 +603,7 @@ namespace RSInputViewMaui
         {
             var touchLocation = e.Touches.Last();
 
-            if (touchLocation.X >= this.Width - TrailingIconTotalWidth)
+            if (touchLocation.X >= this.Width - TrailingIconTotalWidth && IsClearIconVisible)
                 ClearText();
             else
             {
