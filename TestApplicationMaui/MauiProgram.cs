@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using RSGifLoaderMaui;
+using RSGifLoaderMaui.Handlers;
 
 namespace TestApplicationMaui
 {
@@ -13,6 +15,9 @@ namespace TestApplicationMaui
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                }).ConfigureMauiHandlers(h =>
+                {
+                    h.AddHandler<RSGifLoader, GifLoaderHandler>();
                 });
 
 #if DEBUG

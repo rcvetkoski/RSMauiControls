@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TabViewMaui", "TabView\TabV
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApplicationMaui", "TestApplicationMaui\TestApplicationMaui.csproj", "{DAE91156-9540-436F-B85E-2B33AFB66586}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSInputViewMaui", "RSInputViewMaui\RSInputViewMaui.csproj", "{C818629D-100C-468E-BE37-249937FD7A21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSInputViewMaui", "RSInputViewMaui\RSInputViewMaui.csproj", "{C818629D-100C-468E-BE37-249937FD7A21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSGifLoaderMaui", "RSGifLoaderMaui\RSGifLoaderMaui.csproj", "{1F552E94-5B3E-4410-B500-DB913464DCF8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{C818629D-100C-468E-BE37-249937FD7A21}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C818629D-100C-468E-BE37-249937FD7A21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C818629D-100C-468E-BE37-249937FD7A21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F552E94-5B3E-4410-B500-DB913464DCF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F552E94-5B3E-4410-B500-DB913464DCF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F552E94-5B3E-4410-B500-DB913464DCF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F552E94-5B3E-4410-B500-DB913464DCF8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
