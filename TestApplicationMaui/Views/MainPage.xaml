@@ -5,14 +5,100 @@
              xmlns:rsGifLoader="clr-namespace:RSGifLoaderMaui;assembly=RSGifLoaderMaui"
              xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:rsInput="clr-namespace:RSInputViewMaui;assembly=RSInputViewMaui"
+             xmlns:rsPicker="clr-namespace:RSPickerMaui;assembly=RSPickerMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
+             xmlns:model="clr-namespace:TestApplicationMaui.Models"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
              x:Class="TestApplicationMaui.Views.MainPage">
 
     <ContentPage.BindingContext>
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
+
+    <!--<ContentPage.Resources>
+        <Style TargetType="rsPicker:RSGrid">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                               
+                                <Setter Property="IsSelected" Value="False" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="IsSelected" Value="True" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>-->
+
     <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
+
+
+        <rsPicker:RSPicker ItemsSource="{Binding People}" DisplayMemberPath="Name" Placeholder="Multiple Picker">
+            
+        </rsPicker:RSPicker>
+
+
+        <rsPicker:RSCollectionView ItemsSource="{Binding People}" Header="{Binding .}" SelectedItems="{Binding SelectedPeople}" x:TypeArguments="model:Person" SelectionMode="Multiple">
+            <rsPicker:RSCollectionView.HeaderTemplate>
+                <DataTemplate>
+                    <Entry Placeholder="Search"/>
+                </DataTemplate>
+            </rsPicker:RSCollectionView.HeaderTemplate>
+            <rsPicker:RSCollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="Auto" ColumnDefinitions="Auto, *" PropertyChanging="Grid_PropertyChanging">
+                        <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="{Binding IsSelected}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Item.Name}" VerticalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </rsPicker:RSCollectionView.ItemTemplate>
+        </rsPicker:RSCollectionView>
+
+        <rsPicker:RSCollectionView ItemsSource="{Binding People}" Header="{Binding .}" SelectedItems="{Binding SelectedPeople}" x:TypeArguments="model:Person" SelectionMode="Multiple">
+            <rsPicker:RSCollectionView.HeaderTemplate>
+                <DataTemplate>
+                    <Entry Placeholder="Search"/>
+                </DataTemplate>
+            </rsPicker:RSCollectionView.HeaderTemplate>
+            <rsPicker:RSCollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid RowDefinitions="Auto" ColumnDefinitions="Auto, *" PropertyChanging="Grid_PropertyChanging">
+                        <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="{Binding IsSelected}"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Item.Name}" VerticalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </rsPicker:RSCollectionView.ItemTemplate>
+        </rsPicker:RSCollectionView>
+
+
+        <CollectionView ItemsSource="{Binding SelectedPeople}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding Name}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <CollectionView ItemsSource="{Binding People}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding Name}"/>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+
+        <Button Text="new person" Clicked="Button_Clicked_1"/>
+        <Button Text="new person in People" Clicked="Button_Clicked_2"/>
+        <Button Text="remove person in People" Clicked="Button_Clicked_3"/>
+
 
 
         <rsGifLoader:RSGifLoader Path="standsquatsblack" WidthRequest="100" HeightRequest="100"/>

@@ -11,8 +11,10 @@ namespace TestApplicationMaui.ViewModels
 {
     internal class MainViewModel : BaseViewModel
     {
-        public ObservableCollection<Person> People { get; set; }   
-        
+        public ObservableCollection<Person> People { get; set; }
+        public ObservableCollection<Person> SelectedPeople { get; set; }
+
+
         public MainViewModel()
         {
             People = new ObservableCollection<Person>()
@@ -20,6 +22,10 @@ namespace TestApplicationMaui.ViewModels
                 new Person(){Name = "Tom", Age = 26},
                 new Person(){Name = "Natalie", Age = 20}
             };
+
+            SelectedPeople = new ObservableCollection<Person>();
+
+            SelectedPeople.Add(People[0]);
 
             Error = "Error message !";
 

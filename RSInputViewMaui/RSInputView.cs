@@ -623,6 +623,7 @@ namespace RSInputViewMaui
                 {
 #if __ANDROID__
                     handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                    handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
 #elif __IOS__ || __MACCATALYST__
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
@@ -638,6 +639,7 @@ namespace RSInputViewMaui
                 {
 #if __ANDROID__
                     handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                    handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
 #elif WINDOWS
                     handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
                     handler.PlatformView.Style = null;
@@ -652,6 +654,7 @@ namespace RSInputViewMaui
                 {
 #if __ANDROID__
                     handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                    handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
 #elif __IOS__ || __MACCATALYST__ 
                 handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
@@ -667,6 +670,7 @@ namespace RSInputViewMaui
                 {
 #if __ANDROID__
                     handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                    handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
 #elif IOS 
                     handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif __MACCATALYST__

@@ -39,13 +39,20 @@ namespace RSGifLoaderMaui.Handlers
             // Create the Android ImageView
             var context = MauiApplication.Current.ApplicationContext;
             var imageView = new ImageView(context);
-            var path = this.VirtualView.Path;
+            var path = this.VirtualView.Path.Replace(".gif", "");
             int resourceId = LoadImageFromMauiResources(context, context.Resources, path);
 
             // Use Glide to load the image
-            Bumptech.Glide.Glide.With(context)
-            .Load(resourceId)
-            .Into(imageView);
+            LoadGlide(imageView, path, resourceId, context);
+
+            VirtualView.BindingContextChanged += (sender, args) =>
+            {
+                var path = (sender as RSGifLoader).Path.Replace(".gif", "");
+                int resourceId = LoadImageFromMauiResources(context, context.Resources, path);
+
+                // Use Glide to load the image
+                LoadGlide(imageView, path, resourceId, context);
+            };
 
             return imageView;
         }
@@ -54,6 +61,14 @@ namespace RSGifLoaderMaui.Handlers
         {
             int resourceId = context.Resources.GetIdentifier(path, "drawable", context.PackageName);
             return resourceId;
+        }
+
+        private void LoadGlide(ImageView imageView, string path, int resourceId, Context context)
+        {
+            // Use Glide to load the image
+            Bumptech.Glide.Glide.With(context)
+                 .Load(resourceId)
+                 .Into(imageView);
         }
     }
 #elif IOS
