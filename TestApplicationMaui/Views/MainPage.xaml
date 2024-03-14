@@ -9,6 +9,8 @@
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:model="clr-namespace:TestApplicationMaui.Models"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Name="page"
              x:Class="TestApplicationMaui.Views.MainPage">
 
     <ContentPage.BindingContext>
@@ -39,43 +41,18 @@
 
     <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
+        <rsPicker:RSPicker x:TypeArguments="model:Person" ItemsSource="{Binding People}" SelectedItems="{Binding SelectedPeople}" DisplayMemberPath="Name" Placeholder="Multiple Picker">
 
-        <rsPicker:RSPicker ItemsSource="{Binding People}" DisplayMemberPath="Name" Placeholder="Multiple Picker">
-            
         </rsPicker:RSPicker>
 
+        <rsPicker:RSCollectionView x:Name="multi" x:TypeArguments="model:Person" SelectedItems="{Binding SelectedPeople}" ItemsSource="{Binding People}" SelectionMode="Multiple">
 
-        <rsPicker:RSCollectionView ItemsSource="{Binding People}" Header="{Binding .}" SelectedItems="{Binding SelectedPeople}" x:TypeArguments="model:Person" SelectionMode="Multiple">
-            <rsPicker:RSCollectionView.HeaderTemplate>
-                <DataTemplate>
-                    <Entry Placeholder="Search"/>
-                </DataTemplate>
-            </rsPicker:RSCollectionView.HeaderTemplate>
-            <rsPicker:RSCollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Grid RowDefinitions="Auto" ColumnDefinitions="Auto, *" PropertyChanging="Grid_PropertyChanging">
-                        <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="{Binding IsSelected}"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Item.Name}" VerticalOptions="Center"/>
-                    </Grid>
-                </DataTemplate>
-            </rsPicker:RSCollectionView.ItemTemplate>
         </rsPicker:RSCollectionView>
 
-        <rsPicker:RSCollectionView ItemsSource="{Binding People}" Header="{Binding .}" SelectedItems="{Binding SelectedPeople}" x:TypeArguments="model:Person" SelectionMode="Multiple">
-            <rsPicker:RSCollectionView.HeaderTemplate>
-                <DataTemplate>
-                    <Entry Placeholder="Search"/>
-                </DataTemplate>
-            </rsPicker:RSCollectionView.HeaderTemplate>
-            <rsPicker:RSCollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Grid RowDefinitions="Auto" ColumnDefinitions="Auto, *" PropertyChanging="Grid_PropertyChanging">
-                        <CheckBox Grid.Row="0" Grid.Column="0" IsChecked="{Binding IsSelected}"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Item.Name}" VerticalOptions="Center"/>
-                    </Grid>
-                </DataTemplate>
-            </rsPicker:RSCollectionView.ItemTemplate>
-        </rsPicker:RSCollectionView>
+        <rsInput:RSInputView Placeholder="wefewfwef">
+            <Entry Text="efwf"/>
+        </rsInput:RSInputView>
+
 
 
         <CollectionView ItemsSource="{Binding SelectedPeople}">
@@ -98,6 +75,7 @@
         <Button Text="new person" Clicked="Button_Clicked_1"/>
         <Button Text="new person in People" Clicked="Button_Clicked_2"/>
         <Button Text="remove person in People" Clicked="Button_Clicked_3"/>
+        <Button Text="Popup" Clicked="Button_Clicked_4"/>
 
 
 

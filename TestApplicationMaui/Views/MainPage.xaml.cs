@@ -1,4 +1,6 @@
 ﻿using RSInputViewMaui;
+using RSPickerMaui;
+using RSPopupMaui;
 using TestApplicationMaui.ViewModels;
 
 namespace TestApplicationMaui.Views
@@ -59,6 +61,113 @@ namespace TestApplicationMaui.Views
         private void Button_Clicked_3(object sender, EventArgs e)
         {
             (BindingContext as MainViewModel).People.RemoveAt(0);
+        }
+
+        private void Button_Clicked_4(object sender, EventArgs e)
+        {
+            ContentPage page = new ContentPage() { BackgroundColor = Color.FromHex("#aa000000") };
+            page.Loaded += Page_Loaded;
+
+            StackLayout views = new StackLayout() { Orientation = StackOrientation.Vertical, VerticalOptions = LayoutOptions.FillAndExpand};
+            BoxView boxView = new BoxView()
+            {
+                WidthRequest = 150,
+                HeightRequest = 150,
+                CornerRadius = 20,
+                VerticalOptions = LayoutOptions.Center,
+                Color = Colors.Red
+            };
+
+            TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
+            tapGestureRecognizer.Command = new Command(async () =>
+            {
+                RSpopupManager.ClosePopup();
+                //await PoppingOut(page);
+                //await Shell.Current.Navigation.PopAsync(false);
+            });
+            views.GestureRecognizers.Add(tapGestureRecognizer);
+
+            views.Add(boxView);
+            page.Content = views;
+
+
+            //RSPopup rSPopup = new RSPopup(new Label() { Text = "Popup !" });
+            //Shell.Current.Navigation.PushModalAsync(rSPopup, false);
+            //Shell.Current.Navigation.PushModalAsync(page, false);
+
+            RSpopupManager.ShowPopup(multi);
+        }
+
+        private void Page_Loaded(object sender, EventArgs e)
+        {
+            PoppingIn(sender as ContentPage);
+        }
+
+        public void PoppingIn(ContentPage page)
+        {
+            // Measure the actual content size
+            var contentSize = page.Content.Measure(Window.Width, Window.Height, MeasureFlags.IncludeMargins);
+            var contentHeight = contentSize.Request.Height;
+
+            // Start by translating the content below / off screen
+            page.Content.TranslationY = contentHeight;
+
+            // Animate the translucent background, fading into view
+            page.Animate("Background",
+                callback: v => page.Background = new SolidColorBrush(Colors.Black.WithAlpha((float)v)),
+                start: 0d,
+                end: 0.7d,
+                rate: 32,
+                length: 350,
+                easing: Easing.CubicOut,
+                finished: (v, k) =>
+                    page.Background = new SolidColorBrush(Colors.Black.WithAlpha(0.7f)));
+
+            // Also animate the content sliding up from below the screen
+            page.Animate("Content",
+                callback: v => page.Content.TranslationY = (int)(contentHeight - v),
+                start: 0,
+                end: contentHeight,
+                length: 500,
+                easing: Easing.CubicInOut,
+                finished: (v, k) => page.Content.TranslationY = 0);
+        }
+
+
+        public Task PoppingOut(ContentPage page)
+        {
+            var done = new TaskCompletionSource();
+
+            // Measure the content size so we know how much to translate
+            var contentSize = page.Content.Measure(Window.Width, Window.Height, MeasureFlags.IncludeMargins);
+            var windowHeight = contentSize.Request.Height;
+
+            // Start fading out the background
+            page.Animate("Background",
+                callback: v => page.Background = new SolidColorBrush(Colors.Black.WithAlpha((float)v)),
+                start: 0.7d,
+                end: 0d,
+                rate: 32,
+                length: 350,
+                easing: Easing.CubicIn,
+                finished: (v, k) => page.Background = new SolidColorBrush(Colors.Black.WithAlpha(0.0f)));
+
+            // Start sliding the content down below the bottom of the screen
+            page.Animate("Content",
+                callback: v => page.Content.TranslationY = (int)(windowHeight - v),
+                start: windowHeight,
+                end: 0,
+                length: 500,
+                easing: Easing.CubicInOut,
+                finished: (v, k) =>
+                {
+                    page.Content.TranslationY = windowHeight;
+                    // Important: Set our completion source to done!
+                    done.TrySetResult();
+                });
+
+            // We return the task so we can wait for the animation to finish
+            return done.Task;
         }
     }
 
