@@ -1,7 +1,6 @@
 ﻿using RSInputViewMaui;
 using System.Reflection;
 using RSPopupMaui;
-using Microsoft.Maui.Controls;
 
 namespace RSPickerMaui
 {
@@ -10,28 +9,47 @@ namespace RSPickerMaui
     {
         private RSCollectionView<T> CollectionView { get; set; }
 
-        public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(ICollection<T>), typeof(RSPicker<T>), null);
+        public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(ICollection<T>), typeof(RSPicker<T>), null, propertyChanged: ItemsSourceChange);
         public ICollection<T> ItemsSource
         {
             get { return (ICollection<T>)GetValue(ItemsSourceProperty); }
             set { SetValue(ItemsSourceProperty, value); }
         }
+        private static void ItemsSourceChange(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
+
+            RSPicker<T> rsPicker = bindable as RSPicker<T>;
+            rsPicker.CollectionView.ItemsSource = rsPicker.ItemsSource;
+        }
+
+
 
         public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(ICollection<T>), typeof(RSPicker<T>), null, propertyChanged:SelectedItemsChange);
-        private static void SelectedItemsChange(BindableObject bindable, object oldValue, object newValue)
-        {
-            (bindable as RSPicker<T>).PickerText.Text += GetPropValue((bindable as RSPicker<T>).SelectedItem, (bindable as RSPicker<T>).DisplayMemberPath);
-        }
         public ICollection<T> SelectedItems
         {
             get { return (ICollection<T>)GetValue(SelectedItemsProperty); }
             set { SetValue(SelectedItemsProperty, value); }
         }
+        private static void SelectedItemsChange(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
+
+            RSPicker<T> rsPicker = bindable as RSPicker<T>;
+            rsPicker.CollectionView.SelectedItems = rsPicker.SelectedItems;
+        }
+
 
         public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(RSPicker<T>), null, propertyChanged:SelectedItemChanged);
         private static void SelectedItemChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as RSPicker<T>).PickerText.Text += GetPropValue((bindable as RSPicker<T>).SelectedItem, (bindable as RSPicker<T>).DisplayMemberPath);
+            if (bindable == null)
+                return;
+
+            RSPicker<T> rsPicker = (bindable as RSPicker<T>);
+            rsPicker.PickerText.Text += GetPropValue(rsPicker.SelectedItem, rsPicker.DisplayMemberPath);
         }
 
         public object SelectedItem
@@ -40,39 +58,56 @@ namespace RSPickerMaui
             set { SetValue(SelectedItemProperty, value); }
         }
 
-        public string DisplayMemberPath { get; set; }
+        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSPicker<T>), null, propertyChanged: DisplayMemberPathChanged);
+        public string DisplayMemberPath
+        {
+            get { return (string)GetValue(DisplayMemberPathProperty); }
+            set { SetValue(DisplayMemberPathProperty, value); }
+        }
+        private static void DisplayMemberPathChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
 
+            RSPicker<T> rsPicker = (bindable as RSPicker<T>);
+            rsPicker.CollectionView.DisplayMemberPath = (string)newValue;
+        }
         private Entry PickerText;
-
+        private TapGestureRecognizer tapGestureRecognizer;
 
         public RSPicker()
         {
             PickerText = new Entry();
-            //PickerText.Padding = new Thickness(PickerText.Padding.Left, 14, PickerText.Padding.Right, 14);
             Content = PickerText;
             CollectionView = new RSCollectionView<T>()
             {
                 SelectionMode = SelectionMode.Multiple
             };
             CollectionView.SelectionChanged += CollectionView_SelectionChanged;
-            TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
+            tapGestureRecognizer = new TapGestureRecognizer();
             tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
-            //Content.GestureRecognizers.Add(tapGestureRecognizer);
+            Content.GestureRecognizers.Add(tapGestureRecognizer);
         }
 
         private void CollectionView_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             // Update picker text here
-            PickerText.Unfocus();
-            PickerText.Text = "troll";
-            PickerText.Focus();
+            PickerText.Text = string.Empty;
+
+            int i = 0;
+            foreach (var item in e.CurrentSelection)
+            {
+                PickerText.Text += GetPropValue((item as RSItem).Item, DisplayMemberPath);
+
+                if (i < e.CurrentSelection.Count - 1)
+                    PickerText.Text += ", ";
+
+                i++;
+            }
         }
 
         private void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
         {
-            CollectionView.ItemsSource = ItemsSource;
-            CollectionView.SelectedItems = SelectedItems;
-
             RSpopupManager.ShowPopup(CollectionView);
         }
 
@@ -83,6 +118,14 @@ namespace RSPickerMaui
 
             var val = src.GetType().GetRuntimeProperty(propName).GetValue(src, null);
             return val != null ? val.ToString() : string.Empty;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            CollectionView.SelectionChanged -= CollectionView_SelectionChanged;
+            tapGestureRecognizer.Tapped -= TapGestureRecognizer_Tapped;
         }
     }
 }

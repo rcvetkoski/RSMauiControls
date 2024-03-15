@@ -1,10 +1,40 @@
-﻿using System.Collections.Specialized;
+﻿using Microsoft.Maui.Controls;
+using System.Collections.Specialized;
+using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace RSPickerMaui
 {
-    public class RSCollectionView<T> : CollectionView
+    public class RSCollectionView<T> : CollectionView, IDisposable
     {
         public RSCollectionView()
+        {
+            // Set style
+            SetCollectionStyle();
+
+            checkBoxes = new List<CheckBox>();
+
+            // Set default ItemTemplate
+            SetDefultDataTemplate();
+        }
+
+        // Used to Unsubscribe events 
+        private List<CheckBox> checkBoxes;
+        
+        private void SetCollectionStyle()
+        {
+            Setter backgroundColorSetter = new() { Property = BackgroundColorProperty, Value = Colors.Transparent };
+            VisualState stateSelected = new() { Name = CommonStates.Selected, Setters = { backgroundColorSetter } };
+            VisualState stateNormal = new() { Name = CommonStates.Normal };
+            VisualStateGroup visualStateGroup = new() { Name = nameof(CommonStates), States = { stateSelected, stateNormal } };
+            VisualStateGroupList visualStateGroupList = new() { visualStateGroup };
+            Setter vsgSetter = new() { Property = VisualStateGroupsProperty, Value = visualStateGroupList };
+            Style style = new(typeof(Grid)) { Setters = { vsgSetter } };
+
+            // Add the style to the resource dictionary
+            Resources.Add(style);
+        }
+
+        private void SetDefultDataTemplate()
         {
             ItemTemplate = new DataTemplate(() =>
             {
@@ -20,12 +50,21 @@ namespace RSPickerMaui
 
                 // Create the CheckBox and set its IsChecked binding
                 var checkBox = new CheckBox();
+                checkBoxes.Add(checkBox);
+                checkBox.CheckedChanged += CheckBox_CheckedChanged;
                 checkBox.SetBinding(CheckBox.IsCheckedProperty, "IsSelected");
                 Grid.SetColumn(checkBox, 0); // Set CheckBox to the first column
 
                 // Create the Label and set its Text binding
                 var label = new Label { VerticalOptions = LayoutOptions.Center };
-                label.SetBinding(Label.TextProperty, "Item");
+                if (string.IsNullOrEmpty(DisplayMemberPath))
+                {
+                    label.SetBinding(Label.TextProperty, "Item");
+                }
+                else
+                {
+                    label.SetBinding(Label.TextProperty, "Item." + DisplayMemberPath);
+                }
                 Grid.SetColumn(label, 1); // Set Label to the second column
 
                 // Add the CheckBox and Label to the Grid
@@ -36,7 +75,35 @@ namespace RSPickerMaui
             });
         }
 
+        private void CheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
+        {
+            if (e.Value)
+            {
+                if(!(this as CollectionView).SelectedItems.Contains((sender as CheckBox).BindingContext))
+                    (this as CollectionView).SelectedItems.Add((sender as CheckBox).BindingContext);
+            }
+            else
+            {
+                if ((this as CollectionView).SelectedItems.Contains((sender as CheckBox).BindingContext))
+                    (this as CollectionView).SelectedItems.Remove((sender as CheckBox).BindingContext);
+            }
+        }
+
         private List<object>? tempItemsSource;
+
+
+        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSCollectionView<T>), null, propertyChanged: DisplayMemberPathChanged);
+        public string DisplayMemberPath
+        {
+            get { return (string)GetValue(DisplayMemberPathProperty); }
+            set { SetValue(DisplayMemberPathProperty, value); }
+        }
+        private static void DisplayMemberPathChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
+        }
+
 
         new public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(ICollection<T>), typeof(RSCollectionView<T>), null, propertyChanged: SelectedItemsChanged);
         new public ICollection<T> SelectedItems
@@ -164,6 +231,16 @@ namespace RSPickerMaui
                     SelectedItems.Remove((T)(item as RSItem).Item);
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            if (ItemsSource != null && ItemsSource is INotifyCollectionChanged observableDataSource)
+                observableDataSource.CollectionChanged -= ItemsSourceDataSource_CollectionChanged;
+
+            // Unsubscribe event
+            foreach (CheckBox checkBox in checkBoxes)
+                checkBox.CheckedChanged -= CheckBox_CheckedChanged;
         }
     }
 }

@@ -41,14 +41,13 @@
 
     <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
-        <rsPicker:RSPicker x:TypeArguments="model:Person" ItemsSource="{Binding People}" SelectedItems="{Binding SelectedPeople}" DisplayMemberPath="Name" Placeholder="Multiple Picker">
-
+        <rsPicker:RSPicker x:TypeArguments="model:Person" 
+                           ItemsSource="{Binding People}" 
+                           SelectedItems="{Binding SelectedPeople}"
+                           DisplayMemberPath="Name" 
+                           Placeholder="Multiple Picker">
         </rsPicker:RSPicker>
-
-        <rsPicker:RSCollectionView x:Name="multi" x:TypeArguments="model:Person" SelectedItems="{Binding SelectedPeople}" ItemsSource="{Binding People}" SelectionMode="Multiple">
-
-        </rsPicker:RSCollectionView>
-
+        
         <rsInput:RSInputView Placeholder="wefewfwef">
             <Entry Text="efwf"/>
         </rsInput:RSInputView>

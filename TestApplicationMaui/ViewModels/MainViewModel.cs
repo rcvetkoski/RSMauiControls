@@ -20,7 +20,9 @@ namespace TestApplicationMaui.ViewModels
             People = new ObservableCollection<Person>()
             {
                 new Person(){Name = "Tom", Age = 26},
-                new Person(){Name = "Natalie", Age = 20}
+                new Person(){Name = "Natalie", Age = 20},
+                new Person(){Name = "Yukari", Age = 16},
+                new Person(){Name = "Mitsuru", Age = 19}
             };
 
             SelectedPeople = new ObservableCollection<Person>();

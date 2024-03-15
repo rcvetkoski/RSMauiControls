@@ -829,7 +829,7 @@ namespace RSInputViewMaui
             return true;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             Graphics.EndInteraction -= Graphics_EndInteraction;
             Content.Focused -= Content_Focused;

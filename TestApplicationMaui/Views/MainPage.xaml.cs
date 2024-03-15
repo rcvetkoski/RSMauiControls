@@ -65,37 +65,7 @@ namespace TestApplicationMaui.Views
 
         private void Button_Clicked_4(object sender, EventArgs e)
         {
-            ContentPage page = new ContentPage() { BackgroundColor = Color.FromHex("#aa000000") };
-            page.Loaded += Page_Loaded;
-
-            StackLayout views = new StackLayout() { Orientation = StackOrientation.Vertical, VerticalOptions = LayoutOptions.FillAndExpand};
-            BoxView boxView = new BoxView()
-            {
-                WidthRequest = 150,
-                HeightRequest = 150,
-                CornerRadius = 20,
-                VerticalOptions = LayoutOptions.Center,
-                Color = Colors.Red
-            };
-
-            TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
-            tapGestureRecognizer.Command = new Command(async () =>
-            {
-                RSpopupManager.ClosePopup();
-                //await PoppingOut(page);
-                //await Shell.Current.Navigation.PopAsync(false);
-            });
-            views.GestureRecognizers.Add(tapGestureRecognizer);
-
-            views.Add(boxView);
-            page.Content = views;
-
-
-            //RSPopup rSPopup = new RSPopup(new Label() { Text = "Popup !" });
-            //Shell.Current.Navigation.PushModalAsync(rSPopup, false);
-            //Shell.Current.Navigation.PushModalAsync(page, false);
-
-            RSpopupManager.ShowPopup(multi);
+            //RSpopupManager.ShowPopup(multi);
         }
 
         private void Page_Loaded(object sender, EventArgs e)
@@ -169,17 +139,5 @@ namespace TestApplicationMaui.Views
             // We return the task so we can wait for the animation to finish
             return done.Task;
         }
-    }
-
-
-    public class RSBasePicker : Picker
-    {
-
-    }
-
-
-    public class RSEnumPicker : RSBasePicker
-    {
-
     }
 }
