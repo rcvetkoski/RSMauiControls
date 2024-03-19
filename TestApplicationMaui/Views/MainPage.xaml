@@ -38,79 +38,80 @@
             </Setter>
         </Style>
     </ContentPage.Resources>-->
+    <ScrollView>
+        <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
-    <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
-
-        <rsPicker:RSPicker x:TypeArguments="model:Person" 
+            <rsPicker:RSPicker x:TypeArguments="model:Person" 
                            ItemsSource="{Binding People}" 
                            SelectedItems="{Binding SelectedPeople}"
                            DisplayMemberPath="Name" 
                            Placeholder="Multiple Picker">
-        </rsPicker:RSPicker>
-        
-        <rsInput:RSInputView Placeholder="wefewfwef">
-            <Entry Text="efwf"/>
-        </rsInput:RSInputView>
+            </rsPicker:RSPicker>
+
+            <rsInput:RSInputView Placeholder="wefewfwef">
+                <Entry Text="efwf"/>
+            </rsInput:RSInputView>
+
+            <Picker/>
+
+
+            <CollectionView ItemsSource="{Binding SelectedPeople}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding Name}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <CollectionView ItemsSource="{Binding People}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Label Text="{Binding Name}"/>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+
+            <Button Text="new person" Clicked="Button_Clicked_1"/>
+            <Button Text="new person in People" Clicked="Button_Clicked_2"/>
+            <Button Text="remove person in People" Clicked="Button_Clicked_3"/>
+            <Button Text="Popup" Clicked="Button_Clicked_4"/>
 
 
 
-        <CollectionView ItemsSource="{Binding SelectedPeople}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding Name}"/>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            <rsGifLoader:RSGifLoader Path="standsquatsblack" WidthRequest="100" HeightRequest="100"/>
 
-        <CollectionView ItemsSource="{Binding People}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding Name}"/>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            <vp:ViewPager ItemsSource="{Binding People}" ItemBindingPath="Name">
+            </vp:ViewPager>
+
+            <tb:TabView ItemsSource="{Binding People}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
+
+            </tb:TabView>
 
 
-        <Button Text="new person" Clicked="Button_Clicked_1"/>
-        <Button Text="new person in People" Clicked="Button_Clicked_2"/>
-        <Button Text="remove person in People" Clicked="Button_Clicked_3"/>
-        <Button Text="Popup" Clicked="Button_Clicked_4"/>
+            <Entry Placeholder="Stock Entry" />
 
 
-
-        <rsGifLoader:RSGifLoader Path="standsquatsblack" WidthRequest="100" HeightRequest="100"/>
-
-        <vp:ViewPager ItemsSource="{Binding People}" ItemBindingPath="Name">
-        </vp:ViewPager>
-
-        <tb:TabView ItemsSource="{Binding People}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
-            
-        </tb:TabView>
-        
-
-        <Entry Placeholder="Stock Entry" />
+            <rsInput:RSInputView x:Name="pass" Prefix="$" Design="Filled" Placeholder="Price">
+                <Entry/>
+            </rsInput:RSInputView>
 
 
-        <rsInput:RSInputView x:Name="pass" Prefix="$" Design="Filled" Placeholder="Price">
-            <Entry/>
-        </rsInput:RSInputView>
+            <rsInput:RSInputView  HelperMessage="wefwe" Placeholder="Email" TrailingIcon="dotnet_bot.png">
+                <Entry HorizontalTextAlignment="End"/>
+            </rsInput:RSInputView>
 
 
-        <rsInput:RSInputView  HelperMessage="wefwe" Placeholder="Email" TrailingIcon="dotnet_bot.png">
-            <Entry HorizontalTextAlignment="End"/>
-        </rsInput:RSInputView>
+            <rsInput:RSInputView HelperMessage="Helper" Design="Outlined" Placeholder="Label" HasClearIcon="True" LeadingIcon="dotnet_bot.png">
+                <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
+            </rsInput:RSInputView>
 
 
-        <rsInput:RSInputView HelperMessage="Helper" Design="Outlined" Placeholder="Label" HasClearIcon="True" LeadingIcon="dotnet_bot.png">
-            <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
-        </rsInput:RSInputView>
-
-
-        <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper " Design="Outlined"  Placeholder="Label">
+            <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper " Design="Outlined"  Placeholder="Label">
             <Entry/>
         </rsInput:RSInputView>-->
-        
-        <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper" Placeholder="IIIII">
+
+            <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper" Placeholder="IIIII">
             <Entry/>
         </rsInput:RSInputView>
 
@@ -138,5 +139,7 @@
         <Label x:Name="outlinedLabel"/>-->
 
 
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+
+    </ScrollView>
 </ContentPage>

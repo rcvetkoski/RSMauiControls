@@ -21,7 +21,7 @@ namespace RSPopupMaui
             if (rSPopup == null)
                 return;
 
-            await rSPopup.PoppingOut();
+            await rSPopup.DismissPopup();
             await Shell.Current.Navigation.PopAsync(false);
         }
     }
