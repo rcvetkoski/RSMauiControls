@@ -9,7 +9,7 @@
         private Color lightBackgroundColor = Colors.White;
         private Color darkBackgroundColor = Color.FromHex("#212121");
 
-        public RSPopup(IView view)
+        public RSPopup(IView view, bool isModal)
         {
             this.Loaded += RSPopup_Loaded;
             this.BackgroundColor = Color.FromHex("#aa000000");
@@ -19,15 +19,17 @@
                 BackgroundColor = Colors.Transparent
             };
 
-            TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer()
+            if(!isModal)
             {
-                Command = new Command(async () =>
+                TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer()
                 {
-                    await DismissPopup();
-                    await Shell.Current.Navigation.PopAsync(false);
-                })
-            };
-            holder.GestureRecognizers.Add(tapGestureRecognizer);
+                    Command = new Command(() =>
+                    {
+                        ClosePopup();
+                    })
+                };
+                holder.GestureRecognizers.Add(tapGestureRecognizer);
+            }
 
             popup = new Frame()
             {
@@ -88,6 +90,7 @@
         {
             await DismissPopup();
             await Shell.Current.Navigation.PopAsync(false);
+            OnPopupClosedInternal(EventArgs.Empty);
         }
 
         public Task AnimatePopup()
@@ -157,6 +160,12 @@
                 16, 300, finished: (v, c) => done.SetResult(true)); // Adjusted duration to match fade-out
 
             return done.Task;
+        }
+
+        public event EventHandler PopupClosedInternal;
+        protected void OnPopupClosedInternal(EventArgs e)
+        {
+            PopupClosedInternal?.Invoke(null, e);
         }
     }
 }

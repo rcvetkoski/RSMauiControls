@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TestApplicationMaui.Views.TestPage"
+             xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
+             xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
+             Title="TestPage">
+
+    <ContentPage.BindingContext>
+        <vm:MainViewModel/>
+    </ContentPage.BindingContext>
+    <VerticalStackLayout>
+        <tb:TabView ItemsSource="{Binding People}" SelectedItem="{Binding SelectedPerson}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
+
+        </tb:TabView>
+    </VerticalStackLayout>
+</ContentPage>

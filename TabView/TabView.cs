@@ -18,13 +18,16 @@ namespace TabViewMaui
             BindableLayout.SetItemsSource((bindable as TabView).tabsContent, (IEnumerable)newValue);
         }
 
-        public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(TabView), null, BindingMode.TwoWay);
+        public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(TabView), null, BindingMode.TwoWay, propertyChanged: OnSelectedItemPropertyChanged);
         public object SelectedItem
         {
-            get { return (IEnumerable)GetValue(SelectedItemProperty); }
+            get { return (object)GetValue(SelectedItemProperty); }
             set { SetValue(SelectedItemProperty, value); }
         }
-
+        private static void OnSelectedItemPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+             (bindable as TabView).SetCurrentIndex(newValue);
+        }
 
         public static readonly BindableProperty ContentItemTemplateProperty = BindableProperty.Create(nameof(ContentItemTemplate), typeof(DataTemplate), typeof(TabView), propertyChanged: OnContentItemTemplatePropertyChanged);
         public DataTemplate ContentItemTemplate
@@ -101,6 +104,11 @@ namespace TabViewMaui
         private double translateX = 0;
         private bool fixIOSScroll = false;
         private ItemsViewScrolledEventArgs itemsViewScrolledEventArgs;
+        /// <summary>
+        /// Check if SelectedItem is either set internally or externally via binding property
+        /// Used to select the right item based on bindable property
+        /// </summary>
+        private bool IsSelectedItemInternallySet = false;
 
 
         public TabView()
@@ -119,6 +127,11 @@ namespace TabViewMaui
 
             TapCommand = new Command<View>(Tap);
         }
+
+        protected override void OnParentSet()
+        {
+            base.OnParentSet();
+        }      
 
         private void SetMainGrid()
         {
@@ -386,7 +399,10 @@ namespace TabViewMaui
         private void HighLightItem()
         {
             var item = tabsContent.ElementAt(viewPager.CurrentIndex) as VisualElement;
+
+            IsSelectedItemInternallySet = true;
             SelectedItem = item.BindingContext;
+            IsSelectedItemInternallySet = false;
 
             VisualStateManager.GoToState(item, "selected");
 
@@ -476,6 +492,20 @@ namespace TabViewMaui
 
             //Set slider X position
             slider.TranslationX = translateX - tabsHolder.ScrollX;
+        }
+
+        public async void SetCurrentIndex(object item)
+        {
+            if (IsSelectedItemInternallySet)
+                return;
+
+            await Task.Delay(500);
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var child = tabsContent.Children.FirstOrDefault(x => (x as View).BindingContext == item);
+                var index = child != null ? tabsContent.Children.IndexOf(child) : 0;
+                viewPager.ScrollTo(index);
+            });
         }
 
         public void Dispose()

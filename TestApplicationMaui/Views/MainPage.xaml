@@ -9,6 +9,7 @@
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:model="clr-namespace:TestApplicationMaui.Models"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
+             xmlns:enums="clr-namespace:TestApplicationMaui.Helpers.Enum"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Name="page"
              x:Class="TestApplicationMaui.Views.MainPage">
@@ -41,10 +42,17 @@
     <ScrollView>
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
+            <rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" 
+                               Placeholder="Days of week"
+                               ItemsSource="{Binding DaysOfWeek}"
+                               CloseButtonPressed="RSPicker_CloseButtonPressed"
+                               SelectedItems="{Binding SelectedDaysOfWeek}"/>
+
             <rsPicker:RSPicker x:TypeArguments="model:Person" 
                            ItemsSource="{Binding People}" 
                            SelectedItems="{Binding SelectedPeople}"
                            DisplayMemberPath="Name" 
+                           CloseButtonPressed="RSPicker_CloseButtonPressed"
                            Placeholder="Multiple Picker">
             </rsPicker:RSPicker>
 
@@ -84,9 +92,12 @@
             <vp:ViewPager ItemsSource="{Binding People}" ItemBindingPath="Name">
             </vp:ViewPager>
 
-            <tb:TabView ItemsSource="{Binding People}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
+            <tb:TabView ItemsSource="{Binding People}" SelectedItem="{Binding SelectedPerson}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
 
             </tb:TabView>
+
+
+            <Button Text="Go to TestPage" Clicked="Button_Clicked_5"/>
 
 
             <Entry Placeholder="Stock Entry" />

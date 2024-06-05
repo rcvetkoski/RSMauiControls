@@ -108,13 +108,47 @@ namespace RSPickerMaui
 
         private void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
         {
-            RSpopupManager.ShowPopup(CollectionView);
+            //RSpopupManager.ShowPopup(CollectionView);
+            RSpopupManager.ShowPopup(BuildPopup());
         }
+
+        private IView BuildPopup()
+        {
+            Grid grid = new Grid()
+            {
+                RowDefinitions = 
+                {
+                    new RowDefinition(GridLength.Star),
+                    new RowDefinition(GridLength.Auto)
+                }
+            };
+            Button button = new Button() 
+            { 
+                Text = "Cancel", 
+                HorizontalOptions = LayoutOptions.End, 
+                VerticalOptions = LayoutOptions.Center,
+                Command = new Command(()=>
+                {
+                    CloseButtonPressed?.Invoke(this, EventArgs.Empty);
+                    RSpopupManager.ClosePopup();
+                })
+            };
+
+            grid.Add(CollectionView, 0, 0);
+            grid.Add(button, 0, 1);
+
+            return grid;
+        }
+
+        public event EventHandler CloseButtonPressed;
 
         public static string GetPropValue(object src, string propName)
         {
-            if (src is null || string.IsNullOrEmpty(propName))
+            if(src is null)
                 return string.Empty;
+
+            if (string.IsNullOrEmpty(propName))
+                return src.ToString();
 
             var val = src.GetType().GetRuntimeProperty(propName).GetValue(src, null);
             return val != null ? val.ToString() : string.Empty;

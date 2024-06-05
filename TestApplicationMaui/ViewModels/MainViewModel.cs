@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using TestApplicationMaui.Helpers.Enum;
 using TestApplicationMaui.Models;
 
 namespace TestApplicationMaui.ViewModels
@@ -12,7 +13,13 @@ namespace TestApplicationMaui.ViewModels
     internal class MainViewModel : BaseViewModel
     {
         public ObservableCollection<Person> People { get; set; }
+        public Person SelectedPerson { get; set; }  
         public ObservableCollection<Person> SelectedPeople { get; set; }
+
+
+        public ObservableCollection<DaysOfWeekEnum> DaysOfWeek { get; set; }
+        public ObservableCollection<DaysOfWeekEnum> SelectedDaysOfWeek { get; set; }
+
 
 
         public MainViewModel()
@@ -25,9 +32,28 @@ namespace TestApplicationMaui.ViewModels
                 new Person(){Name = "Mitsuru", Age = 19}
             };
 
+            SelectedPerson = People.ElementAt(2);
+
             SelectedPeople = new ObservableCollection<Person>();
 
             SelectedPeople.Add(People[0]);
+
+
+            DaysOfWeek = new ObservableCollection<DaysOfWeekEnum>()
+            {
+                DaysOfWeekEnum.Monday,
+                DaysOfWeekEnum.Tuesday,
+                DaysOfWeekEnum.Wednesday,
+                DaysOfWeekEnum.Thursday,
+                DaysOfWeekEnum.Friday,
+                DaysOfWeekEnum.Saturday,
+                DaysOfWeekEnum.Sunday
+            };
+
+            SelectedDaysOfWeek = new ObservableCollection<DaysOfWeekEnum>()
+            { 
+                DaysOfWeekEnum.Friday
+            };
 
             Error = "Error message !";
 

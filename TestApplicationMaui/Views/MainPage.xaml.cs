@@ -65,7 +65,16 @@ namespace TestApplicationMaui.Views
 
         private void Button_Clicked_4(object sender, EventArgs e)
         {
-            //RSpopupManager.ShowPopup(multi);
+            RSpopupManager.ShowPopup(new Button() { Text = "Close", Command = new Command(()=>
+            {
+                RSpopupManager.ClosePopup();
+            })}, true);
+            RSpopupManager.PopupClosed += RSpopupManager_PopupClosed;
+        }
+
+        private void RSpopupManager_PopupClosed(object sender, EventArgs e)
+        {
+            RSpopupManager.PopupClosed -= RSpopupManager_PopupClosed;
         }
 
         private void Page_Loaded(object sender, EventArgs e)
@@ -138,6 +147,16 @@ namespace TestApplicationMaui.Views
 
             // We return the task so we can wait for the animation to finish
             return done.Task;
+        }
+
+        private void RSPicker_CloseButtonPressed(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Button_Clicked_5(object sender, EventArgs e)
+        {
+            Shell.Current.Navigation.PushAsync(new TestPage());
         }
     }
 }
