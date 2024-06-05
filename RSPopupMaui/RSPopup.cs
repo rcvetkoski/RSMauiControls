@@ -5,7 +5,7 @@
     {
         private Grid holder { get; set; }
         private Frame popup { get; set; }
-
+        private bool isModal;
         private Color lightBackgroundColor = Colors.White;
         private Color darkBackgroundColor = Color.FromHex("#212121");
 
@@ -13,6 +13,7 @@
         {
             this.Loaded += RSPopup_Loaded;
             this.BackgroundColor = Color.FromHex("#aa000000");
+            this.isModal = isModal;
 
             holder = new Grid()
             {
@@ -82,7 +83,9 @@
 
         protected override bool OnBackButtonPressed()
         {
-            ClosePopup();
+            if(!isModal)
+                ClosePopup();
+
             return true;
         }
 
