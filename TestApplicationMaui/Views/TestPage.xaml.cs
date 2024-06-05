@@ -7,3 +7,8 @@ public partial class TestPage : ContentPage
 		InitializeComponent();
 	}
 }
+
+public class Lol : CollectionView
+{
+
+}

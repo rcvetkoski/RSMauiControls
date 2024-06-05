@@ -102,8 +102,6 @@
                 currentIndex--;
                 OnCurrentIndexChanged();
             }
-
-            //Console.WriteLine($"currentIndex {currentIndex}        HorizontalOffset {e.HorizontalOffset}");
         }
 
         protected override void OnChildAdded(Element child)

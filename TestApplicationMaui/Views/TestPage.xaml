@@ -4,14 +4,17 @@
              x:Class="TestApplicationMaui.Views.TestPage"
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
+             xmlns:views="clr-namespace:TestApplicationMaui.Views"
              Title="TestPage">
 
     <ContentPage.BindingContext>
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
-    <VerticalStackLayout>
-        <tb:TabView ItemsSource="{Binding People}" SelectedItem="{Binding SelectedPerson}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
 
-        </tb:TabView>
-    </VerticalStackLayout>
+    <ScrollView Orientation="Vertical">
+        <VerticalStackLayout>
+            <tb:TabView ItemsSource="{Binding People}"/>
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>
