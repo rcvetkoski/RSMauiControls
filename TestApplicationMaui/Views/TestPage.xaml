@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TestApplicationMaui.Views.TestPage"
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
+             xmlns:viewpager="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
              Title="TestPage">
@@ -13,7 +14,8 @@
 
     <ScrollView Orientation="Vertical">
         <VerticalStackLayout>
-            <tb:TabView ItemsSource="{Binding People}"/>
+            <tb:TabView ItemsSource="{Binding People}" ContentItemBindingPath="Name">
+            </tb:TabView>
         </VerticalStackLayout>
     </ScrollView>
 

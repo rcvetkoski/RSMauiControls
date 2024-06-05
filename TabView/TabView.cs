@@ -126,19 +126,14 @@ namespace TabViewMaui
             this.Add(viewPager, 0, 2);
 
             TapCommand = new Command<View>(Tap);
-        }
-
-        protected override void OnParentSet()
-        {
-            base.OnParentSet();
-        }      
+        }  
 
         private void SetMainGrid()
         {
             // Main Grid
             RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             RowDefinitions.Add(new RowDefinition { Height = new GridLength(15) });
-            RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+            RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
         }
 
@@ -521,5 +516,4 @@ namespace TabViewMaui
                 item.SizeChanged -= Item_SizeChanged;
         }
     }
-
 }

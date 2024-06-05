@@ -134,5 +134,4 @@
             CurrentIndexChanged?.Invoke(this, EventArgs.Empty);
         }
     }
-
 }
