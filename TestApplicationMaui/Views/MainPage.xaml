@@ -42,7 +42,15 @@
     <ScrollView>
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
-            <rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" 
+
+            <rsInput:RSInputView Placeholder="Placeholder" PrefilValue="10 kg" >
+                <Entry />
+            </rsInput:RSInputView>
+
+
+            <Entry Placeholder="lol entry"/>
+
+            <!--<rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" 
                                Placeholder="Days of week"
                                ItemsSource="{Binding DaysOfWeek}"
                                CloseButtonPressed="RSPicker_CloseButtonPressed"
@@ -92,7 +100,7 @@
             <vp:ViewPager ItemsSource="{Binding People}" ItemBindingPath="Name">
             </vp:ViewPager>
 
-            <tb:TabView ItemsSource="{Binding People}" SelectedItem="{Binding SelectedPerson}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue" HeightRequest="200">
+            <tb:TabView ItemsSource="{Binding People}" SelectedItem="{Binding SelectedPerson}" TabsItemBindingPath="Name" ContentItemBindingPath="Name" BackgroundColor="LightBlue">
 
             </tb:TabView>
 
@@ -115,7 +123,7 @@
 
             <rsInput:RSInputView HelperMessage="Helper" Design="Outlined" Placeholder="Label" HasClearIcon="True" LeadingIcon="dotnet_bot.png">
                 <Picker ItemsSource="{Binding People}" ItemDisplayBinding="{Binding Name}"/>
-            </rsInput:RSInputView>
+            </rsInput:RSInputView>-->
 
 
             <!--<rsInput:RSInputView x:Name="outlined" TrailingIcon="dotnet_bot.png" Helper="Helper " Design="Outlined"  Placeholder="Label">
@@ -151,6 +159,5 @@
 
 
         </VerticalStackLayout>
-
     </ScrollView>
 </ContentPage>

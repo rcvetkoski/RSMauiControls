@@ -453,6 +453,21 @@ namespace RSInputViewMaui
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+        public static readonly BindableProperty PrefilValueProperty = BindableProperty.Create(nameof(PrefilValue), typeof(object), typeof(RSInputView), null, propertyChanged: PrefilValueChanged);
+        public object PrefilValue
+        {
+            get { return (object)GetValue(PrefilValueProperty); }
+            set { SetValue(PrefilValueProperty, value); }
+        }
+        private static void PrefilValueChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+
+            if (rsInput.graphicsDrawable == null)
+                return;
+
+            rsInput.Graphics.Invalidate();
+        }
 
         public static readonly BindableProperty PrefixProperty = BindableProperty.Create(nameof(Prefix), typeof(object), typeof(RSInputView), null, propertyChanged: PrefixChanged);
         public object Prefix
@@ -791,6 +806,17 @@ namespace RSInputViewMaui
             if (Content.IsFocused)
                 return true;
 
+            if (IsPrefilValueVisible())
+                return true;
+
+            if (ControlHasValue())
+                return true;
+
+            return false;
+        }
+
+        public bool ControlHasValue()
+        {
             if (Content is InputView)
             {
                 if (!string.IsNullOrEmpty((Content as InputView).Text))
@@ -802,16 +828,27 @@ namespace RSInputViewMaui
                     return true;
             }
             else if (Content is DatePicker || Content is TimePicker)
-            {
                 return true;
-            }
+
 
             return false;
         }
 
+        public bool IsPrefilValueVisible()
+        {
+            if (PrefilValue != null && !ControlHasValue() && !Content.IsFocused)
+                return true;
+            else
+                return false;
+        }
+
         private bool CheckIfShouldAnimate()
         {
-            if (Content is InputView)
+            if (IsPrefilValueVisible())
+            {
+                return false;
+            }
+            else if (Content is InputView)
             {
                 if (!string.IsNullOrEmpty((Content as InputView).Text))
                     return false;

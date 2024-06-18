@@ -127,6 +127,9 @@
             // Draw Counter
             DrawCharacterCounter(canvas, dirtyRect);
 
+            // Draw PrefilValue
+            DrawPrefilValue(canvas, dirtyRect);
+
             // Draw Prefix
             DrawPrefix(canvas, dirtyRect);
 

@@ -113,6 +113,9 @@ namespace RSInputViewMaui
             // Draw Prefix
             DrawPrefix(canvas, dirtyRect);
 
+            // Draw PrefilValue
+            DrawPrefilValue(canvas, dirtyRect);
+
             // Draw Suffix
             DrawSuffix(canvas, dirtyRect);
 

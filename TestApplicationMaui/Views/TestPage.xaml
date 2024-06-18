@@ -12,11 +12,21 @@
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
 
-    <ScrollView Orientation="Vertical">
         <VerticalStackLayout>
-            <tb:TabView ItemsSource="{Binding People}" ContentItemBindingPath="Name">
-            </tb:TabView>
-        </VerticalStackLayout>
-    </ScrollView>
+            <CollectionView x:Name="list" ItemsSource="{Binding People}" BackgroundColor="Yellow">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*" RowDefinitions="Auto" WidthRequest="{Binding Widht, Source={x:Reference list}}" BackgroundColor="Green" HorizontalOptions="Fill">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding Name}" HorizontalOptions="Fill" HorizontalTextAlignment="Center" BackgroundColor="Red"/>
+                        </Grid>
+                    </DataTemplate>
+             </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="ththtzh" HorizontalOptions="Fill" HorizontalTextAlignment="Center" BackgroundColor="Red"/>
+    </VerticalStackLayout>
 
 </ContentPage>

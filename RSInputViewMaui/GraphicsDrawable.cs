@@ -246,6 +246,9 @@ namespace RSInputViewMaui
 
         protected void DrawCharacterCounter(ICanvas canvas, RectF dirtyRect)
         {
+            if (InputView.characterCounterString == null)
+                return;
+
             float height = MessageMargin.Bottom >= messageSpacing ? MessageMargin.Bottom - messageSpacing : MessageMargin.Bottom;
             var size = GetCanvasStringSize(canvas, InputView.characterCounterString, TextFont, fontSizeFloating);
 
@@ -258,6 +261,22 @@ namespace RSInputViewMaui
                               height,
                               HorizontalAlignment.Left,
                               VerticalAlignment.Top,
+                              TextFlow.ClipBounds);
+        }
+
+        protected void DrawPrefilValue(ICanvas canvas, RectF dirtyRect)
+        {
+            if (!InputView.IsPrefilValueVisible())
+                return;
+
+            canvas.FontSize = FontSize;
+            canvas.DrawString(value: InputView.PrefilValue.ToString(),
+                              x: PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth + prefixWidth,
+                              y: (float)(InputView.ContentMargin.Top - InputView.ContentMargin.Bottom) / 2,
+                              width: dirtyRect.Width - PlaceholderMargin.Left - PlaceholderMargin.Right - (float)InputView.LeadingIconTotalWidth - (float)InputView.ContentMargin.Right - (float)InputView.TrailingIconTotalWidth - prefixWidth - suffixWidth,
+                              height: dirtyRect.Height,
+                              HorizontalAlignment.Left,
+                              VerticalAlignment.Center,
                               TextFlow.ClipBounds);
         }
 
