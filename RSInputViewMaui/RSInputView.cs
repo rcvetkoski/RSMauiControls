@@ -221,6 +221,19 @@ namespace RSInputViewMaui
         }
 
 
+        public static readonly BindableProperty PlaceholderOnTopProperty = BindableProperty.Create(nameof(PlaceholderOnTop), typeof(bool), typeof(RSInputView), true, propertyChanged: PlaceholderOnTopChanged);
+        public bool PlaceholderOnTop
+        {
+            get { return (bool)GetValue(PlaceholderOnTopProperty); }
+            set { SetValue(PlaceholderOnTopProperty, value); }
+        }
+        private static void PlaceholderOnTopChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var rsInput = (bindable as RSInputView);
+            rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+            rsInput.Graphics.Invalidate();
+        }
+
         public static readonly BindableProperty PlaceholderColorProperty = BindableProperty.Create(nameof(PlaceholderColor), typeof(Color), typeof(RSInputView), Colors.Gray, propertyChanged: PlaceholderColorChanged);
         public Color PlaceholderColor
         {
@@ -408,6 +421,10 @@ namespace RSInputViewMaui
             {
                 (bindable as RSInputView).graphicsDrawable = new OutlineDrawable(bindable as RSInputView);
             }
+            else if ((RSInputViewDesign)newValue == RSInputViewDesign.TopPlaceholderOutlined)
+            {
+                (bindable as RSInputView).graphicsDrawable = new TopPlaceholderOutlineDrawable(bindable as RSInputView);
+            }
             else if ((RSInputViewDesign)newValue == RSInputViewDesign.Filled)
             {
                 (bindable as RSInputView).graphicsDrawable = new FilledDrawable(bindable as RSInputView);
@@ -418,7 +435,7 @@ namespace RSInputViewMaui
         }
 
 
-        public static readonly BindableProperty FilledBorderColorProperty = BindableProperty.Create(nameof(FilledBorderColor), typeof(Color), typeof(RSInputView), Colors.WhiteSmoke, propertyChanged: FilledBorderColorChanged);
+        public static readonly BindableProperty FilledBorderColorProperty = BindableProperty.Create(nameof(FilledBorderColor), typeof(Color), typeof(RSInputView), Colors.Transparent, propertyChanged: FilledBorderColorChanged);
         public Color FilledBorderColor
         {
             get { return (Color)GetValue(FilledBorderColorProperty); }
@@ -698,7 +715,13 @@ namespace RSInputViewMaui
             });
 
             // Set drawable
-            graphicsDrawable = Design == RSInputViewDesign.Outlined ? new OutlineDrawable(this) : new FilledDrawable(this);
+            graphicsDrawable = Design switch
+            {
+                RSInputViewDesign.Outlined => new OutlineDrawable(this),
+                RSInputViewDesign.TopPlaceholderOutlined => new TopPlaceholderOutlineDrawable(this),
+                RSInputViewDesign.Filled => new FilledDrawable(this),
+                _ => null
+            };
             Graphics.Drawable = graphicsDrawable;
             //Graphics.SetBinding(View.HeightRequestProperty, new Binding("Height", converter: new HeightConverter(), source: Content));
             isDesignSet = true;
@@ -802,6 +825,9 @@ namespace RSInputViewMaui
         {
             if (Content == null)
                 return false;
+
+            if (Design == RSInputViewDesign.TopPlaceholderOutlined)
+                return true;
 
             if (Content.IsFocused)
                 return true;

@@ -43,12 +43,21 @@
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
 
-            <rsInput:RSInputView Placeholder="Placeholder" PrefilValue="10 kg" >
+            <rsInput:RSInputView Placeholder="Vegetable" PlaceholderOnTop="False" Design="TopPlaceholderOutlined" FilledBorderColor="LightGray" BorderColor="LightGray">
                 <Entry />
             </rsInput:RSInputView>
 
 
+            <rsInput:RSInputView Placeholder="Placeholder" Design="Outlined" BorderColor="LightGray">
+                <Entry />
+            </rsInput:RSInputView>
+
             <Entry Placeholder="lol entry"/>
+
+
+            <rsInput:RSInputView Placeholder="Placeholder" Design="Filled" BorderColor="LightGray">
+                <Entry />
+            </rsInput:RSInputView>
 
             <!--<rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" 
                                Placeholder="Days of week"

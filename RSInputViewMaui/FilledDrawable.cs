@@ -148,7 +148,7 @@
                                                  height: dirtyRect.Height - BorderMargin.Top - BorderMargin.Bottom - InputView.BorderThikness * 2,
                                                  cornerRadius: InputView.CornerRadius);
 
-            var fillColor = InputView.IsActive ? Colors.LightGray : InputView.FilledBorderColor;
+            var fillColor = InputView.FilledBorderColor != Colors.Transparent ? InputView.FilledBorderColor : Colors.WhiteSmoke;
             canvas.StrokeColor = fillColor;
             canvas.FillColor = fillColor;
             canvas.FillPath(pathF, WindingMode.NonZero);

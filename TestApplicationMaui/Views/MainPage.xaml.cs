@@ -65,10 +65,14 @@ namespace TestApplicationMaui.Views
 
         private void Button_Clicked_4(object sender, EventArgs e)
         {
-            RSpopupManager.ShowPopup(new Button() { Text = "Close", Command = new Command(()=>
+            RSpopupManager.ShowPopup(new Button()
+            {
+                Text = "Close",
+                Command = new Command(() =>
             {
                 RSpopupManager.ClosePopup();
-            })}, true);
+            })
+            }, true);
             RSpopupManager.PopupClosed += RSpopupManager_PopupClosed;
         }
 

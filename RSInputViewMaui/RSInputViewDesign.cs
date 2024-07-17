@@ -3,6 +3,7 @@
     public enum RSInputViewDesign
     {
         Outlined,
+        TopPlaceholderOutlined,
         Filled
     }
 }

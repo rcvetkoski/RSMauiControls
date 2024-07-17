@@ -138,6 +138,14 @@ namespace RSInputViewMaui
 
         private bool FocusedAnimation()
         {
+            if(InputView.Design == RSInputViewDesign.TopPlaceholderOutlined)
+            {
+                // Invalidate to redraw the control
+                InputView.Graphics.Invalidate();
+
+                return false;
+            }
+
             isAnimating = true;
 
             float progress = (float)(DateTime.UtcNow - animationStartTime).TotalMilliseconds / AnimationDuration;

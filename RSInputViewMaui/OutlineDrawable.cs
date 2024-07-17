@@ -1,8 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using System.Drawing;
-
-namespace RSInputViewMaui
+﻿namespace RSInputViewMaui
 {
     public class OutlineDrawable : GraphicsDrawable
     {
