@@ -114,15 +114,6 @@
 
             // Draw Suffix
             DrawSuffix(canvas, dirtyRect);
-
-            //// Draw icon
-            //CreateIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
-            //           dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - (float)InputView.IconHeightRequest / 2,
-            //           (float)InputView.IconWidthRequest,
-            //           (float)InputView.IconHeightRequest,
-            //           canvas);
-
-            this.Canvas = canvas;
         }
 
         private void DrawBorder(ICanvas canvas, RectF dirtyRect)

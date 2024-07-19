@@ -183,8 +183,8 @@ namespace RSInputViewMaui
             }
             else if (InputView.IsActive)
             {
-                placeholderColor = Colors.Blue;
-                borderColor = Colors.Blue;
+                placeholderColor = InputView.ActiveColor;
+                borderColor = InputView.ActiveColor;
             }
             else
             {
@@ -204,14 +204,17 @@ namespace RSInputViewMaui
             {
                 this.Canvas = canvas;
 
-                if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
-                    InputView.SetBottomMessageMargin(InputView);
-                else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
-                    SetContentMargin(BorderMargin.Bottom);
+                InputView.SetBottomMessageMargin(InputView);
+
+
+                //if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
+                //    InputView.SetBottomMessageMargin(InputView);
+                //else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
+                //    SetContentMargin(BorderMargin.Bottom);
             }
 
             // Clear icon
-            if(InputView.IsClearIconVisible)
+            if (InputView.IsClearIconVisible)
             {
                 CreateClearIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
                                 dirtyRect.Height / 2 + (BorderMargin.Top - BorderMargin.Bottom) / 2 - (float)InputView.IconHeightRequest / 2,

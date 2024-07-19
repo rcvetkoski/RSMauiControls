@@ -28,11 +28,24 @@ namespace RSInputViewMaui
 
         public override void SetIconMargin(double bottomMargin)
         {
+            float placeholderTotalHeight = 0;
+            if (Canvas != null && InputView.PlaceholderOnTop)
+            {
+                var placeholderSize = Canvas.GetStringSize(InputView.Placeholder, TextFont, FontSize, HorizontalAlignment.Left, VerticalAlignment.Center);
+                placeholderTotalHeight = placeholderSize.Height / 2 + placeholderSpacing;
+            }
+
             if (InputView.LeadingIcon != null)
-                InputView.LeadingIconImage.Margin = new Thickness(baseSidesMargin, OutlinedBorderMargin + OutlinedBorderMargin / 2, 0, OutlinedBorderMargin / 2 + bottomMargin);
+                InputView.LeadingIconImage.Margin = new Thickness(baseSidesMargin, 
+                                                                  OutlinedBorderMargin + OutlinedBorderMargin / 2 + placeholderTotalHeight,
+                                                                  0,
+                                                                  OutlinedBorderMargin / 2 + bottomMargin);
 
             if (InputView.TrailingIconImage != null)
-                InputView.TrailingIconImage.Margin = new Thickness(0, OutlinedBorderMargin + OutlinedBorderMargin / 2, baseSidesMargin, OutlinedBorderMargin / 2 + bottomMargin);
+                InputView.TrailingIconImage.Margin = new Thickness(0, 
+                                                                   OutlinedBorderMargin + OutlinedBorderMargin / 2 + placeholderTotalHeight,
+                                                                   baseSidesMargin,
+                                                                   OutlinedBorderMargin / 2 + bottomMargin);
         }
 
         public override void SetContentMargin(double bottomMargin)
@@ -52,32 +65,23 @@ namespace RSInputViewMaui
             InputView.Content.Margin = InputView.ContentMargin;
         }
 
+
         public override void Draw(ICanvas canvas, RectF dirtyRect)
         {
-            if(Canvas == null)
+            if (InputView.PlaceholderOnTop)
             {
-                Canvas = canvas;
-
-                var size = canvas.GetStringSize(InputView.Placeholder, TextFont, FontSize, HorizontalAlignment.Left, VerticalAlignment.Center);
-
-
-                if (InputView.PlaceholderOnTop)
-                {
-                    currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
-                    currentPlaceholderY = 0;
-                    currentPlaceholderSize = FontSize;
-                }
-                else
-                {
-                    currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
-                    currentPlaceholderY = dirtyRect.Height / 2 - (float)InputView.ContentMargin.Top + (float)InputView.ContentMargin.Bottom;
-                    currentPlaceholderSize = FontSize;
-                }
-
-
-                SetContentMargin(InputView.Content.Margin.Bottom);
+                currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
+                currentPlaceholderY = (float)-InputView.Graphics.Height / 2 + BorderMargin.Top;
+                currentPlaceholderSize = FontSize;
             }
+            else
+            {
+                float placeholderHeight = Canvas != null ? Canvas.GetStringSize(InputView.Placeholder, TextFont, FontSize, HorizontalAlignment.Left, VerticalAlignment.Center).Height : 0f;
 
+                currentPlaceholderX = PlaceholderMargin.Left + (float)InputView.LeadingIconTotalWidth;
+                currentPlaceholderY = (BorderMargin.Top - BorderMargin.Bottom) / 2;
+                currentPlaceholderSize = FontSize;
+            }
 
             base.Draw(canvas, dirtyRect);
 
@@ -101,9 +105,6 @@ namespace RSInputViewMaui
 
             // Draw Suffix
             DrawSuffix(canvas, dirtyRect);
-
-
-            this.Canvas = canvas;
         }
 
         private void DrawBorder(ICanvas canvas, RectF dirtyRect)
@@ -143,7 +144,7 @@ namespace RSInputViewMaui
                               x: currentPlaceholderX,
                               y: currentPlaceholderY,
                               width: dirtyRect.Width - (float)PlaceholderMargin.Left - (float)PlaceholderMargin.Right,
-                              height: size.Height,
+                              height: dirtyRect.Height,
                               HorizontalAlignment.Left,
                               VerticalAlignment.Center,
                               TextFlow.ClipBounds);

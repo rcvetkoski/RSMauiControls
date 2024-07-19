@@ -43,12 +43,21 @@
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
 
-            <rsInput:RSInputView Placeholder="Vegetable" PlaceholderOnTop="False" Design="TopPlaceholderOutlined" FilledBorderColor="LightGray" BorderColor="LightGray">
-                <Entry />
+            <rsInput:RSInputView Placeholder="Placeholder"
+                                 CharacterCounter="10" 
+                                 CornerRadius="10" 
+                                 LeadingIcon="dotnet_bot.png"
+                                 PlaceholderOnTop="True"
+                                 Design="TopPlaceholderOutlined" 
+                                 PlaceholderColor="White"
+                                 ActiveColor="LightGray"
+                                 FilledBorderColor="LightGray" 
+                                 BorderColor="LightGray">
+                <Entry/>
             </rsInput:RSInputView>
 
 
-            <rsInput:RSInputView Placeholder="Placeholder" Design="Outlined" BorderColor="LightGray">
+            <rsInput:RSInputView Placeholder="Placeholder" LeadingIcon="dotnet_bot.png" Design="Outlined" BorderColor="LightGray">
                 <Entry />
             </rsInput:RSInputView>
 

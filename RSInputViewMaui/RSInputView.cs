@@ -230,7 +230,7 @@ namespace RSInputViewMaui
         private static void PlaceholderOnTopChanged(BindableObject bindable, object oldValue, object newValue)
         {
             var rsInput = (bindable as RSInputView);
-            rsInput.graphicsDrawable.SetContentMargin(rsInput.ContentMargin.Bottom);
+            rsInput.SetBottomMessageMargin(rsInput);
             rsInput.Graphics.Invalidate();
         }
 
@@ -470,6 +470,19 @@ namespace RSInputViewMaui
             (bindable as RSInputView).Graphics.Invalidate();
         }
 
+
+        public static readonly BindableProperty ActiveColorProperty = BindableProperty.Create(nameof(ActiveColor), typeof(Color), typeof(RSInputView), Colors.Blue, propertyChanged: ActiveColorChanged);
+        public Color ActiveColor
+        {
+            get { return (Color)GetValue(ActiveColorProperty); }
+            set { SetValue(ActiveColorProperty, value); }
+        }
+        private static void ActiveColorChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            (bindable as RSInputView).Graphics.Invalidate();
+        }
+
+
         public static readonly BindableProperty PrefilValueProperty = BindableProperty.Create(nameof(PrefilValue), typeof(object), typeof(RSInputView), null, propertyChanged: PrefilValueChanged);
         public object PrefilValue
         {
@@ -657,7 +670,7 @@ namespace RSInputViewMaui
                     handler.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
                     handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
 #elif __IOS__ || __MACCATALYST__
-                handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+                    handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
                     handler.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
                     handler.PlatformView.Style = null;
@@ -678,7 +691,6 @@ namespace RSInputViewMaui
 #endif
                 }
             });
-
 
             Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("BorderlessPicker", (handler, view) =>
             {
