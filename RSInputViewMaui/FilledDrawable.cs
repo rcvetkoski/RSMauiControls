@@ -31,7 +31,11 @@
 
         public override void SetContentMargin(double bottomMargin)
         {
-            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth + prefixWidth, filledBorderMargin, baseSidesMargin + InputView.TrailingIconTotalWidth + suffixWidth, bottomMargin);
+            InputView.ContentMargin = new Thickness(baseSidesMargin + InputView.LeadingIconTotalWidth + prefixWidth,
+                                                    filledBorderMargin, 
+                                                    baseSidesMargin + InputView.TrailingIconTotalWidth + suffixWidth,
+                                                    bottomMargin);
+
             InputView.Content.Margin = InputView.ContentMargin;
         }
 
@@ -117,6 +121,20 @@
 
             // Draw Border
             DrawBorder(canvas, dirtyRect);
+
+            // Clear icon
+            CreateClearIcon(x: dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
+                            y: (float)InputView.Content.Bounds.Center.Y - (float)InputView.IconHeightRequest / 2,
+                            width: (float)InputView.IconWidthRequest,
+                            height: (float)InputView.IconHeightRequest,
+                            canvas);
+
+            // Drop down icon
+            CreateDropDownIcon(dirtyRect.Width - PlaceholderMargin.Right - (float)InputView.IconWidthRequest,
+                               y: (float)InputView.Content.Bounds.Center.Y - (float)InputView.IconHeightRequest / 2,
+                               (float)InputView.IconWidthRequest,
+                               (float)InputView.IconHeightRequest,
+                               canvas);
 
             // Draw Placeholder
             DrawPlaceholder(canvas, dirtyRect);

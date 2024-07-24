@@ -579,7 +579,12 @@ namespace RSInputViewMaui
         {
             get
             {
-                return TrailingIconImage == null ? 0 : IconWidthRequest + TrailingIconImage.Margin.Right;
+                if (TrailingIconImage != null)
+                    return IconWidthRequest + TrailingIconImage.Margin.Right;
+                else if (HasClearIcon || HasDropDownIcon)
+                    return IconWidthRequest;
+                else
+                    return 0;
             }
         }
 
@@ -648,7 +653,7 @@ namespace RSInputViewMaui
         {
             var touchLocation = e.Touches.Last();
 
-            if (touchLocation.X >= this.Width - TrailingIconTotalWidth && IsClearIconVisible)
+            if (touchLocation.X >= this.Width - TrailingIconTotalWidth - graphicsDrawable.MessageMargin.Right && IsClearIconVisible)
                 ClearText();
             else
             {

@@ -48,27 +48,29 @@
                                  CornerRadius="10" 
                                  LeadingIcon="dotnet_bot.png"
                                  PlaceholderOnTop="True"
+                                 HasClearIcon="True" 
+                                 Prefix="wefwe"
                                  Design="TopPlaceholderOutlined" 
                                  PlaceholderColor="White"
                                  ActiveColor="LightGray"
-                                 FilledBorderColor="LightGray" 
+                                 FilledBorderColor="Transparent" 
                                  BorderColor="LightGray">
                 <Entry/>
             </rsInput:RSInputView>
 
 
-            <rsInput:RSInputView Placeholder="Placeholder" LeadingIcon="dotnet_bot.png" Design="Outlined" BorderColor="LightGray">
+            <rsInput:RSInputView Placeholder="Placeholder" HasClearIcon="True" TrailingIcon="dotnet_bot.png" Design="Outlined" BorderColor="LightGray">
                 <Entry />
             </rsInput:RSInputView>
 
             <Entry Placeholder="lol entry"/>
 
 
-            <rsInput:RSInputView Placeholder="Placeholder" Design="Filled" BorderColor="LightGray">
+            <rsInput:RSInputView Placeholder="Placeholder" HasClearIcon="True" Design="Filled" BorderColor="LightGray">
                 <Entry />
             </rsInput:RSInputView>
 
-            <!--<rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" 
+            <!--<rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" dwqdwqdqwd
                                Placeholder="Days of week"
                                ItemsSource="{Binding DaysOfWeek}"
                                CloseButtonPressed="RSPicker_CloseButtonPressed"
