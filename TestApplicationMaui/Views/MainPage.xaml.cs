@@ -72,7 +72,7 @@ namespace TestApplicationMaui.Views
             {
                 RSpopupManager.ClosePopup();
             })
-            }, true);
+            }, RSPopupAnimationTypeEnum.PopInEffect, true);
             RSpopupManager.PopupClosed += RSpopupManager_PopupClosed;
         }
 
@@ -161,6 +161,12 @@ namespace TestApplicationMaui.Views
         private void Button_Clicked_5(object sender, EventArgs e)
         {
             Shell.Current.Navigation.PushAsync(new TestPage());
+        }
+
+        private void OpenPopup(object sender, EventArgs e)
+        {
+            
+            RSpopupManager.ShowPopup(new Label() { Text = "BlaBla", HeightRequest = 200 }, RSPopupAnimationTypeEnum.BottomToTop);
         }
     }
 }

@@ -4,9 +4,9 @@
     {
         private static RSPopup rSPopup;
 
-        public static void ShowPopup(IView view, bool isModal = false)
+        public static void ShowPopup(IView view, RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum = RSPopupAnimationTypeEnum.PopInEffect, bool isModal = false)
         {
-            rSPopup = new RSPopup(view, isModal);
+            rSPopup = new RSPopup(view, rSPopupAnimationTypeEnum, isModal);
             rSPopup.PopupClosedInternal += RSPopup_PopupClosedInternal;
             Shell.Current.Navigation.PushModalAsync(rSPopup, false);
         }
@@ -22,7 +22,7 @@
             if (rSPopup == null)
                 return;
 
-            await rSPopup.DismissPopup();
+            await rSPopup.DismissPopupFromBottom();
             await Shell.Current.Navigation.PopAsync(false);
         }
 
