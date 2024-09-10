@@ -165,8 +165,12 @@ namespace TestApplicationMaui.Views
 
         private void OpenPopup(object sender, EventArgs e)
         {
-            
-            RSpopupManager.ShowPopup(new Label() { Text = "BlaBla", HeightRequest = 200 }, RSPopupAnimationTypeEnum.BottomToTop);
+            RSpopupManager.ShowPopup(new Label() { Text = "BlaBla", HeightRequest = 200, HorizontalOptions = LayoutOptions.Center }, RSPopupAnimationTypeEnum.BottomToTop);
+        }
+
+        private void OpenPopup2(object sender, EventArgs e)
+        {
+            RSpopupManager.ShowPopup(new Label() { Text = "BlaBla" });
         }
     }
 }

@@ -22,7 +22,7 @@
             if (rSPopup == null)
                 return;
 
-            await rSPopup.DismissPopupFromBottom();
+            await rSPopup.CloseAnimatePopup();
             await Shell.Current.Navigation.PopAsync(false);
         }
 
