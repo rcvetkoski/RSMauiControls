@@ -6,6 +6,7 @@
              xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:rsInput="clr-namespace:RSInputViewMaui;assembly=RSInputViewMaui"
              xmlns:rsPicker="clr-namespace:RSPickerMaui;assembly=RSPickerMaui"
+             xmlns:rsCircle="clr-namespace:RSCircleCountdownMaui;assembly=RSCircleCountdownMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:model="clr-namespace:TestApplicationMaui.Models"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
@@ -41,6 +42,15 @@
     </ContentPage.Resources>-->
     <ScrollView>
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
+
+
+            <rsCircle:RSCircleCountdown x:Name="countdownControl" Duration="{Binding Time}" WidthRequest="200" HeightRequest="200" TimerRunning="countdownControl_TimerRunning" />
+            <Button Text="Add 5 seconds"
+                    Command="{Binding Source={x:Reference countdownControl}, Path=AddTimeCommand}"
+                    CommandParameter="5000" />
+            <Button Text="Remove 5 seconds"
+                    Command="{Binding Source={x:Reference countdownControl}, Path=RemoveTimeCommand}"
+                    CommandParameter="5000" />
 
             <Button Text="Popup" Clicked="OpenPopup"/>
             <Button Text="Popup" Clicked="OpenPopup2"/>

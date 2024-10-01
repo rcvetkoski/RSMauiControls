@@ -172,5 +172,15 @@ namespace TestApplicationMaui.Views
         {
             RSpopupManager.ShowPopup(new Label() { Text = "BlaBla" });
         }
+
+        private void countdownControl_TimerElapsed(object sender, EventArgs e)
+        {
+
+        }
+
+        private void countdownControl_TimerRunning(object sender, RSCircleCountdownMaui.CircleCountdownEventArgs e)
+        {
+            Console.WriteLine(e.Time.ToString(@"mm\:ss"));
+        }
     }
 }

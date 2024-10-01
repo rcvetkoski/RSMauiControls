@@ -20,7 +20,22 @@ namespace TestApplicationMaui.ViewModels
         public ObservableCollection<DaysOfWeekEnum> DaysOfWeek { get; set; }
         public ObservableCollection<DaysOfWeekEnum> SelectedDaysOfWeek { get; set; }
 
-
+        private TimeSpan time;
+        public TimeSpan Time
+        {
+            get
+            {
+                return time;
+            }
+            set
+            {
+                if(value != time)
+                {
+                    time = value;
+                    OnPropertyChanged(nameof(Time));
+                }
+            }
+        }
 
         public MainViewModel()
         {
@@ -37,7 +52,7 @@ namespace TestApplicationMaui.ViewModels
             SelectedPeople = new ObservableCollection<Person>();
 
             SelectedPeople.Add(People[0]);
-
+            Time = TimeSpan.FromMilliseconds(10000);
 
             DaysOfWeek = new ObservableCollection<DaysOfWeekEnum>()
             {

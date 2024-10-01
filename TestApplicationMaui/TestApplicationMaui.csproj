@@ -53,6 +53,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\RSCircleCountdownMaui\RSCircleCountdownMaui.csproj" />
 	  <ProjectReference Include="..\RSGifLoaderMaui\RSGifLoaderMaui.csproj" />
 	  <ProjectReference Include="..\RSInputViewMaui\RSInputViewMaui.csproj" />
 	  <ProjectReference Include="..\RSPickerMaui\RSPickerMaui.csproj" />
