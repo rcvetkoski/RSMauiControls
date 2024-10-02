@@ -42,7 +42,6 @@ namespace RSCircleCountdownMaui
                 return;
 
             (control.Drawable as CircularCountdownDrawable).ProgressColor = newValue as Color;
-            //control.Invalidate();
         }
 
         public static readonly BindableProperty CircleColorProperty = BindableProperty.Create(nameof(CircleColor), typeof(Color), typeof(RSCircleCountdown), Colors.LightGray, propertyChanged: CircleColorChanged);
@@ -58,7 +57,6 @@ namespace RSCircleCountdownMaui
                 return;
 
             (control.Drawable as CircularCountdownDrawable).CircleColor = newValue as Color;
-            //control.Invalidate();
         }
 
         public static readonly BindableProperty StrokeSizeProperty = BindableProperty.Create(nameof(StrokeSize), typeof(float), typeof(RSCircleCountdown), 7f, propertyChanged: StrokeSizeChanged);
@@ -74,7 +72,22 @@ namespace RSCircleCountdownMaui
                 return;
 
             (control.Drawable as CircularCountdownDrawable).StrokeZize = (float)newValue;
-            //control.Invalidate();
+        }
+
+
+        public static readonly BindableProperty IsTextVisibleProperty = BindableProperty.Create(nameof(IsTextVisible), typeof(bool), typeof(RSCircleCountdown), true, propertyChanged: IsTextVisibleChanged);
+        public bool IsTextVisible
+        {
+            get { return (bool)GetValue(IsTextVisibleProperty); }
+            set { SetValue(IsTextVisibleProperty, value); }
+        }
+        private static void IsTextVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            var control = (bindable as RSCircleCountdown);
+            if (control == null || newValue == null || control.Drawable == null)
+                return;
+
+            (control.Drawable as CircularCountdownDrawable).IsTextVisible = (bool)newValue;
         }
 
 
@@ -99,7 +112,7 @@ namespace RSCircleCountdownMaui
         {
             WidthRequest = 100;
             HeightRequest = 100;
-            drawable = new CircularCountdownDrawable(ProgressColor, CircleColor, StrokeSize);
+            drawable = new CircularCountdownDrawable(ProgressColor, CircleColor, StrokeSize, IsTextVisible);
             Drawable = drawable;
             stopwatch = new Stopwatch();
 
@@ -109,11 +122,11 @@ namespace RSCircleCountdownMaui
 
         }
 
-        private void StartCountdown()
+        public void StartCountdown()
         {
             if (!isRunning)
             {
-                stopwatch.Restart(); // Start or restart the stopwatch
+                stopwatch.Start();
                 isRunning = true;
 
                 var animation = new Animation(v =>
@@ -122,24 +135,42 @@ namespace RSCircleCountdownMaui
                     double elapsed = stopwatch.Elapsed.TotalMilliseconds;
                     double progress = Math.Clamp(1.0 - (elapsed / remainingDuration), 0, 1);
                     drawable.Progress = (float)progress;
+                    drawable.Time = TimeSpan.FromMilliseconds(progress * remainingDuration);
                     this.Invalidate(); // Redraw the GraphicsView
 
-
-
                     TimerRunning?.Invoke(this, new CircleCountdownEventArgs() { Progress = progress, RemainingDuration = remainingDuration, Time = TimeSpan.FromMilliseconds(progress * remainingDuration)});
-
 
                     if (progress <= 0)
                     {
                         // Stop the countdown when time is up
                         stopwatch.Stop();
                         isRunning = false;
-                        TimerElapsed?.Invoke(this, new EventArgs());
+
+                        // Stop the animation explicitly
+                        this.AbortAnimation("CountdownAnimation");
+
+                        // Invoke TimerElapsed event
+                        TimerElapsed?.Invoke(this, EventArgs.Empty);
                     }
                 }, 0, 1);
 
+
+
                 animation.Commit(this, "CountdownAnimation", length: remainingDuration, easing: Easing.Linear);
             }
+        }
+
+        public void StopCountdown()
+        {
+            // Stop the countdown 
+            stopwatch?.Stop();
+            isRunning = false;
+
+            // Stop the animation explicitly
+            this.AbortAnimation("CountdownAnimation");
+            
+            // Invoke TimerElapsed event
+            TimerElapsed?.Invoke(this, EventArgs.Empty);
         }
 
         private void AddTime(string milliseconds)
@@ -178,6 +209,5 @@ namespace RSCircleCountdownMaui
         public double Progress { get; set; }
         public double RemainingDuration { get; set; }
         public TimeSpan Time { get; set; }
-
     }
 }

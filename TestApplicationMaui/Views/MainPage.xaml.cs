@@ -182,5 +182,15 @@ namespace TestApplicationMaui.Views
         {
             Console.WriteLine(e.Time.ToString(@"mm\:ss"));
         }
+
+        private void Button_Clicked_6(object sender, EventArgs e)
+        {
+            countdownControl.StopCountdown();
+        }
+
+        private void Button_Clicked_7(object sender, EventArgs e)
+        {
+            countdownControl.StartCountdown();
+        }
     }
 }
