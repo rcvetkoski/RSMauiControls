@@ -71,7 +71,7 @@ namespace RSCircleCountdownMaui
             if (control == null || newValue == null || control.Drawable == null)
                 return;
 
-            (control.Drawable as CircularCountdownDrawable).StrokeZize = (float)newValue;
+            (control.Drawable as CircularCountdownDrawable).StrokeSize = (float)newValue;
         }
 
 
@@ -122,6 +122,12 @@ namespace RSCircleCountdownMaui
 
         }
 
+        private CircleCountdownEventArgs timerEventArgs = new CircleCountdownEventArgs();
+
+        private TimeSpan remainingTimeSpan;
+        private const double InvalidateInterval = 100; // in milliseconds
+        private double lastInvalidateTime = 0;
+
         public void StartCountdown()
         {
             if (!isRunning)
@@ -131,30 +137,32 @@ namespace RSCircleCountdownMaui
 
                 var animation = new Animation(v =>
                 {
-                    // Calculate progress based on remaining time
                     double elapsed = stopwatch.Elapsed.TotalMilliseconds;
                     double progress = Math.Clamp(1.0 - (elapsed / remainingDuration), 0, 1);
                     drawable.Progress = (float)progress;
-                    drawable.Time = TimeSpan.FromMilliseconds(progress * remainingDuration);
-                    this.Invalidate(); // Redraw the GraphicsView
 
-                    TimerRunning?.Invoke(this, new CircleCountdownEventArgs() { Progress = progress, RemainingDuration = remainingDuration, Time = TimeSpan.FromMilliseconds(progress * remainingDuration)});
+                    drawable.Time = TimeSpan.FromMilliseconds(progress * remainingDuration);
+
+                    // Throttle Invalidate() calls to every 100ms
+                    if (elapsed - lastInvalidateTime >= InvalidateInterval)
+                    {
+                        lastInvalidateTime = elapsed;
+                        this.Invalidate(); // Redraw the GraphicsView
+                    }
+
+                    timerEventArgs.Progress = progress;
+                    timerEventArgs.RemainingDuration = remainingDuration;
+                    timerEventArgs.Time = TimeSpan.FromMilliseconds(progress * remainingDuration);
+                    TimerRunning?.Invoke(this, timerEventArgs);
 
                     if (progress <= 0)
                     {
-                        // Stop the countdown when time is up
                         stopwatch.Stop();
                         isRunning = false;
-
-                        // Stop the animation explicitly
                         this.AbortAnimation("CountdownAnimation");
-
-                        // Invoke TimerElapsed event
                         TimerElapsed?.Invoke(this, EventArgs.Empty);
                     }
                 }, 0, 1);
-
-
 
                 animation.Commit(this, "CountdownAnimation", length: remainingDuration, easing: Easing.Linear);
             }

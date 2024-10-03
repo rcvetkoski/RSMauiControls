@@ -8,7 +8,7 @@ namespace RSCircleCountdownMaui
         public float Progress { get; set; } = 1.0f; // Starts at 100%
         public Color ProgressColor { get; set; }
         public Color CircleColor { get; set; }
-        public float StrokeZize { get; set; }
+        public float StrokeSize { get; set; }
         public bool IsTextVisible { get; set; }
         public float TextFontSize { get; set; }
         public TimeSpan Time { get; set; }
@@ -18,7 +18,7 @@ namespace RSCircleCountdownMaui
         {
             ProgressColor = progressColor;
             CircleColor = circleColor;
-            StrokeZize = strokeSize;
+            StrokeSize = strokeSize;
             IsTextVisible = isTextVisible;
             TextFontSize = 20;
         }
@@ -36,13 +36,13 @@ namespace RSCircleCountdownMaui
 
             // Draw background circle
             canvas.StrokeColor = CircleColor;
-            canvas.StrokeSize = StrokeZize;
+            canvas.StrokeSize = StrokeSize;
             canvas.Antialias = true;
             canvas.DrawCircle(centerX, centerY, radius);
 
             // Draw progress arc
             canvas.StrokeColor = ProgressColor;
-            canvas.StrokeSize = StrokeZize;
+            canvas.StrokeSize = StrokeSize;
             canvas.Antialias = true;
             canvas.StrokeLineCap = LineCap.Round;
             canvas.DrawArc(

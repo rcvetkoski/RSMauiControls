@@ -180,7 +180,6 @@ namespace TestApplicationMaui.Views
 
         private void countdownControl_TimerRunning(object sender, RSCircleCountdownMaui.CircleCountdownEventArgs e)
         {
-            Console.WriteLine(e.Time.ToString(@"mm\:ss"));
         }
 
         private void Button_Clicked_6(object sender, EventArgs e)
