@@ -56,10 +56,13 @@ namespace RSPopupMaui
                 Margin = margin
             };
 
-            panGesture = new PanGestureRecognizer();
-            panGesture.PanUpdated += PanGesture_PanUpdated;
-            popup.GestureRecognizers.Add(panGesture);
 
+            if(rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.BottomToTop)
+            {
+                panGesture = new PanGestureRecognizer();
+                panGesture.PanUpdated += PanGesture_PanUpdated;
+                popup.GestureRecognizers.Add(panGesture);
+            }
 
             Grid content = null;
             if (rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.BottomToTop)
@@ -106,14 +109,11 @@ namespace RSPopupMaui
 
         private void PanGesture_PanUpdated(object? sender, PanUpdatedEventArgs e)
         {
-            Console.WriteLine(e.TotalY);
-
             switch (e.StatusType)
             {
                 case GestureStatus.Started:
                     // Initialize the current Y translation when the pan starts
                     break;
-
                 case GestureStatus.Running:
                     // Apply translaytion y stop at 0
                     popup.TranslationY = Math.Max(0, popup.TranslationY += e.TotalY);
@@ -195,8 +195,8 @@ namespace RSPopupMaui
             else
                 DismissPopupFromBottom(done);
 
-
-            panGesture.PanUpdated -= PanGesture_PanUpdated;
+            if(panGesture != null)
+                panGesture.PanUpdated -= PanGesture_PanUpdated;
 
             return done.Task;
         }

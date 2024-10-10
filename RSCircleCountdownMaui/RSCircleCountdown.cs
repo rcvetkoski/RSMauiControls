@@ -176,9 +176,9 @@ namespace RSCircleCountdownMaui
 
             // Stop the animation explicitly
             this.AbortAnimation("CountdownAnimation");
-            
+
             // Invoke TimerElapsed event
-            TimerElapsed?.Invoke(this, EventArgs.Empty);
+            TimerStopped?.Invoke(this, EventArgs.Empty);
         }
 
         private void AddTime(string milliseconds)
@@ -209,6 +209,7 @@ namespace RSCircleCountdownMaui
         }
 
         public event EventHandler<CircleCountdownEventArgs> TimerRunning;
+        public event EventHandler TimerStopped;
         public event EventHandler TimerElapsed;
     }
 
