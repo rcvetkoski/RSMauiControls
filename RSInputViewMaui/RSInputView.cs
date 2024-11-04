@@ -201,12 +201,14 @@ namespace RSInputViewMaui
             var rsInput = (bindable as RSInputView);
            rsInput.Graphics.Invalidate();
         }
-        private void ClearText()
+        protected virtual void ClearText()
         {
             if (Content is Picker)
                 (Content as Picker).SelectedItem = null;
             else if (Content is InputView)
                 (Content as InputView).Text = string.Empty;
+            else if (Content is Label)
+                (Content as Label).Text = string.Empty;
         }
 
         public static readonly BindableProperty PlaceholderProperty = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(RSInputView), default, propertyChanged: PlaceholderChanged);
@@ -607,6 +609,11 @@ namespace RSInputViewMaui
                     if (!string.IsNullOrEmpty((Content as InputView).Text))
                         res = true;
                 }
+                else if (Content is Label && HasClearIcon)
+                {
+                    if (!string.IsNullOrEmpty((Content as Label).Text))
+                        res = true;
+                }
 
                 // Hide or show TrailingIcon
                 if (TrailingIconImage != null)
@@ -863,6 +870,11 @@ namespace RSInputViewMaui
             if (Content is InputView)
             {
                 if (!string.IsNullOrEmpty((Content as InputView).Text))
+                    return true;
+            }
+            else if (Content is Label)
+            {
+                if (!string.IsNullOrEmpty((Content as Label).Text))
                     return true;
             }
             else if (Content is Picker)

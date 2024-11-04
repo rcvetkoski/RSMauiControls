@@ -18,30 +18,33 @@
     <ContentPage.BindingContext>
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
-
-    <!--<ContentPage.Resources>
-        <Style TargetType="rsPicker:RSGrid">
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal">
-                            <VisualState.Setters>
-                               
-                                <Setter Property="IsSelected" Value="False" />
-                            </VisualState.Setters>
-                        </VisualState>
-                        <VisualState x:Name="Selected">
-                            <VisualState.Setters>
-                                <Setter Property="IsSelected" Value="True" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </Setter>
-        </Style>
-    </ContentPage.Resources>-->
+    
+    
     <ScrollView>
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
+
+            <Grid RowDefinitions="Auto" ColumnDefinitions="*,*">
+                <rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum"
+                                   Grid.Row="0" Grid.Column="0"
+                                   EnumType="{x:Type enums:DaysOfWeekEnum}"
+                                   Placeholder="Days of week" HasClearIcon="True"
+                                   ItemsSource="{Binding DaysOfWeek}"
+                                   CloseButtonPressed="RSPicker_CloseButtonPressed"
+                                   SelectedItems="{Binding SelectedDaysOfWeek}"/>
+
+
+                <rsInput:RSInputView x:Name="entry" Grid.Row="0" Grid.Column="1" Placeholder="Placeholder"
+                                 PlaceholderOnTop="True"
+                                 HasClearIcon="True" >
+                    <Entry Text="Friday"/>
+                </rsInput:RSInputView>
+            </Grid>
+
+
+
+            <CollectionView ItemsSource="{Binding SelectedDaysOfWeek}">
+                
+            </CollectionView>
 
 
             <rsCircle:RSCircleCountdown x:Name="countdownControl" Duration="{Binding Time}" TimerElapsed="countdownControl_TimerElapsed" WidthRequest="200" HeightRequest="200" TimerRunning="countdownControl_TimerRunning" />
@@ -86,7 +89,7 @@
                 <Entry />
             </rsInput:RSInputView>
 
-            <!--<rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum" dwqdwqdqwd
+            <!--<rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum"
                                Placeholder="Days of week"
                                ItemsSource="{Binding DaysOfWeek}"
                                CloseButtonPressed="RSPicker_CloseButtonPressed"

@@ -25,6 +25,24 @@ namespace RSPickerMaui
         }
 
 
+        public static readonly BindableProperty EnumTypeProperty = BindableProperty.Create(nameof(EnumType), typeof(Type), typeof(RSPicker<T>), null, propertyChanged: OnEnumTypeChanged);
+
+        public Type EnumType
+        {
+            get => (Type)GetValue(EnumTypeProperty);
+            set => SetValue(EnumTypeProperty, value);
+        }
+
+        private static void OnEnumTypeChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable is RSPicker<T> picker && newValue is Type enumType && enumType.IsEnum)
+            {
+                var list = EnumHelper.GetEnumValues(enumType);
+                //picker.ItemsSource = list;
+            }
+        }
+
+
 
         public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(ICollection<T>), typeof(RSPicker<T>), null, propertyChanged:SelectedItemsChange);
         public ICollection<T> SelectedItems
@@ -72,13 +90,31 @@ namespace RSPickerMaui
             RSPicker<T> rsPicker = (bindable as RSPicker<T>);
             rsPicker.CollectionView.DisplayMemberPath = (string)newValue;
         }
-        private Entry PickerText;
+        private Label PickerText;
         private TapGestureRecognizer tapGestureRecognizer;
+
+
+        public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(nameof(FontSize), typeof(double), typeof(RSPicker<T>), new Label().FontSize, propertyChanged: FontSizeChanged);
+        public double FontSize
+        {
+            get { return (double)GetValue(FontSizeProperty); }
+            set { SetValue(FontSizeProperty, value); }
+        }
+        private static void FontSizeChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
+
+            RSPicker<T> rsPicker = bindable as RSPicker<T>;
+            rsPicker.PickerText.FontSize = (double)newValue;
+            rsPicker.Graphics.Invalidate();
+        }
 
         public RSPicker()
         {
-            PickerText = new Entry();
+            PickerText = new Label() { Padding = new Thickness(5, 12.35, 5, 12.35), FontSize = FontSize, LineBreakMode = LineBreakMode.TailTruncation };
             Content = PickerText;
+            HasDropDownIcon = true;
             CollectionView = new RSCollectionView<T>()
             {
                 SelectionMode = SelectionMode.Multiple
@@ -88,6 +124,17 @@ namespace RSPickerMaui
             tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
             Content.GestureRecognizers.Add(tapGestureRecognizer);
         }
+
+        protected override void ClearText()
+        {
+            base.ClearText();
+
+            CollectionView.SelectedItem = null;
+            CollectionView.ClearSelectedItems();
+
+            SelectedItems.ToString();
+        }
+
 
         private void CollectionView_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
@@ -108,7 +155,6 @@ namespace RSPickerMaui
 
         private void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
         {
-            //RSpopupManager.ShowPopup(CollectionView);
             RSpopupManager.ShowPopup(BuildPopup());
         }
 

@@ -233,6 +233,12 @@ namespace RSPickerMaui
             }
         }
 
+        public void ClearSelectedItems()
+        {
+            foreach (RSItem item in tempItemsSource)
+                item.IsSelected = false;
+        }
+
         public void Dispose()
         {
             if (ItemsSource != null && ItemsSource is INotifyCollectionChanged observableDataSource)
