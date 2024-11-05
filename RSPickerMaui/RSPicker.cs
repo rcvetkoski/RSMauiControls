@@ -1,18 +1,19 @@
 ﻿using RSInputViewMaui;
 using System.Reflection;
 using RSPopupMaui;
+using System.Collections;
 
 namespace RSPickerMaui
 {
     // All the code in this file is included in all platforms.
-    public class RSPicker<T> : RSInputView
+    public class RSPicker : RSInputView
     {
-        private RSCollectionView<T> CollectionView { get; set; }
+        private RSCollectionView CollectionView { get; set; }
 
-        public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(ICollection<T>), typeof(RSPicker<T>), null, propertyChanged: ItemsSourceChange);
-        public ICollection<T> ItemsSource
+        public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IList), typeof(RSPicker), null, propertyChanged: ItemsSourceChange);
+        public IList ItemsSource
         {
-            get { return (ICollection<T>)GetValue(ItemsSourceProperty); }
+            get { return (IList)GetValue(ItemsSourceProperty); }
             set { SetValue(ItemsSourceProperty, value); }
         }
         private static void ItemsSourceChange(BindableObject bindable, object oldValue, object newValue)
@@ -20,12 +21,14 @@ namespace RSPickerMaui
             if (bindable == null)
                 return;
 
-            RSPicker<T> rsPicker = bindable as RSPicker<T>;
+            RSPicker rsPicker = bindable as RSPicker;
             rsPicker.CollectionView.ItemsSource = rsPicker.ItemsSource;
         }
 
-
-        public static readonly BindableProperty EnumTypeProperty = BindableProperty.Create(nameof(EnumType), typeof(Type), typeof(RSPicker<T>), null, propertyChanged: OnEnumTypeChanged);
+        /// <summary>
+        /// In XAML : EnumType="{x:Type enums:DaysOfWeekEnum}"
+        /// </summary>
+        public static readonly BindableProperty EnumTypeProperty = BindableProperty.Create(nameof(EnumType), typeof(Type), typeof(RSPicker), null, propertyChanged: OnEnumTypeChanged);
 
         public Type EnumType
         {
@@ -35,19 +38,19 @@ namespace RSPickerMaui
 
         private static void OnEnumTypeChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            if (bindable is RSPicker<T> picker && newValue is Type enumType && enumType.IsEnum)
+            if (bindable is RSPicker rsPicker && newValue is Type enumType && enumType.IsEnum)
             {
                 var list = EnumHelper.GetEnumValues(enumType);
-                //picker.ItemsSource = list;
+                rsPicker.ItemsSource = list.ToList();
             }
         }
 
 
 
-        public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(ICollection<T>), typeof(RSPicker<T>), null, propertyChanged:SelectedItemsChange);
-        public ICollection<T> SelectedItems
+        public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(IList), typeof(RSPicker), null, propertyChanged:SelectedItemsChange);
+        public IList SelectedItems
         {
-            get { return (ICollection<T>)GetValue(SelectedItemsProperty); }
+            get { return (IList)GetValue(SelectedItemsProperty); }
             set { SetValue(SelectedItemsProperty, value); }
         }
         private static void SelectedItemsChange(BindableObject bindable, object oldValue, object newValue)
@@ -55,18 +58,18 @@ namespace RSPickerMaui
             if (bindable == null)
                 return;
 
-            RSPicker<T> rsPicker = bindable as RSPicker<T>;
+            RSPicker rsPicker = bindable as RSPicker;
             rsPicker.CollectionView.SelectedItems = rsPicker.SelectedItems;
         }
 
 
-        public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(RSPicker<T>), null, propertyChanged:SelectedItemChanged);
+        public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(RSPicker), null, propertyChanged:SelectedItemChanged);
         private static void SelectedItemChanged(BindableObject bindable, object oldValue, object newValue)
         {
             if (bindable == null)
                 return;
 
-            RSPicker<T> rsPicker = (bindable as RSPicker<T>);
+            RSPicker rsPicker = (bindable as RSPicker);
             rsPicker.PickerText.Text += GetPropValue(rsPicker.SelectedItem, rsPicker.DisplayMemberPath);
         }
 
@@ -76,7 +79,7 @@ namespace RSPickerMaui
             set { SetValue(SelectedItemProperty, value); }
         }
 
-        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSPicker<T>), null, propertyChanged: DisplayMemberPathChanged);
+        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSPicker), null, propertyChanged: DisplayMemberPathChanged);
         public string DisplayMemberPath
         {
             get { return (string)GetValue(DisplayMemberPathProperty); }
@@ -87,14 +90,14 @@ namespace RSPickerMaui
             if (bindable == null)
                 return;
 
-            RSPicker<T> rsPicker = (bindable as RSPicker<T>);
+            RSPicker rsPicker = (bindable as RSPicker);
             rsPicker.CollectionView.DisplayMemberPath = (string)newValue;
         }
         private Label PickerText;
         private TapGestureRecognizer tapGestureRecognizer;
 
 
-        public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(nameof(FontSize), typeof(double), typeof(RSPicker<T>), new Label().FontSize, propertyChanged: FontSizeChanged);
+        public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(nameof(FontSize), typeof(double), typeof(RSPicker), new Label().FontSize, propertyChanged: FontSizeChanged);
         public double FontSize
         {
             get { return (double)GetValue(FontSizeProperty); }
@@ -105,7 +108,7 @@ namespace RSPickerMaui
             if (bindable == null)
                 return;
 
-            RSPicker<T> rsPicker = bindable as RSPicker<T>;
+            RSPicker rsPicker = bindable as RSPicker;
             rsPicker.PickerText.FontSize = (double)newValue;
             rsPicker.Graphics.Invalidate();
         }
@@ -115,7 +118,7 @@ namespace RSPickerMaui
             PickerText = new Label() { Padding = new Thickness(5, 12.35, 5, 12.35), FontSize = FontSize, LineBreakMode = LineBreakMode.TailTruncation };
             Content = PickerText;
             HasDropDownIcon = true;
-            CollectionView = new RSCollectionView<T>()
+            CollectionView = new RSCollectionView()
             {
                 SelectionMode = SelectionMode.Multiple
             };
@@ -131,8 +134,6 @@ namespace RSPickerMaui
 
             CollectionView.SelectedItem = null;
             CollectionView.ClearSelectedItems();
-
-            SelectedItems.ToString();
         }
 
 
@@ -155,6 +156,12 @@ namespace RSPickerMaui
 
         private void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
         {
+            Grid parent = CollectionView.Parent as Grid;
+
+            if(parent != null)
+                parent.Remove(CollectionView);
+
+
             RSpopupManager.ShowPopup(BuildPopup());
         }
 
@@ -173,10 +180,10 @@ namespace RSPickerMaui
                 Text = "Cancel", 
                 HorizontalOptions = LayoutOptions.End, 
                 VerticalOptions = LayoutOptions.Center,
-                Command = new Command(()=>
+                Command = new Command(async ()=>
                 {
                     CloseButtonPressed?.Invoke(this, EventArgs.Empty);
-                    RSpopupManager.ClosePopup();
+                    await RSpopupManager.ClosePopup();
                 })
             };
 
@@ -186,7 +193,7 @@ namespace RSPickerMaui
             return grid;
         }
 
-        public event EventHandler CloseButtonPressed;
+        public event EventHandler? CloseButtonPressed;
 
         public static string GetPropValue(object src, string propName)
         {

@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using static Microsoft.Maui.Controls.VisualStateManager;
 
 namespace RSPickerMaui
 {
-    public class RSCollectionView<T> : CollectionView, IDisposable
+    public class RSCollectionView : CollectionView, IDisposable
     {
         public RSCollectionView()
         {
@@ -92,7 +92,7 @@ namespace RSPickerMaui
         private List<object>? tempItemsSource;
 
 
-        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSCollectionView<T>), null, propertyChanged: DisplayMemberPathChanged);
+        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSCollectionView), null, propertyChanged: DisplayMemberPathChanged);
         public string DisplayMemberPath
         {
             get { return (string)GetValue(DisplayMemberPathProperty); }
@@ -105,10 +105,10 @@ namespace RSPickerMaui
         }
 
 
-        new public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(ICollection<T>), typeof(RSCollectionView<T>), null, propertyChanged: SelectedItemsChanged);
-        new public ICollection<T> SelectedItems
+        new public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(IList), typeof(RSCollectionView), null, propertyChanged: SelectedItemsChanged);
+        new public IList SelectedItems
         {
-            get { return (ICollection<T>)GetValue(SelectedItemsProperty); }
+            get { return (IList)GetValue(SelectedItemsProperty); }
             set { SetValue(SelectedItemsProperty, value); }
         }
         private static void SelectedItemsChanged(BindableObject bindable, object oldValue, object newValue)
@@ -116,7 +116,7 @@ namespace RSPickerMaui
             if (bindable == null)
                 return;
 
-            RSCollectionView<T> rsCollectionView = (bindable as RSCollectionView<T>);
+            RSCollectionView rsCollectionView = (bindable as RSCollectionView);
 
             if (newValue != null && rsCollectionView.ItemsSource != null)
                 rsCollectionView.FillOriginalItemsSource();
@@ -142,10 +142,10 @@ namespace RSPickerMaui
             (this as CollectionView).SelectedItems = tempList;
         }
 
-        new public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable<T>), typeof(RSCollectionView<T>), null, propertyChanged: ItemsSourceChanged);
-        new public IEnumerable<T> ItemsSource
+        new public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IList), typeof(RSCollectionView), null, propertyChanged: ItemsSourceChanged);
+        new public IList ItemsSource
         {
-            get { return (IEnumerable<T>)GetValue(ItemsSourceProperty); }
+            get { return (IList)GetValue(ItemsSourceProperty); }
             set { SetValue(ItemsSourceProperty, value); }
         }
         private static void ItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
@@ -155,7 +155,7 @@ namespace RSPickerMaui
 
             if (newValue != null)
             {
-                RSCollectionView<T> rsCollectionView = (bindable as RSCollectionView<T>);
+                RSCollectionView rsCollectionView = (bindable as RSCollectionView);
                 rsCollectionView.tempItemsSource = new List<object>();
 
                 foreach (var item in rsCollectionView.ItemsSource)
@@ -211,15 +211,12 @@ namespace RSPickerMaui
 
         protected override void OnSelectionChanged(SelectionChangedEventArgs args)
         {
-            if (SelectedItems == null)
-                return;
-
             foreach (var item in args.CurrentSelection)
             {
                 if (!args.PreviousSelection.Contains(item))
                 {
                     (item as RSItem).IsSelected = true;
-                    SelectedItems.Add((T)(item as RSItem).Item);
+                    SelectedItems?.Add((item as RSItem).Item);
                 }
             }
 
@@ -228,7 +225,7 @@ namespace RSPickerMaui
                 if (!args.CurrentSelection.Contains(item))
                 {
                     (item as RSItem).IsSelected = false;
-                    SelectedItems.Remove((T)(item as RSItem).Item);
+                    SelectedItems?.Remove((item as RSItem).Item);
                 }
             }
         }

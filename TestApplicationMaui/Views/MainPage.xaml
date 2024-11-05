@@ -24,8 +24,7 @@
         <VerticalStackLayout x:Name="stack" Margin="10" Spacing="20">
 
             <Grid RowDefinitions="Auto" ColumnDefinitions="*,*">
-                <rsPicker:RSPicker x:TypeArguments="enums:DaysOfWeekEnum"
-                                   Grid.Row="0" Grid.Column="0"
+                <rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
                                    EnumType="{x:Type enums:DaysOfWeekEnum}"
                                    Placeholder="Days of week" HasClearIcon="True"
                                    ItemsSource="{Binding DaysOfWeek}"

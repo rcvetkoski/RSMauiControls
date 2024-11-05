@@ -65,10 +65,11 @@ namespace TestApplicationMaui.ViewModels
                 DaysOfWeekEnum.Sunday
             };
 
-            SelectedDaysOfWeek = new ObservableCollection<DaysOfWeekEnum>()
-            { 
-                DaysOfWeekEnum.Friday
-            };
+            SelectedDaysOfWeek = new ObservableCollection<DaysOfWeekEnum>();
+            //SelectedDaysOfWeek = new ObservableCollection<DaysOfWeekEnum>()
+            //{ 
+            //    DaysOfWeekEnum.Friday
+            //};
 
             Error = "Error message !";
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Windows.Input;
 
@@ -800,9 +801,9 @@ namespace RSInputViewMaui
                     Graphics.Invalidate();
                 }
             }
-            else if (e.PropertyName == nameof(Entry.Text) || e.PropertyName == nameof(Picker.SelectedItem) || e.PropertyName == nameof(Picker.SelectedIndex))
+            else if (e.PropertyName == nameof(Entry.Text) || e.PropertyName == nameof(Label.Text) || e.PropertyName == nameof(Picker.SelectedItem) || e.PropertyName == nameof(Picker.SelectedIndex))
             {
-                if(CharacterCounter >= 0) 
+                if (CharacterCounter >= 0) 
                     characterCounterString = GetCharacterCounterString();
 
                 Graphics.Invalidate();
