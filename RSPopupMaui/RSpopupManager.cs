@@ -2,34 +2,35 @@
 {
     public class RSpopupManager
     {
-        private static RSPopup rSPopup;
+        public static List<RSPopup> PopupStack = new List<RSPopup>();
+
+        public static RSPopup GetCurrentPopup()
+        {
+            return PopupStack.LastOrDefault();
+        }
 
         public static void ShowPopup(IView view, RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum = RSPopupAnimationTypeEnum.PopInEffect, bool isModal = false)
         {
-            rSPopup = new RSPopup(view, rSPopupAnimationTypeEnum, isModal);
-            rSPopup.PopupClosedInternal += RSPopup_PopupClosedInternal;
-            Shell.Current.Navigation.PushModalAsync(rSPopup, false);
+            RSPopup rSPopup = new RSPopup(view, rSPopupAnimationTypeEnum, isModal);
+            PopupStack.Add(rSPopup);
+            rSPopup.PopupClosed += RsPopup_PopupClosed;
+            Shell.Current.Navigation.PushModalAsync(rSPopup, animated: false);
         }
 
-        private static void RSPopup_PopupClosedInternal(object? sender, EventArgs e)
+        private static void RsPopup_PopupClosed(object? sender, EventArgs e)
         {
-            rSPopup.PopupClosedInternal -= RSPopup_PopupClosedInternal;
-            OnPopupClosed(e);
+            (sender as RSPopup).PopupClosed -= RsPopup_PopupClosed;
+            PopupStack.Remove(sender as RSPopup);
         }
 
-        public static async Task ClosePopup()
+        public static async void ClosePopup()
         {
-            if (rSPopup == null)
-                return;
-
-            await rSPopup.CloseAnimatePopup();
-            await Shell.Current.Navigation.PopAsync(false);
-        }
-
-        public static event EventHandler PopupClosed;
-        protected static void OnPopupClosed(EventArgs e)
-        {
-            PopupClosed?.Invoke(null, e);
+            RSPopup currentPopup = GetCurrentPopup();
+            if (currentPopup != null)
+            {
+                PopupStack.Remove(currentPopup);
+                currentPopup.ClosePopup();
+            }
         }
     }
 }
