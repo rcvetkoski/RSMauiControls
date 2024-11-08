@@ -23,13 +23,13 @@
             PopupStack.Remove(sender as RSPopup);
         }
 
-        public static async void ClosePopup()
+        public static async Task ClosePopup()
         {
             RSPopup currentPopup = GetCurrentPopup();
             if (currentPopup != null)
             {
                 PopupStack.Remove(currentPopup);
-                currentPopup.ClosePopup();
+                await currentPopup.ClosePopup();
             }
         }
     }

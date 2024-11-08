@@ -35,9 +35,9 @@ namespace RSPopupMaui
             {
                 TapGestureRecognizer item = new TapGestureRecognizer
                 {
-                    Command = new Command((Action)delegate
+                    Command = new Command((Action)async delegate
                     {
-                        ClosePopup();
+                        await ClosePopup();
                     })
                 };
                 holder.GestureRecognizers.Add(item);
@@ -120,7 +120,7 @@ namespace RSPopupMaui
             }
         }
 
-        private void PanGesture_PanUpdated(object? sender, PanUpdatedEventArgs e)
+        private async void PanGesture_PanUpdated(object? sender, PanUpdatedEventArgs e)
         {
             switch (e.StatusType)
             {
@@ -130,11 +130,11 @@ namespace RSPopupMaui
                 case GestureStatus.Completed:
                     if (popup.TranslationY > 55.0)
                     {
-                        ClosePopup();
+                        await ClosePopup();
                     }
                     else
                     {
-                        popup.TranslateTo(0.0, 0.0, 250u, Easing.Linear);
+                        await popup.TranslateTo(0.0, 0.0, 250u, Easing.Linear);
                     }
 
                     break;
@@ -172,7 +172,7 @@ namespace RSPopupMaui
             return true;
         }
 
-        public async void ClosePopup()
+        public async Task ClosePopup()
         {
             await CloseAnimatePopup();
             await Shell.Current.Navigation.PopAsync(animated: false);
