@@ -10,7 +10,7 @@ using TestApplicationMaui.Models;
 
 namespace TestApplicationMaui.ViewModels
 {
-    internal class MainViewModel : BaseViewModel
+    public class MainViewModel : BaseViewModel
     {
         public ObservableCollection<Person> People { get; set; }
         public Person SelectedPerson { get; set; }  
@@ -39,12 +39,18 @@ namespace TestApplicationMaui.ViewModels
 
         public MainViewModel()
         {
+            List<string> strings = new List<string>();
+            for (int i = 0; i < 20; i++)
+            {
+                strings.Add($"F you {i}");
+            }
+
             People = new ObservableCollection<Person>()
             {
-                new Person(){Name = "Tom", Age = 26},
-                new Person(){Name = "Natalie", Age = 20},
-                new Person(){Name = "Yukari", Age = 16},
-                new Person(){Name = "Mitsuru", Age = 19}
+                new Person(){Name = "Tom", Age = 26, TestList = strings},
+                new Person(){Name = "Natalie", Age = 20, TestList = strings},
+                new Person(){Name = "Yukari", Age = 16, TestList = strings},
+                new Person(){Name = "Mitsuru", Age = 19, TestList = strings}
             };
 
             SelectedPerson = People.ElementAt(2);

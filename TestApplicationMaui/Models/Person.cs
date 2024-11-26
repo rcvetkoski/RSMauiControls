@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace TestApplicationMaui.Models
 {
-    internal class Person
+    public class Person
     {
         public string Name { get; set; }
         public int Age { get; set; }
+
+        public List<string> TestList { get; set; }
     }
 }

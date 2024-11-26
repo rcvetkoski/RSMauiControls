@@ -133,7 +133,7 @@ namespace TabViewMaui
             // Main Grid
             RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             RowDefinitions.Add(new RowDefinition { Height = new GridLength(15) });
-            RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
             ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
         }
 
@@ -175,6 +175,7 @@ namespace TabViewMaui
             tabsContent.ChildAdded += TabsContent_ChildAdded;
             tabsContent.ChildRemoved += TabsContent_ChildRemoved;
             tabsHolder.MeasureInvalidated += TabsHolder_MeasureInvalidated;
+
         }
 
         private void SetSlider()
@@ -334,8 +335,20 @@ namespace TabViewMaui
 
         private void Tap(View item)
         {
+            ApplyRippleEffect(item);
             var position = tabsContent.Children.IndexOf(item);
             viewPager.ScrollTo(position);
+        }
+        private async void ApplyRippleEffect(View targetView)
+        {
+            // Store the original scale of the view
+            var originalScale = targetView.Scale;
+
+            // Apply a "press" effect by shrinking the view slightly
+            await targetView.ScaleTo(0.9, 100, Easing.CubicOut);
+
+            // Restore the view to its original size
+            await targetView.ScaleTo(originalScale, 100, Easing.CubicIn);
         }
 
         private void TabsHolder_Scrolled(object sender, ScrolledEventArgs e)
@@ -408,26 +421,6 @@ namespace TabViewMaui
             previousSelected = item;
         }
 
-        private void ComputeTabItemsWidth()
-        {
-            var fullWidth = viewPager.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width;
-
-            var widthOccupied = tabsContent.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width;
-            var widthAvailable = fullWidth - widthOccupied;
-
-            if (!tabsContent.Children.Any())
-                return;
-
-            foreach (var child in tabsContent.Children)
-            {
-                var widthRequested = child.Measure(double.PositiveInfinity, double.PositiveInfinity).Width;
-                var ratio = widthRequested / widthOccupied;
-                var newWidth = widthAvailable * ratio;
-                (child as View).WidthRequest = widthRequested + newWidth;
-            }
-
-        }
-
         private void ViewPager_CurrentIndexChanged(object sender, EventArgs e)
         {
             // For tab item styling purpose
@@ -452,7 +445,7 @@ namespace TabViewMaui
             // scrollRatio
             scrollRatio = (e.HorizontalOffset + viewPager.offsetX - viewPager.Width * currentIndex) / viewPager.Width;
 
-            double currentItemWidth = currentItem.Width < 0 ? currentItem.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width : currentItem.Width;
+            double currentItemWidth = currentItem.Width < 0 ? (currentItem as IView).Measure(double.PositiveInfinity, double.PositiveInfinity).Width : currentItem.Width;
             double nextItemWidth = nextItem != null ? nextItem.Width : currentItem.Width;
 
             if (sign > 0)

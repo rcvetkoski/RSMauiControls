@@ -109,7 +109,7 @@
             base.OnChildAdded(child);
 
             (child as View).SetBinding(View.WidthRequestProperty, new Binding(nameof(ViewPager.Width), source: this));
-            (child as View).SetBinding(View.HeightRequestProperty, new Binding(nameof(ViewPager.Height), source: this));
+            //(child as View).SetBinding(View.HeightRequestProperty, new Binding(nameof(ViewPager.Height), source: this));
         }
 
         /// <summary>
@@ -119,9 +119,9 @@
         public void ScrollTo(int position)
         {
 #if ANDROID
-        var xOffset = recyclerView.ComputeHorizontalScrollOffset();
-        var scrollX = (int)(recyclerView.Width * position) - xOffset;
-        recyclerView.SmoothScrollBy(scrollX, 0);
+            var xOffset = recyclerView.ComputeHorizontalScrollOffset();
+            var scrollX = (int)(recyclerView.Width * position) - xOffset;
+            recyclerView.SmoothScrollBy(scrollX, 0);
 #endif
 #if IOS
         var scrollX = uICollectionView.Frame.Width * position;

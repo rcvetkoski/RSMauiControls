@@ -5,28 +5,152 @@
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
              xmlns:viewpager="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
+             xmlns:dataTemplates="clr-namespace:TestApplicationMaui.Helpers.DataTemplateSelectors"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
+             x:Name="testPage"
              Title="TestPage">
 
     <ContentPage.BindingContext>
-        <vm:MainViewModel/>
+        <vm:TestViewModel/>
     </ContentPage.BindingContext>
 
-        <VerticalStackLayout>
-            <CollectionView x:Name="list" ItemsSource="{Binding People}" BackgroundColor="Yellow">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" SnapPointsType="MandatorySingle" SnapPointsAlignment="Center"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="*" RowDefinitions="Auto" WidthRequest="{Binding Widht, Source={x:Reference list}}" BackgroundColor="Green" HorizontalOptions="Fill">
-                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding Name}" HorizontalOptions="Fill" HorizontalTextAlignment="Center" BackgroundColor="Red"/>
-                        </Grid>
-                    </DataTemplate>
-             </CollectionView.ItemTemplate>
-            </CollectionView>
 
-            <Label Text="ththtzh" HorizontalOptions="Fill" HorizontalTextAlignment="Center" BackgroundColor="Red"/>
-    </VerticalStackLayout>
+    <ContentPage.Resources>
+        
+        
+        <!-- Template A -->
+        <DataTemplate x:Key="TemplateA">
+            <ScrollView>
+                <VerticalStackLayout Padding="20" Spacing="15">
+                    <!-- Product Image -->
+                    <Image Source="product_image_placeholder.jpg"
+                       Aspect="AspectFill"
+                       HeightRequest="200"
+                       WidthRequest="200"
+                       HorizontalOptions="Center" />
+
+                    <!-- Product Name -->
+                    <Label Text="Sample Product Name"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" />
+
+                    <!-- Product Price -->
+                    <Label Text="Price: $99.99"
+                       FontSize="18"
+                       TextColor="Green"
+                       HorizontalOptions="Center" />
+
+                    <!-- Product Description -->
+                    <Label Text="This is a detailed description of the product. It provides all the information a customer might want to know about the product."
+                       FontSize="14"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+
+                    <!-- Add to Cart Button -->
+                    <Button Text="Add to Cart"
+                        BackgroundColor="Blue"
+                        TextColor="White"
+                        FontSize="16"
+                        HorizontalOptions="Center"
+                        CornerRadius="10"
+                        Padding="10,5" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </DataTemplate>
+
+        <!-- Template B -->
+        <DataTemplate x:Key="TemplateB">
+            <ScrollView>
+                <VerticalStackLayout Padding="15" Spacing="20">
+                    <!-- Product Card -->
+                    <Frame BackgroundColor="White"
+                       CornerRadius="15"
+                       Padding="0"
+                       Margin="10">
+                        <VerticalStackLayout>
+                            <!-- Product Image -->
+                            <Image Source="alternative_product_image_placeholder.jpg"
+                               Aspect="AspectFill"
+                               HeightRequest="250"
+                               WidthRequest="350"
+                               HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Product Information -->
+                    <VerticalStackLayout Padding="10" Spacing="10">
+                        <!-- Product Name -->
+                        <Label Text="Stylish Watch"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Start" />
+
+                        <!-- Product Price -->
+                        <Label Text="Price: $149.99"
+                           FontSize="18"
+                           FontAttributes="Italic"
+                           TextColor="Teal"
+                           HorizontalOptions="Start" />
+
+                        <!-- Product Features -->
+                        <Label Text="Features:"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Start" />
+                        <Label Text="• Elegant design\n• Waterproof up to 50m\n• Scratch-resistant glass"
+                           FontSize="14"
+                           TextColor="Gray"
+                           LineHeight="1.5"
+                           HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
+                    <!-- Action Buttons -->
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                        <Button Text="Buy Now"
+                            BackgroundColor="Green"
+                            TextColor="White"
+                            FontSize="16"
+                            CornerRadius="10"
+                            Padding="10,5"
+                            WidthRequest="120" />
+                        <Button Text="Add to Wishlist"
+                            BackgroundColor="DarkOrange"
+                            TextColor="White"
+                            FontSize="16"
+                            CornerRadius="10"
+                            Padding="10,5"
+                            WidthRequest="120" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </ScrollView>
+        </DataTemplate>
+
+        <dataTemplates:CarouselDataTemplateSelector x:Key="CarouselDataTemplateSelector"
+                                                    TemplateA="{StaticResource TemplateA}"
+                                                    TemplateB="{StaticResource TemplateB}" />
+    </ContentPage.Resources>
+    
+    
+
+    <Grid x:Name="grid" RowDefinitions="*" ColumnDefinitions="*">
+
+        <Grid RowDefinitions="Auto, 10, Auto, *" ColumnDefinitions="*" ColumnSpacing="0">
+            <Grid ColumnDefinitions="*, *, *, *" Grid.Row="0" Grid.Column="0">
+                <Label Grid.Row="0" Grid.Column="0" Text="{Binding People[0].Name}" HorizontalOptions="Center" FontSize="17"/>
+                <Label Grid.Row="0" Grid.Column="1" Text="{Binding People[1].Name}" HorizontalOptions="Center" FontSize="17"/>
+                <Label Grid.Row="0" Grid.Column="2" Text="{Binding People[2].Name}" HorizontalOptions="Center" FontSize="17"/>
+                <Label Grid.Row="0" Grid.Column="3" Text="{Binding People[3].Name}" HorizontalOptions="Center" FontSize="17"/>
+            </Grid>
+            <BoxView x:Name="slider" Grid.Row="1" Grid.Column="0" WidthRequest="105" HeightRequest="2" Color="LightGray" HorizontalOptions="Start" VerticalOptions="Center"/>
+            <CarouselView x:Name="carrousel"
+                          Grid.Row="3" Grid.Column="0"
+                          ItemsSource="{Binding People}"
+                          ItemTemplate="{StaticResource CarouselDataTemplateSelector}"
+                          Scrolled="carrousel_Scrolled">
+            </CarouselView>
+
+        </Grid>
+    </Grid>
 
 </ContentPage>
