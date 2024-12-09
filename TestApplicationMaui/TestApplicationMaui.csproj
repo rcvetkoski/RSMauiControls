@@ -54,6 +54,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\RSCircleCountdownMaui\RSCircleCountdownMaui.csproj" />
+	  <ProjectReference Include="..\RSFixedSizePagerMaui\RSFixedSizePagerMaui.csproj" />
 	  <ProjectReference Include="..\RSGifLoaderMaui\RSGifLoaderMaui.csproj" />
 	  <ProjectReference Include="..\RSInputViewMaui\RSInputViewMaui.csproj" />
 	  <ProjectReference Include="..\RSPickerMaui\RSPickerMaui.csproj" />
@@ -62,7 +63,7 @@
 	</ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.70" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.10" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.70" />
   </ItemGroup>
 

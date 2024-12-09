@@ -26,7 +26,7 @@ namespace TabViewMaui
         }
         private static void OnSelectedItemPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-             (bindable as TabView).SetCurrentIndex(newValue);
+             //(bindable as TabView).SetCurrentIndex(newValue);
         }
 
         public static readonly BindableProperty ContentItemTemplateProperty = BindableProperty.Create(nameof(ContentItemTemplate), typeof(DataTemplate), typeof(TabView), propertyChanged: OnContentItemTemplatePropertyChanged);
@@ -484,16 +484,16 @@ namespace TabViewMaui
 
         public async void SetCurrentIndex(object item)
         {
-            if (IsSelectedItemInternallySet)
-                return;
+            //if (IsSelectedItemInternallySet)
+            //    return;
 
-            await Task.Delay(500);
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                var child = tabsContent.Children.FirstOrDefault(x => (x as View).BindingContext == item);
-                var index = child != null ? tabsContent.Children.IndexOf(child) : 0;
-                viewPager.ScrollTo(index);
-            });
+            //await Task.Delay(500);
+            //MainThread.BeginInvokeOnMainThread(() =>
+            //{
+            //    var child = tabsContent.Children.FirstOrDefault(x => (x as View).BindingContext == item);
+            //    var index = child != null ? tabsContent.Children.IndexOf(child) : 0;
+            //    viewPager.ScrollTo(index);
+            //});
         }
 
         public void Dispose()
