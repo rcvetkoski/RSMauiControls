@@ -58,6 +58,7 @@
 	  <ProjectReference Include="..\RSGifLoaderMaui\RSGifLoaderMaui.csproj" />
 	  <ProjectReference Include="..\RSInputViewMaui\RSInputViewMaui.csproj" />
 	  <ProjectReference Include="..\RSPickerMaui\RSPickerMaui.csproj" />
+	  <ProjectReference Include="..\RSsegmentedControlMaui\RSsegmentedControlMaui.csproj" />
 	  <ProjectReference Include="..\TabView\TabViewMaui.csproj" />
 	  <ProjectReference Include="..\ViewPager\ViewPagerMaui.csproj" />
 	</ItemGroup>
