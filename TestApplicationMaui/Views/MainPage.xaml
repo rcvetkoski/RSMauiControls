@@ -42,8 +42,27 @@
             </rsSegmented:RSsegmentedControl.ItemTemplate>-->
         </rsSegmented:RSsegmentedControl>
 
-        <Label Text="{Binding SelectedIndex, Source={x:Reference seg}}"/>
-        <Label Text="{Binding SelectedItem, Source={x:Reference seg}}" HorizontalOptions="End"/>
+        <Border Grid.Row="0" Grid.Column="0" HorizontalOptions="Center" BackgroundColor="Green" VerticalOptions="Start">
+
+            <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto" ColumnDefinitions="*,1,*,1,*,1,*" HorizontalOptions="Center"  VerticalOptions="Start">
+                <BoxView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="8" BackgroundColor="Yellow"/>
+
+                <Label Grid.Row="0" Grid.Column="0" BackgroundColor="Red" Text="AA" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="10"/>
+                <BoxView Grid.Row="0" Grid.Column="1"/>
+                <Label Grid.Row="0" Grid.Column="2" Text="AAA" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="10"/>
+                <BoxView Grid.Row="0" Grid.Column="3"/>
+                <Label Grid.Row="0" Grid.Column="4" Text="AAAAAAAA" BackgroundColor="Red" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="10"/>
+                <BoxView Grid.Row="0" Grid.Column="5"/>
+                <Label Grid.Row="0" Grid.Column="6" Text="BBBBBBBBB" HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" Padding="10"/>
+            </Grid>
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="10"/>
+            </Border.StrokeShape>
+        </Border>
+        
+
+        <!--<Label Text="{Binding SelectedIndex, Source={x:Reference seg}}"/>
+        <Label Text="{Binding SelectedItem, Source={x:Reference seg}}" HorizontalOptions="End"/>-->
 
         <Button Grid.Row="1" Grid.Column="0" Text="GoToTestPage" Clicked="GoToTestPage"/>
         

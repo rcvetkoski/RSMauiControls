@@ -107,7 +107,7 @@ namespace RSsegmentedControlMaui
 
             hStack = new HorizontalStackLayout()
             {
-                
+
             };
 
             Content = hStack;
@@ -179,7 +179,10 @@ namespace RSsegmentedControlMaui
             foreach (var item in ItemsSource)
             {
                 Items.Add(item);
+            }
 
+            foreach (var item in ItemsSource)
+            {
                 var itemView = ItemTemplate.CreateContent() as View;
                 itemView.BindingContext = item;
                 itemView.GestureRecognizers.Add(new TapGestureRecognizer
@@ -197,7 +200,8 @@ namespace RSsegmentedControlMaui
 
 
                 hStack.Add(itemView);
-                hStack.Add(separator);
+                if(item != Items[Items.Count - 1])
+                    hStack.Add(separator);
             }
         }
     }
