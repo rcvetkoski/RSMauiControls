@@ -23,7 +23,7 @@
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
 
-        <rsSegmented:RSsegmentedControl x:Name="seg" Grid.Row="0" Grid.Column="0" Stroke="Gray" HorizontalOptions="Center" VerticalOptions="Center" SelectedIndex="2">
+        <rsSegmented:RSsegmentedControl SelectionMode="Mandatory">
             <rsSegmented:RSsegmentedControl.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Day</x:String>
@@ -32,37 +32,11 @@
                     <x:String>Year</x:String>
                 </x:Array>
             </rsSegmented:RSsegmentedControl.ItemsSource>
-            <!--<rsSegmented:RSsegmentedControl.ItemTemplate>
-                <DataTemplate>
-                    <VerticalStackLayout Padding="10">
-                        <Image Source="dotnet_bot" HeightRequest="40"/>
-                        <Label Text="{Binding .}"/>
-                    </VerticalStackLayout>
-                </DataTemplate>
-            </rsSegmented:RSsegmentedControl.ItemTemplate>-->
         </rsSegmented:RSsegmentedControl>
 
-        <Border Grid.Row="0" Grid.Column="0" HorizontalOptions="Center" BackgroundColor="Green" VerticalOptions="Start">
 
-            <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto" ColumnDefinitions="*,1,*,1,*,1,*" HorizontalOptions="Center"  VerticalOptions="Start">
-                <BoxView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="8" BackgroundColor="Yellow"/>
-
-                <Label Grid.Row="0" Grid.Column="0" BackgroundColor="Red" Text="AA" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="10"/>
-                <BoxView Grid.Row="0" Grid.Column="1"/>
-                <Label Grid.Row="0" Grid.Column="2" Text="AAA" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="10"/>
-                <BoxView Grid.Row="0" Grid.Column="3"/>
-                <Label Grid.Row="0" Grid.Column="4" Text="AAAAAAAA" BackgroundColor="Red" HorizontalOptions="Center" HorizontalTextAlignment="Center" VerticalOptions="Center" Padding="10"/>
-                <BoxView Grid.Row="0" Grid.Column="5"/>
-                <Label Grid.Row="0" Grid.Column="6" Text="BBBBBBBBB" HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" Padding="10"/>
-            </Grid>
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="10"/>
-            </Border.StrokeShape>
-        </Border>
-        
-
-        <!--<Label Text="{Binding SelectedIndex, Source={x:Reference seg}}"/>
-        <Label Text="{Binding SelectedItem, Source={x:Reference seg}}" HorizontalOptions="End"/>-->
+        <Label Text="{Binding SelectedIndex, Source={x:Reference seg}}"/>
+        <Label Text="{Binding SelectedItem, Source={x:Reference seg}}" HorizontalOptions="End"/>
 
         <Button Grid.Row="1" Grid.Column="0" Text="GoToTestPage" Clicked="GoToTestPage"/>
         

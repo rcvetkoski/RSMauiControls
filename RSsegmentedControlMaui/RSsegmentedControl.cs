@@ -94,6 +94,19 @@ namespace RSsegmentedControlMaui
         }
 
 
+        public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(nameof(SelectionMode), typeof(SelectionModeEnum), typeof(RSsegmentedControl), SelectionModeEnum.NonMandatory, BindingMode.TwoWay, propertyChanged: OnSelectionModePropertyChanged);
+        public SelectionModeEnum SelectionMode
+        {
+            get { return (SelectionModeEnum)GetValue(SelectionModeProperty); }
+            set { SetValue(SelectionModeProperty, value); }
+        }
+        private static void OnSelectionModePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
+        }
+
+
 
         public RSsegmentedControl()
         {
@@ -147,7 +160,27 @@ namespace RSsegmentedControlMaui
             });
         }
 
-        private void HighlightItem(View view)
+        async Task AnimateBackgroundColorChange(VisualElement element, Color fromColor, Color toColor, uint duration)
+        {
+            if (element == null)
+                return;
+
+            if (fromColor == null)
+                fromColor = Colors.Transparent;
+
+            var animation = new Animation(v =>
+            {
+                element.BackgroundColor = Color.FromRgba(
+                    fromColor.Red + (toColor.Red - fromColor.Red) * v,
+                    fromColor.Green + (toColor.Green - fromColor.Green) * v,
+                    fromColor.Blue + (toColor.Blue - fromColor.Blue) * v,
+                    fromColor.Alpha + (toColor.Alpha - fromColor.Alpha) * v);
+            });
+
+            animation.Commit(element, "BackgroundColorAnimation", length: duration, easing: Easing.Linear);
+        }
+
+        private async void HighlightItem(View view)
         {
             if (SelectedItem == null && previousSelectedItem == null)
                 return;
@@ -155,19 +188,26 @@ namespace RSsegmentedControlMaui
             if(previousSelectedItem != null)
             {
                 previousSelectedItemView = hStack.FirstOrDefault(x => (x as View).BindingContext == previousSelectedItem) as View;
-                previousSelectedItemView.BackgroundColor = Colors.Transparent;
+                await AnimateBackgroundColorChange(previousSelectedItemView, previousSelectedItemView.BackgroundColor, Colors.Transparent, 250);
+                //previousSelectedItemView.BackgroundColor = Colors.Transparent;
             }
 
             if(SelectedItem != null)
             {
                 SelectedItemView = hStack.FirstOrDefault(x => (x as View).BindingContext == SelectedItem) as View;
-                SelectedItemView.BackgroundColor = SelectedColor;
+                await AnimateBackgroundColorChange(SelectedItemView, SelectedItemView.BackgroundColor, SelectedColor, 250);
+
+                //SelectedItemView.BackgroundColor = SelectedColor;
             }
         }
 
         private void TapMehod(object item)
         {
             var currentIndex = Items.IndexOf(item);
+
+            if(SelectionMode == SelectionModeEnum.Mandatory && SelectedIndex == currentIndex)
+                return;
+
             SelectedIndex = SelectedIndex == currentIndex ? -1 : currentIndex;
         }
 
