@@ -23,7 +23,7 @@
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
 
-        <rsSegmented:RSsegmentedControl SelectionMode="Mandatory">
+        <rsSegmented:RSsegmentedControl SelectedIndex="2" SelectionMode="Mandatory" Stroke="Transparent" Orientation="Vertical" HorizontalOptions="Center" Margin="10">
             <rsSegmented:RSsegmentedControl.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>Day</x:String>
@@ -32,6 +32,11 @@
                     <x:String>Year</x:String>
                 </x:Array>
             </rsSegmented:RSsegmentedControl.ItemsSource>
+            <rsSegmented:RSsegmentedControl.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding .}" HorizontalTextAlignment="Center" WidthRequest="415" Padding="10"/>
+                </DataTemplate>
+            </rsSegmented:RSsegmentedControl.ItemTemplate>
         </rsSegmented:RSsegmentedControl>
 
 

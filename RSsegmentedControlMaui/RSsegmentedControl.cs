@@ -1,14 +1,12 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
 using System.Collections;
-using System.Globalization;
-using System.Linq;
 
 namespace RSsegmentedControlMaui
 {
     // All the code in this file is included in all platforms.
     public class RSsegmentedControl : Border
     {
-        private HorizontalStackLayout hStack;
+        private StackBase hStack;
         private View previousSelectedItemView;
         private View SelectedItemView;
         private object previousSelectedItem;
@@ -43,6 +41,7 @@ namespace RSsegmentedControlMaui
                 return;
 
             (bindable as RSsegmentedControl).InitItems();
+            (bindable as RSsegmentedControl).HighlightItem();
         }
 
 
@@ -58,9 +57,7 @@ namespace RSsegmentedControlMaui
                 return;
 
             RSsegmentedControl rSsegmentedControl = bindable as RSsegmentedControl;
-
-            var view = rSsegmentedControl.hStack.FirstOrDefault(x => (x as View).BindingContext == newValue) as View;
-            rSsegmentedControl.HighlightItem(view);
+            rSsegmentedControl.HighlightItem();
         }
 
 
@@ -107,6 +104,21 @@ namespace RSsegmentedControlMaui
         }
 
 
+        public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(OrientationEnum), typeof(RSsegmentedControl), OrientationEnum.Horizontal, BindingMode.TwoWay, propertyChanged: OnOrientationPropertyChanged);
+        public OrientationEnum Orientation
+        {
+            get { return (OrientationEnum)GetValue(OrientationProperty); }
+            set { SetValue(OrientationProperty, value); }
+        }
+        private static void OnOrientationPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+        {
+            if (bindable == null)
+                return;
+
+            RSsegmentedControl rSsegmentedControl = bindable as RSsegmentedControl;
+            rSsegmentedControl.HighlightItem();
+        }
+
 
         public RSsegmentedControl()
         {
@@ -118,12 +130,6 @@ namespace RSsegmentedControlMaui
                 CornerRadius = new CornerRadius(10)
             };
 
-            hStack = new HorizontalStackLayout()
-            {
-
-            };
-
-            Content = hStack;
             previousSelectedItem = null;
             Items = new List<object>();
         }
@@ -180,23 +186,22 @@ namespace RSsegmentedControlMaui
             animation.Commit(element, "BackgroundColorAnimation", length: duration, easing: Easing.Linear);
         }
 
-        private async void HighlightItem(View view)
+        private async void HighlightItem()
         {
             if (SelectedItem == null && previousSelectedItem == null)
                 return;
 
-            if(previousSelectedItem != null)
+            previousSelectedItemView = hStack.FirstOrDefault(x => (x as View).BindingContext == previousSelectedItem) as View;
+            if (previousSelectedItemView != null)
             {
-                previousSelectedItemView = hStack.FirstOrDefault(x => (x as View).BindingContext == previousSelectedItem) as View;
                 await AnimateBackgroundColorChange(previousSelectedItemView, previousSelectedItemView.BackgroundColor, Colors.Transparent, 250);
                 //previousSelectedItemView.BackgroundColor = Colors.Transparent;
             }
 
-            if(SelectedItem != null)
+            SelectedItemView = hStack.FirstOrDefault(x => (x as View).BindingContext == SelectedItem) as View;
+            if (SelectedItemView != null)
             {
-                SelectedItemView = hStack.FirstOrDefault(x => (x as View).BindingContext == SelectedItem) as View;
                 await AnimateBackgroundColorChange(SelectedItemView, SelectedItemView.BackgroundColor, SelectedColor, 250);
-
                 //SelectedItemView.BackgroundColor = SelectedColor;
             }
         }
@@ -213,6 +218,9 @@ namespace RSsegmentedControlMaui
 
         private void InitItems()
         {
+            hStack = Orientation == OrientationEnum.Horizontal ? new HorizontalStackLayout() : new VerticalStackLayout();
+            Content = hStack;
+
             hStack.Children.Clear();
             Items.Clear();
 
@@ -230,11 +238,10 @@ namespace RSsegmentedControlMaui
                     Command = new Command<object>(TapMehod),
                     CommandParameter = item
                 });
-                    
-                BoxView separator = new BoxView()
-                {
-                    WidthRequest = 1
-                };
+
+                BoxView separator = Orientation == OrientationEnum.Horizontal ? new BoxView() { WidthRequest = 1 } :
+                                                                                new BoxView() { HeightRequest = 1 };
+
                 Binding binding = new Binding("Stroke", source: this, converter: new BrushToColorConverter(), converterParameter: separator);
                 separator.SetBinding(BoxView.ColorProperty, binding);
 
