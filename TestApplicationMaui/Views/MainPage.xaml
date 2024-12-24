@@ -28,7 +28,7 @@
                                         SelectedItem="{Binding SelectedItemSegment}"
                                         HorizontalOptions="Center"
                                         SelectionMode="Mandatory"
-                                        Orientation="Horizontal"
+                                        Orientation="Vertical"
                                         Margin="10">
             <rsSegmented:RSsegmentedControl.ItemsSource>
                 <x:Array Type="{x:Type x:Int32}">

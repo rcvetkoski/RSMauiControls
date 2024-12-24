@@ -238,7 +238,10 @@ namespace RSsegmentedControlMaui
 
         private void InitItems()
         {
-            stack.Children.Clear();
+            if (ItemsSource == null)
+                return;
+
+            stack.Clear();
             Items.Clear();
             ListOfViewsWithoutSeparators.Clear();
 
@@ -258,12 +261,10 @@ namespace RSsegmentedControlMaui
                     Command = new Command<View>(TapMehod),
                     CommandParameter = itemView
                 });
-
-                ListOfViewsWithoutSeparators.Add(itemView); 
+                ListOfViewsWithoutSeparators.Add(itemView);
 
                 BoxView separator = Orientation == OrientationEnum.Horizontal ? new BoxView() { WidthRequest = 1 } :
                                                                                 new BoxView() { HeightRequest = 1 };
-
                 Binding binding = new Binding("Stroke", source: this, converter: new BrushToColorConverter(), converterParameter: separator);
                 separator.SetBinding(BoxView.ColorProperty, binding);
 
