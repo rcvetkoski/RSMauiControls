@@ -37,6 +37,8 @@ namespace TestApplicationMaui.ViewModels
             }
         }
 
+        public ObservableCollection<bool> Bools { get; set; }
+
         public MainViewModel()
         {
             List<string> strings = new List<string>();
@@ -80,6 +82,13 @@ namespace TestApplicationMaui.ViewModels
             Error = "Error message !";
 
             TrailingIconCommand = new Command<object>(TrailingIconMethod);
+
+
+            Bools = new ObservableCollection<bool>()
+            {
+                true,
+                false
+            };
         }
 
         private string error;
@@ -94,8 +103,26 @@ namespace TestApplicationMaui.ViewModels
                     OnPropertyChanged(nameof(Error));   
                 }
             }
-        }       
+        }
 
+
+        private int selectedItemSegment;
+
+        public int SelectedItemSegment 
+        { 
+            get
+            {
+                return selectedItemSegment;
+            }
+            set
+            {
+                if(selectedItemSegment != value)
+                {
+                    selectedItemSegment = value;
+                    OnPropertyChanged(nameof(SelectedItemSegment));
+                }
+            }
+        }
 
         public ICommand TrailingIconCommand { get; set; }
         private void TrailingIconMethod(object obj)

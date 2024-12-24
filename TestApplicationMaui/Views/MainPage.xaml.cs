@@ -1,6 +1,8 @@
 ﻿using RSInputViewMaui;
 using RSPickerMaui;
 using RSPopupMaui;
+using RSsegmentedControlMaui;
+using System.Xml.Linq;
 using TestApplicationMaui.ViewModels;
 
 namespace TestApplicationMaui.Views
