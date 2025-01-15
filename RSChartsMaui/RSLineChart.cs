@@ -1,4 +1,6 @@
-﻿namespace RSChartsMaui
+﻿using Microsoft.Maui.Graphics;
+
+namespace RSChartsMaui
 {
     public class RSLineChartDrawable : IDrawable
     {
@@ -38,6 +40,7 @@
             float xInterval = chartWidth / (dataCount - 1);
             float maxDataValue = chart.MaxDataValue;
             float yScale = chartHeight / maxDataValue;
+
 
             // Draw shadow if enabled
             if (chart.ShowShadow)
@@ -92,11 +95,27 @@
                 shadowPath.LineTo(margin, height - margin);
                 shadowPath.Close();
 
-                // Fill the shadow
-                canvas.FillColor = chart.ShadowColor.WithAlpha(0.3f); // Semi-transparent shadow
-                canvas.FillPath(shadowPath);
-            }
+                // Use GradientPaint to fill the shadow with a vertical gradient effect
+                var gradientPaint = new LinearGradientPaint
+                {
+                    StartPoint = new PointF(0, 0),
+                    EndPoint = new PointF(0, 1),
+                    GradientStops = new[]
+                    {
+                        new PaintGradientStop(0.0f, chart.ShadowColor.WithAlpha(0.8f)), // Fully visible at the top
+                        new PaintGradientStop(1.0f, chart.ShadowColor.WithAlpha(0.0f))  // Transparent at the bottom
+                    }
+                };
 
+                // Save the canvas state before applying gradient paint
+                canvas.SaveState();
+
+                canvas.SetFillPaint(gradientPaint, shadowPath.Bounds);
+                canvas.FillPath(shadowPath);
+
+                // Restore the canvas
+                canvas.RestoreState();
+            }
 
             if (chart.IsCurved)
             {
@@ -164,7 +183,7 @@
                 {
                     float x = margin + i * xInterval;
                     float y = height - margin - (dataPoints[i] * yScale);
-                    canvas.FillCircle(x, y, 3); // Draw a circle with radius 5
+                    canvas.FillCircle(x, y, 3.5f); // Draw a circle with radius 5
                 }
             }
 

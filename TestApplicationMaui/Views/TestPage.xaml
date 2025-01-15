@@ -19,7 +19,7 @@
 
 
     <Grid x:Name="grid" RowDefinitions="*" ColumnDefinitions="*">
-        <charts:RSLineChart ChartData="{Binding ChartData}" HeightRequest="300" IsCurved="True" ShowShadow="True" ShadowColor="Blue"/>
+        <charts:RSLineChart ChartData="{Binding ChartData}" HeightRequest="300" ShadowColor="Gray" IsCurved="True" ShowShadow="True" ShowDataPoints="True"/>
     </Grid>
 
 </ContentPage>
