@@ -39,6 +39,65 @@
             float maxDataValue = chart.MaxDataValue;
             float yScale = chartHeight / maxDataValue;
 
+            // Draw shadow if enabled
+            if (chart.ShowShadow)
+            {
+                var shadowPath = new PathF();
+
+                // Start the shadow at the first data point
+                float startX = margin;
+                float startY = height - margin - (dataPoints[0] * yScale);
+                shadowPath.MoveTo(startX, startY);
+
+                if (chart.IsCurved)
+                {
+                    for (int i = 0; i < dataCount - 1; i++)
+                    {
+                        // Get the current, next, and neighboring points
+                        float x0 = i == 0 ? margin : margin + (i - 1) * xInterval;
+                        float y0 = i == 0 ? height - margin - (dataPoints[0] * yScale) : height - margin - (dataPoints[i - 1] * yScale);
+
+                        float x1 = margin + i * xInterval;
+                        float y1 = height - margin - (dataPoints[i] * yScale);
+
+                        float x2 = margin + (i + 1) * xInterval;
+                        float y2 = height - margin - (dataPoints[i + 1] * yScale);
+
+                        float x3 = i + 2 < dataCount ? margin + (i + 2) * xInterval : x2;
+                        float y3 = i + 2 < dataCount ? height - margin - (dataPoints[i + 2] * yScale) : y2;
+
+                        // Calculate control points
+                        float controlX1 = x1 + (x2 - x0) / 6f;
+                        float controlY1 = y1 + (y2 - y0) / 6f;
+
+                        float controlX2 = x2 - (x3 - x1) / 6f;
+                        float controlY2 = y2 - (y3 - y1) / 6f;
+
+                        // Add a cubic curve segment to the shadow path
+                        shadowPath.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i < dataCount; i++)
+                    {
+                        float x = margin + i * xInterval;
+                        float y = height - margin - (dataPoints[i] * yScale);
+                        shadowPath.LineTo(x, y);
+                    }
+                }
+
+                // Close the shadow path to the X-axis
+                shadowPath.LineTo(margin + (dataCount - 1) * xInterval, height - margin);
+                shadowPath.LineTo(margin, height - margin);
+                shadowPath.Close();
+
+                // Fill the shadow
+                canvas.FillColor = chart.ShadowColor.WithAlpha(0.3f); // Semi-transparent shadow
+                canvas.FillPath(shadowPath);
+            }
+
+
             if (chart.IsCurved)
             {
                 // Draw smooth curves
@@ -105,7 +164,7 @@
                 {
                     float x = margin + i * xInterval;
                     float y = height - margin - (dataPoints[i] * yScale);
-                    canvas.FillCircle(x, y, 5); // Draw a circle with radius 5
+                    canvas.FillCircle(x, y, 3); // Draw a circle with radius 5
                 }
             }
 
@@ -222,7 +281,27 @@
             nameof(DataPointColor),
             typeof(Color),
             typeof(RSLineChart),
-            Colors.Red,
+            Colors.Gray,
+            propertyChanged: (bindable, oldValue, newValue) =>
+            {
+                ((RSLineChart)bindable).Invalidate();
+            });
+
+        public static readonly BindableProperty ShowShadowProperty = BindableProperty.Create(
+            nameof(ShowShadow),
+            typeof(bool),
+            typeof(RSLineChart),
+            false,
+            propertyChanged: (bindable, oldValue, newValue) =>
+            {
+                ((RSLineChart)bindable).Invalidate();
+            });
+
+        public static readonly BindableProperty ShadowColorProperty = BindableProperty.Create(
+            nameof(ShadowColor),
+            typeof(Color),
+            typeof(RSLineChart),
+            Colors.Blue,
             propertyChanged: (bindable, oldValue, newValue) =>
             {
                 ((RSLineChart)bindable).Invalidate();
@@ -274,6 +353,18 @@
         {
             get => (Color)GetValue(DataPointColorProperty);
             set => SetValue(DataPointColorProperty, value);
+        }
+
+        public bool ShowShadow
+        {
+            get => (bool)GetValue(ShowShadowProperty);
+            set => SetValue(ShowShadowProperty, value);
+        }
+
+        public Color ShadowColor
+        {
+            get => (Color)GetValue(ShadowColorProperty);
+            set => SetValue(ShadowColorProperty, value);
         }
     }
 }
