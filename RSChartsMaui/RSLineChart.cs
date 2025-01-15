@@ -97,6 +97,18 @@
                 }
             }
 
+            // Add data points as circles if enabled
+            if (chart.ShowDataPoints)
+            {
+                canvas.FillColor = chart.DataPointColor;
+                foreach (var i in Enumerable.Range(0, dataCount))
+                {
+                    float x = margin + i * xInterval;
+                    float y = height - margin - (dataPoints[i] * yScale);
+                    canvas.FillCircle(x, y, 5); // Draw a circle with radius 5
+                }
+            }
+
             // Add axis labels and indicators
             canvas.FontSize = 12;
             canvas.FontColor = chart.AxisLabelColor;
@@ -196,6 +208,26 @@
                 ((RSLineChart)bindable).Invalidate();
             });
 
+        public static readonly BindableProperty ShowDataPointsProperty = BindableProperty.Create(
+            nameof(ShowDataPoints),
+            typeof(bool),
+            typeof(RSLineChart),
+            true,
+            propertyChanged: (bindable, oldValue, newValue) =>
+            {
+                ((RSLineChart)bindable).Invalidate();
+            });
+
+        public static readonly BindableProperty DataPointColorProperty = BindableProperty.Create(
+            nameof(DataPointColor),
+            typeof(Color),
+            typeof(RSLineChart),
+            Colors.Red,
+            propertyChanged: (bindable, oldValue, newValue) =>
+            {
+                ((RSLineChart)bindable).Invalidate();
+            });
+
         public IList<float> ChartData
         {
             get => (IList<float>)GetValue(ChartDataProperty);
@@ -230,6 +262,18 @@
         {
             get => (Color)GetValue(AxisLabelColorProperty);
             set => SetValue(AxisLabelColorProperty, value);
+        }
+
+        public bool ShowDataPoints
+        {
+            get => (bool)GetValue(ShowDataPointsProperty);
+            set => SetValue(ShowDataPointsProperty, value);
+        }
+
+        public Color DataPointColor
+        {
+            get => (Color)GetValue(DataPointColorProperty);
+            set => SetValue(DataPointColorProperty, value);
         }
     }
 }
