@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using TestApplicationMaui.Models;
 
 namespace TestApplicationMaui.ViewModels
@@ -43,6 +38,13 @@ namespace TestApplicationMaui.ViewModels
                     OnPropertyChanged(nameof(SelectedPerson));
                 }
             }
+        }
+
+        public List<float> ChartData { get; set; }
+
+        public TestViewModel()
+        {
+            ChartData = new List<float> { 10, 30, 20, 40, 50, 35, 5, 23, 45, 85};
         }
     }
 }

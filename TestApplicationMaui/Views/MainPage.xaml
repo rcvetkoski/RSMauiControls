@@ -39,11 +39,8 @@
                 </x:Array>
             </rsSegmented:RSsegmentedControl.ItemsSource>
         </rsSegmented:RSsegmentedControl>
-
-
         <Label Text="{Binding SelectedIndex, Source={x:Reference seg}}"/>
         <Label Text="{Binding SelectedItemSegment}" HorizontalOptions="End"/>
-
         <Button Grid.Row="1" Grid.Column="0" Text="GoToTestPage" Clicked="GoToTestPage"/>
         
     </Grid>
