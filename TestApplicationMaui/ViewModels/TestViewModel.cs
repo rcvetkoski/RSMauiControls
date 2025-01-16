@@ -44,7 +44,7 @@ namespace TestApplicationMaui.ViewModels
 
         public TestViewModel()
         {
-            ChartData = new List<float> { 10, 30, 20, 40, 50, 35, 5, 23, 45, 4};
+            ChartData = new List<float> { 10, 30, 20, 40, 50, 35, 5, 23, 45, 4 };
         }
     }
 }

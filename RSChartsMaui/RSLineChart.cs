@@ -1,95 +1,78 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace RSChartsMaui
+﻿namespace RSChartsMaui
 {
     public class RSLineChartDrawable : IDrawable
     {
         private readonly RSLineChart chart;
+        private float margin;
+        private float width;
+        private float height;
+        private float chartWidth;
+        private float chartHeight;
+        private int dataCount;
+        private float xInterval;
+        private float maxDataValue;
+        private float yScale;
+        private float startX;
+        private float startY;
+        float x0;
+        float y0;
+        float x1;
+        float y1;
+        float x2;
+        float y2;
+        float x3;
+        float y3;
+        float controlX1;
+        float controlY1;
+        float controlX2;
+        float controlY2;
+        private PathF shadowPath;
+        private PathF dataLinePath;
 
         public RSLineChartDrawable(RSLineChart chart)
         {
             this.chart = chart;
         }
 
-        public void Draw(ICanvas canvas, RectF dirtyRect)
+        private void DrawDataLine(ICanvas canvas, float startX, float startY, float controlX1, float controlY1, float controlX2, float controlY2, float x2, float y2)
         {
-            // Define margins and dimensions
-            float margin = 40;
-            float width = (float)dirtyRect.Width;
-            float height = (float)dirtyRect.Height;
-            float chartWidth = width - 2 * margin;
-            float chartHeight = height - 2 * margin;
-
-            // Set up axis lines
-            canvas.StrokeColor = chart.AxisLineColor;
-            canvas.StrokeSize = 1;
-
-            // Draw X-axis
-            canvas.DrawLine(margin, height - margin, width - margin, height - margin);
-
-            // Draw Y-axis
-            canvas.DrawLine(margin, margin, margin, height - margin);
-
-            // Get data points
-            var dataPoints = chart.ChartData;
-            if (dataPoints == null || dataPoints.Count == 0) return;
-
-            int dataCount = dataPoints.Count;
-
-            // Calculate scaling factors
-            float xInterval = chartWidth / (dataCount - 1);
-            float maxDataValue = chart.MaxDataValue;
-            float yScale = chartHeight / maxDataValue;
-
-
-            // Draw shadow if enabled
-            if (chart.ShowShadow)
+            // Create dataLinePath
+            if(dataLinePath == null)
             {
-                var shadowPath = new PathF();
+                dataLinePath = new PathF();
+
+                // Start the path at the first data point
+                dataLinePath.MoveTo(startX, startY);
+            }
+            
+            
+            // Add a cubic curve segment to the path
+            dataLinePath.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
+
+            // Draw the smooth path
+            canvas.StrokeColor = chart.LineColor;
+            canvas.StrokeSize = 3;
+
+            canvas.DrawPath(dataLinePath);
+        }
+
+        private void DrawShadow(ICanvas canvas, float startX, float startY, float controlX1, float controlY1, float controlX2, float controlY2, float x2, float y2, bool closePath)
+        {
+            // Create shadowPath
+            if(shadowPath == null)
+            {
+                shadowPath = new PathF();
 
                 // Start the shadow at the first data point
-                float startX = margin;
-                float startY = height - margin - (dataPoints[0] * yScale);
                 shadowPath.MoveTo(startX, startY);
+            }
 
-                if (chart.IsCurved)
-                {
-                    for (int i = 0; i < dataCount - 1; i++)
-                    {
-                        // Get the current, next, and neighboring points
-                        float x0 = i == 0 ? margin : margin + (i - 1) * xInterval;
-                        float y0 = i == 0 ? height - margin - (dataPoints[0] * yScale) : height - margin - (dataPoints[i - 1] * yScale);
+            // Add a cubic curve segment to the shadow path
+            shadowPath.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
 
-                        float x1 = margin + i * xInterval;
-                        float y1 = height - margin - (dataPoints[i] * yScale);
-
-                        float x2 = margin + (i + 1) * xInterval;
-                        float y2 = height - margin - (dataPoints[i + 1] * yScale);
-
-                        float x3 = i + 2 < dataCount ? margin + (i + 2) * xInterval : x2;
-                        float y3 = i + 2 < dataCount ? height - margin - (dataPoints[i + 2] * yScale) : y2;
-
-                        // Calculate control points
-                        float controlX1 = x1 + (x2 - x0) / 6f;
-                        float controlY1 = y1 + (y2 - y0) / 6f;
-
-                        float controlX2 = x2 - (x3 - x1) / 6f;
-                        float controlY2 = y2 - (y3 - y1) / 6f;
-
-                        // Add a cubic curve segment to the shadow path
-                        shadowPath.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
-                    }
-                }
-                else
-                {
-                    for (int i = 1; i < dataCount; i++)
-                    {
-                        float x = margin + i * xInterval;
-                        float y = height - margin - (dataPoints[i] * yScale);
-                        shadowPath.LineTo(x, y);
-                    }
-                }
-
+            // Close the shadow path
+            if (closePath)
+            {
                 // Close the shadow path to the X-axis
                 shadowPath.LineTo(margin + (dataCount - 1) * xInterval, height - margin);
                 shadowPath.LineTo(margin, height - margin);
@@ -116,76 +99,43 @@ namespace RSChartsMaui
                 // Restore the canvas
                 canvas.RestoreState();
             }
+        }
 
-            if (chart.IsCurved)
-            {
-                // Draw smooth curves
-                var path = new PathF();
+        private void DrawDataPoints(ICanvas canvas, float x1, float y1)
+        {
+            canvas.FillColor = chart.DataPointColor;
+            canvas.FillCircle(x1, y1, 3.5f); // Draw a circle with radius 3.5f
+        }
 
-                // Start the path at the first data point
-                float startX = margin;
-                float startY = height - margin - (dataPoints[0] * yScale);
-                path.MoveTo(startX, startY);
 
-                for (int i = 0; i < dataCount - 1; i++)
-                {
-                    // Get the current, next, and neighboring points
-                    float x0 = i == 0 ? margin : margin + (i - 1) * xInterval;
-                    float y0 = i == 0 ? height - margin - (dataPoints[0] * yScale) : height - margin - (dataPoints[i - 1] * yScale);
+        public async void Draw(ICanvas canvas, RectF dirtyRect)
+        {
+            // Define margins and dimensions
+            margin = 40;
+            width = (float)dirtyRect.Width;
+            height = (float)dirtyRect.Height;
+            chartWidth = width - 2 * margin;
+            chartHeight = height - 2 * margin;
 
-                    float x1 = margin + i * xInterval;
-                    float y1 = height - margin - (dataPoints[i] * yScale);
+            // Set up axis lines
+            canvas.StrokeColor = chart.AxisLineColor;
+            canvas.StrokeSize = 1;
 
-                    float x2 = margin + (i + 1) * xInterval;
-                    float y2 = height - margin - (dataPoints[i + 1] * yScale);
+            // Draw X-axis
+            canvas.DrawLine(margin, height - margin, width - margin, height - margin);
 
-                    float x3 = i + 2 < dataCount ? margin + (i + 2) * xInterval : x2;
-                    float y3 = i + 2 < dataCount ? height - margin - (dataPoints[i + 2] * yScale) : y2;
+            // Draw Y-axis
+            canvas.DrawLine(margin, margin, margin, height - margin);
 
-                    // Calculate control points
-                    float controlX1 = x1 + (x2 - x0) / 6f;
-                    float controlY1 = y1 + (y2 - y0) / 6f;
+            // Get data points
+            if (chart.ChartData == null || chart.ChartData.Count == 0) return;
 
-                    float controlX2 = x2 - (x3 - x1) / 6f;
-                    float controlY2 = y2 - (y3 - y1) / 6f;
+            dataCount = chart.ChartData.Count;
 
-                    // Add a cubic curve segment to the path
-                    path.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
-                }
-
-                // Draw the smooth path
-                canvas.StrokeColor = chart.LineColor;
-                canvas.StrokeSize = 3;
-                canvas.DrawPath(path);
-            }
-            else
-            {
-                // Draw straight lines
-                canvas.StrokeColor = chart.LineColor;
-                canvas.StrokeSize = 3;
-
-                for (int i = 0; i < dataCount - 1; i++)
-                {
-                    float x1 = margin + i * xInterval;
-                    float y1 = height - margin - (dataPoints[i] * yScale);
-                    float x2 = margin + (i + 1) * xInterval;
-                    float y2 = height - margin - (dataPoints[i + 1] * yScale);
-
-                    canvas.DrawLine(x1, y1, x2, y2);
-                }
-            }
-
-            // Add data points as circles if enabled
-            if (chart.ShowDataPoints)
-            {
-                canvas.FillColor = chart.DataPointColor;
-                foreach (var i in Enumerable.Range(0, dataCount))
-                {
-                    float x = margin + i * xInterval;
-                    float y = height - margin - (dataPoints[i] * yScale);
-                    canvas.FillCircle(x, y, 3.5f); // Draw a circle with radius 5
-                }
-            }
+            // Calculate scaling factors
+            xInterval = chartWidth / (dataCount - 1);
+            maxDataValue = chart.MaxDataValue;
+            yScale = chartHeight / maxDataValue;
 
             // Add axis labels and indicators
             canvas.FontSize = 12;
@@ -200,7 +150,10 @@ namespace RSChartsMaui
                 float x = margin + i * xInterval;
                 float y = height - margin;
 
+                // Draw indicator
                 canvas.DrawLine(x, y, x, y + 5);
+
+                // Draw label
                 canvas.DrawString((i + 1).ToString(), x, y + 20, HorizontalAlignment.Center);
             }
 
@@ -215,6 +168,51 @@ namespace RSChartsMaui
 
                 // Draw label
                 canvas.DrawString(i.ToString(), x - 20, y + 5, HorizontalAlignment.Center);
+            }
+
+            
+
+            // Start the path at the first data point
+            startX = margin;
+            startY = height - margin - (chart.ChartData[0] * yScale);
+
+            if (chart.IsCurved)
+            {
+                for (int i = 0; i < dataCount - 1; i++)
+                {
+                    // Get the current, next, and neighboring points
+                    x0 = i == 0 ? margin : margin + (i - 1) * xInterval;
+                    y0 = i == 0 ? height - margin - (chart.ChartData[0] * yScale) : height - margin - (chart.ChartData[i - 1] * yScale);
+
+                    x1 = margin + i * xInterval;
+                    y1 = height - margin - (chart.ChartData[i] * yScale);
+
+                    x2 = margin + (i + 1) * xInterval;
+                    y2 = height - margin - (chart.ChartData[i + 1] * yScale);
+
+                    x3 = i + 2 < dataCount ? margin + (i + 2) * xInterval : x2;
+                    y3 = i + 2 < dataCount ? height - margin - (chart.ChartData[i + 2] * yScale) : y2;
+
+                    // Calculate control points
+                    controlX1 = x1 + (x2 - x0) / 6f;
+                    controlY1 = y1 + (y2 - y0) / 6f;
+
+                    controlX2 = x2 - (x3 - x1) / 6f;
+                    controlY2 = y2 - (y3 - y1) / 6f;
+
+                    // Data Line
+                    DrawDataLine(canvas, startX, startY, controlX1, controlY1, controlX2, controlY2, x2, y2);
+
+                    // Shadow
+                    if (chart.ShowShadow)
+                        DrawShadow(canvas, startX, startY, controlX1, controlY1, controlX2, controlY2, x2, y2, (i == (dataCount - 2)));
+
+                    // Data Points
+                    if (chart.ShowDataPoints)
+                        DrawDataPoints(canvas, x1, y1);
+                }
+
+                dataLinePath = null;
             }
         }
     }
