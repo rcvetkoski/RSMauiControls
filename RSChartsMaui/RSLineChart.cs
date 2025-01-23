@@ -1,4 +1,7 @@
-﻿namespace RSChartsMaui
+﻿using System;
+using System.Collections.Generic;
+
+namespace RSChartsMaui
 {
     public class RSLineChartDrawable : IDrawable
     {
@@ -14,91 +17,28 @@
         private float yScale;
         private float startX;
         private float startY;
-        float x0;
-        float y0;
-        float x1;
-        float y1;
-        float x2;
-        float y2;
-        float x3;
-        float y3;
-        float controlX1;
-        float controlY1;
-        float controlX2;
-        float controlY2;
         private PathF shadowPath;
-        private PathF dataLinePath;
+        public PathF dataLinePath;
+        public double ClipProgress;
+
+        List<PointF> scaledPoints;
+        List<PointF> interpolatedPoints;
 
         public RSLineChartDrawable(RSLineChart chart)
         {
             this.chart = chart;
         }
 
-        private void DrawDataLine(ICanvas canvas, float startX, float startY, float controlX1, float controlY1, float controlX2, float controlY2, float x2, float y2)
+        public void SetPoints(IList<float> points)
         {
-            // Create dataLinePath
-            if(dataLinePath == null)
-            {
-                dataLinePath = new PathF();
-
-                // Start the path at the first data point
-                dataLinePath.MoveTo(startX, startY);
-            }
-            
-            
-            // Add a cubic curve segment to the path
-            dataLinePath.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
-
-            // Draw the smooth path
-            canvas.StrokeColor = chart.LineColor;
-            canvas.StrokeSize = 3;
-
-            canvas.DrawPath(dataLinePath);
+            scaledPoints = GeneratePoints(points);
+            interpolatedPoints = InterpolatePoints(scaledPoints);
         }
 
-        private void DrawShadow(ICanvas canvas, float startX, float startY, float controlX1, float controlY1, float controlX2, float controlY2, float x2, float y2, bool closePath)
+        public void ResetPaths()
         {
-            // Create shadowPath
-            if(shadowPath == null)
-            {
-                shadowPath = new PathF();
-
-                // Start the shadow at the first data point
-                shadowPath.MoveTo(startX, startY);
-            }
-
-            // Add a cubic curve segment to the shadow path
-            shadowPath.CurveTo(controlX1, controlY1, controlX2, controlY2, x2, y2);
-
-            // Close the shadow path
-            if (closePath)
-            {
-                // Close the shadow path to the X-axis
-                shadowPath.LineTo(margin + (dataCount - 1) * xInterval, height - margin);
-                shadowPath.LineTo(margin, height - margin);
-                shadowPath.Close();
-
-                // Use GradientPaint to fill the shadow with a vertical gradient effect
-                var gradientPaint = new LinearGradientPaint
-                {
-                    StartPoint = new PointF(0, 0),
-                    EndPoint = new PointF(0, 1),
-                    GradientStops = new[]
-                    {
-                        new PaintGradientStop(0.0f, chart.ShadowColor.WithAlpha(0.8f)), // Fully visible at the top
-                        new PaintGradientStop(1.0f, chart.ShadowColor.WithAlpha(0.0f))  // Transparent at the bottom
-                    }
-                };
-
-                // Save the canvas state before applying gradient paint
-                canvas.SaveState();
-
-                canvas.SetFillPaint(gradientPaint, shadowPath.Bounds);
-                canvas.FillPath(shadowPath);
-
-                // Restore the canvas
-                canvas.RestoreState();
-            }
+            dataLinePath = null;
+            shadowPath = null;
         }
 
         private void DrawDataPoints(ICanvas canvas, float x1, float y1)
@@ -107,8 +47,7 @@
             canvas.FillCircle(x1, y1, 3.5f); // Draw a circle with radius 3.5f
         }
 
-
-        public async void Draw(ICanvas canvas, RectF dirtyRect)
+        public void Draw(ICanvas canvas, RectF dirtyRect)
         {
             // Define margins and dimensions
             margin = 40;
@@ -143,6 +82,9 @@
             canvas.StrokeColor = chart.AxisLineColor;
             canvas.StrokeSize = 1;
 
+
+            SetPoints(chart.ChartData);
+
             // X-axis labels and indicators
             int labelInterval = Math.Max(1, dataCount / 12); // Show ~12 labels
             for (int i = 0; i < dataCount; i += labelInterval)
@@ -170,51 +112,232 @@
                 canvas.DrawString(i.ToString(), x - 20, y + 5, HorizontalAlignment.Center);
             }
 
-            
 
-            // Start the path at the first data point
-            startX = margin;
-            startY = height - margin - (chart.ChartData[0] * yScale);
-
-            if (chart.IsCurved)
+            // Build path for the partial curve
+            if(dataLinePath == null)
             {
-                for (int i = 0; i < dataCount - 1; i++)
+                dataLinePath = new PathF();
+                dataLinePath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
+            }
+
+
+            // Build path for shadow
+            if (chart.ShowShadow && shadowPath == null)
+            {
+                shadowPath = new PathF();
+                shadowPath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
+            }
+
+            if(dataLinePath.Count <= 1)
+            {
+                if(chart.IsCurved)
                 {
-                    // Get the current, next, and neighboring points
-                    x0 = i == 0 ? margin : margin + (i - 1) * xInterval;
-                    y0 = i == 0 ? height - margin - (chart.ChartData[0] * yScale) : height - margin - (chart.ChartData[i - 1] * yScale);
+                    for (int i = 0; i < interpolatedPoints.Count; i += 3)
+                    {
+                        dataLinePath.CurveTo(interpolatedPoints[i], interpolatedPoints[i + 1], interpolatedPoints[i + 2]);
 
-                    x1 = margin + i * xInterval;
-                    y1 = height - margin - (chart.ChartData[i] * yScale);
+                        if (chart.ShowShadow)
+                            shadowPath.CurveTo(interpolatedPoints[i], interpolatedPoints[i + 1], interpolatedPoints[i + 2]);
+                    }
 
-                    x2 = margin + (i + 1) * xInterval;
-                    y2 = height - margin - (chart.ChartData[i + 1] * yScale);
-
-                    x3 = i + 2 < dataCount ? margin + (i + 2) * xInterval : x2;
-                    y3 = i + 2 < dataCount ? height - margin - (chart.ChartData[i + 2] * yScale) : y2;
-
-                    // Calculate control points
-                    controlX1 = x1 + (x2 - x0) / 6f;
-                    controlY1 = y1 + (y2 - y0) / 6f;
-
-                    controlX2 = x2 - (x3 - x1) / 6f;
-                    controlY2 = y2 - (y3 - y1) / 6f;
-
-                    // Data Line
-                    DrawDataLine(canvas, startX, startY, controlX1, controlY1, controlX2, controlY2, x2, y2);
-
-                    // Shadow
-                    if (chart.ShowShadow)
-                        DrawShadow(canvas, startX, startY, controlX1, controlY1, controlX2, controlY2, x2, y2, (i == (dataCount - 2)));
-
-                    // Data Points
-                    if (chart.ShowDataPoints)
-                        DrawDataPoints(canvas, x1, y1);
+                    //CreateSmoothCurve(scaledPoints);
+                    //CreateCubicSpline(scaledPoints);
                 }
+                else
+                {
+                    for (int i = 0; i < scaledPoints.Count; i++)
+                    {
+                        dataLinePath.LineTo(scaledPoints[i]);
 
-                dataLinePath = null;
+                        if (chart.ShowShadow)
+                            shadowPath.LineTo(scaledPoints[i]);
+                    }
+                }
+            }
+
+
+            // Set up clipping region
+            float clipWidth = (float)(ClipProgress * dirtyRect.Width);
+            canvas.ClipRectangle(0, 0, clipWidth, dirtyRect.Height);
+
+
+            // Data Line
+            canvas.StrokeColor = chart.LineColor;
+            canvas.StrokeSize = 3;
+            canvas.DrawPath(dataLinePath);
+
+
+            // Shadow
+            // Close the shadow path to the X-axis
+            if (chart.ShowShadow)
+            {
+                shadowPath.LineTo(margin + (dataCount - 1) * xInterval, height - margin);
+                shadowPath.LineTo(margin, height - margin);
+                shadowPath.Close();
+                // Use GradientPaint to fill the shadow with a vertical gradient effect
+                var gradientPaint = new LinearGradientPaint
+                {
+                    StartPoint = new PointF(0, 0),
+                    EndPoint = new PointF(0, 1),
+                    GradientStops = new[]
+                        {
+                        new PaintGradientStop(0.0f, chart.ShadowColor.WithAlpha(0.8f)), // Fully visible at the top
+                        new PaintGradientStop(1.0f, chart.ShadowColor.WithAlpha(0.0f))  // Transparent at the bottom
+                    }
+                };
+                // Save the canvas state before applying gradient paint
+                canvas.SaveState();
+                canvas.SetFillPaint(gradientPaint, shadowPath.Bounds);
+                canvas.FillPath(shadowPath);
+                // Restore the canvas
+                canvas.RestoreState();
+            }
+
+
+            // Data Points
+            if(chart.ShowDataPoints)
+            {
+                for (int y = 0; y < scaledPoints.Count; y++)
+                {
+                    DrawDataPoints(canvas, scaledPoints[y].X, scaledPoints[y].Y);
+                }
             }
         }
+
+        private void CreateCubicSpline(List<PointF> points)
+        {
+            if (points == null || points.Count < 2)
+                return;
+
+            // Solve for cubic spline coefficients
+            var n = points.Count - 1;
+            var a = points.Select(p => p.Y).ToArray();
+            var b = new float[n];
+            var d = new float[n];
+            var h = new float[n];
+
+            for (int i = 0; i < n; i++)
+                h[i] = points[i + 1].X - points[i].X;
+
+            var alpha = new float[n];
+            for (int i = 1; i < n; i++)
+                alpha[i] = (3 / h[i]) * (a[i + 1] - a[i]) - (3 / h[i - 1]) * (a[i] - a[i - 1]);
+
+            var c = new float[n + 1];
+            var l = new float[n + 1];
+            var mu = new float[n + 1];
+            var z = new float[n + 1];
+            l[0] = 1;
+
+            for (int i = 1; i < n; i++)
+            {
+                l[i] = 2 * (points[i + 1].X - points[i - 1].X) - h[i - 1] * mu[i - 1];
+                mu[i] = h[i] / l[i];
+                z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / l[i];
+            }
+
+            l[n] = 1;
+
+            for (int j = n - 1; j >= 0; j--)
+            {
+                c[j] = z[j] - mu[j] * c[j + 1];
+                b[j] = (a[j + 1] - a[j]) / h[j] - h[j] * (c[j + 1] + 2 * c[j]) / 3;
+                d[j] = (c[j + 1] - c[j]) / (3 * h[j]);
+            }
+
+            // Build the spline
+            dataLinePath.MoveTo(points[0].X, points[0].Y);
+
+            for (int i = 0; i < n; i++)
+            {
+                for (float x = points[i].X; x < points[i + 1].X; x += 1)
+                {
+                    var dx = x - points[i].X;
+                    var y = a[i] + b[i] * dx + c[i] * dx * dx + d[i] * dx * dx * dx;
+                    dataLinePath.LineTo(x, y);
+                }
+            }
+        }
+
+        private void CreateSmoothCurve(List<PointF> points)
+        {
+            if (points == null || points.Count < 2)
+                return;
+
+            // Start at the first point
+            dataLinePath.MoveTo(points[0].X, points[0].Y);
+
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                // Current point
+                var p0 = points[i];
+
+                // Next point
+                var p1 = points[i + 1];
+
+                // Control points for smooth curve (adjust these as needed)
+                var cp1 = new PointF((p0.X + p1.X) / 2, p0.Y);
+                var cp2 = new PointF((p0.X + p1.X) / 2, p1.Y);
+
+                // Add cubic Bezier curve segment
+                dataLinePath.CurveTo(cp1.X, cp1.Y, cp2.X, cp2.Y, p1.X, p1.Y);
+            }
+        }
+
+        public List<PointF> InterpolatePoints(IReadOnlyList<PointF> points)
+        {
+            List<PointF> list = new List<PointF>();
+
+            // We’ll treat each pair (Pi, Pi+1) as a cubic segment
+            // and compute C1, C2 from neighbors.
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                // Current point
+                PointF p0 = points[i];
+                // Next point
+                PointF p1 = points[i + 1];
+
+                // Previous point (for i=0, use p0)
+                PointF pm = (i - 1 >= 0) ? points[i - 1] : p0;
+                // Next-next point (for i+2 >= Count, use p1)
+                PointF pp = (i + 2 < points.Count) ? points[i + 2] : p1;
+
+                // Catmull–Rom-like parameters
+                float tension = 0.1f;
+                // The factor is tension / 2 = 0.5 / 2 = 0.25 if you prefer that style.
+                // Or equivalently  (1/6) if tension=0.5 in a standard CR formula.
+
+                // You can adjust the factor to see which style you like better.
+                float factor = (1f - tension) / 6f; // This matches the “1/6” formula at tension=0.5.
+
+                // C1 = P_i + (P_{i+1} - P_{i-1}) * factor
+                float c1x = p0.X + (p1.X - pm.X) * factor;
+                float c1y = p0.Y + (p1.Y - pm.Y) * factor;
+
+                // C2 = P_{i+1} - (P_{i+2} - P_{i}) * factor
+                float c2x = p1.X - (pp.X - p0.X) * factor;
+                float c2y = p1.Y - (pp.Y - p0.Y) * factor;
+
+
+                list.Add(new PointF(c1x, c1y));
+                list.Add(new PointF(c2x, c2y));
+                list.Add(new PointF(p1.X, p1.Y));
+            }
+
+            return list;    
+        }
+
+        private List<PointF> GeneratePoints(IList<float> yValues, float spacing = 100f)
+        {
+            var pts = new List<PointF>();
+            for (int i = 0; i < yValues.Count; i++)
+            {
+                float x = i * xInterval + margin;
+                float y = height - margin - (yValues[i] * yScale);
+                pts.Add(new PointF(x, y));
+            }
+            return pts;
+        } 
     }
 
     public class RSLineChart : GraphicsView
@@ -222,7 +345,10 @@
         public RSLineChart()
         {
             Drawable = new RSLineChartDrawable(this);
+            progress = 0;
         }
+
+        private double progress;
 
         public static readonly BindableProperty ChartDataProperty = BindableProperty.Create(
             nameof(ChartData),
@@ -231,6 +357,10 @@
             new List<float>(),
             propertyChanged: (bindable, oldValue, newValue) =>
             {
+                if (bindable == null || newValue == null)
+                    return;
+
+                (((RSLineChart)bindable).Drawable as RSLineChartDrawable).SetPoints(newValue as IList<float>);
                 ((RSLineChart)bindable).Invalidate();
             });
 
@@ -251,6 +381,7 @@
             false,
             propertyChanged: (bindable, oldValue, newValue) =>
             {
+                (((RSLineChart)bindable).Drawable as RSLineChartDrawable).ResetPaths();
                 ((RSLineChart)bindable).Invalidate();
             });
 
@@ -311,6 +442,7 @@
             false,
             propertyChanged: (bindable, oldValue, newValue) =>
             {
+                (((RSLineChart)bindable).Drawable as RSLineChartDrawable).ResetPaths();
                 ((RSLineChart)bindable).Invalidate();
             });
 
@@ -383,5 +515,35 @@
             get => (Color)GetValue(ShadowColorProperty);
             set => SetValue(ShadowColorProperty, value);
         }
+
+        // Duration in seconds
+        public async void StartAnimation(double duration = 2)
+        {
+            RSLineChartDrawable drawable = (Drawable as RSLineChartDrawable);
+
+            // Reset values
+            progress = 0;
+            double increment = 1;
+
+            // Cancel the previous timer if it is still running
+            _animationTokenSource?.Cancel();
+            _animationTokenSource = new CancellationTokenSource();
+            var token = _animationTokenSource.Token;
+
+            Dispatcher.StartTimer(TimeSpan.FromMilliseconds(16), () =>
+            {
+                if (token.IsCancellationRequested)
+                    return false; // Stop the timer if the token is canceled
+
+                progress = progress + increment / (60 * duration);
+                drawable.ClipProgress = progress;
+                Invalidate();
+
+                return progress < 1; // Stop the timer when progress reaches 1
+            });
+        }
+
+        private CancellationTokenSource _animationTokenSource;
+
     }
 }

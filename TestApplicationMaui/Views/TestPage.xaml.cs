@@ -9,6 +9,6 @@ public partial class TestPage : ContentPage
 
     private void Button_Clicked(object sender, EventArgs e)
     {
-        chart.StartAnimation();
+        chart.StartAnimation(1);
     }
 }
