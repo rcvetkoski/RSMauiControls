@@ -21,7 +21,7 @@
     <Grid x:Name="grid" RowDefinitions="*" ColumnDefinitions="*">
         <charts:RSLineChart x:Name="chart" ChartData="{Binding ChartData}" HeightRequest="300" IsCurved="True" ShowShadow="True" ShowDataPoints="True"/>
 
-        <Button Text="Animate" Clicked="Button_Clicked" VerticalOptions="End" Margin="40"/>
+        <Button Text="Animate Bla" Clicked="Button_Clicked" VerticalOptions="End" Margin="40"/>
     </Grid>
 
 </ContentPage>
