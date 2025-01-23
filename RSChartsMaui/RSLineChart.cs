@@ -95,8 +95,11 @@ namespace RSChartsMaui
                 // Draw indicator
                 canvas.DrawLine(x, y, x, y + 5);
 
+                var stringSize = canvas.GetStringSize((i + 1).ToString(), Microsoft.Maui.Graphics.Font.Default, 12);
+                var stringBounds = new RectF(new PointF(x, y), stringSize);
+
                 // Draw label
-                canvas.DrawString((i + 1).ToString(), x, y + 20, HorizontalAlignment.Center);
+                canvas.DrawString((i + 1).ToString(), x, y + 20, 10, 15, HorizontalAlignment.Center, VerticalAlignment.Center);
             }
 
             // Y-axis labels and indicators
