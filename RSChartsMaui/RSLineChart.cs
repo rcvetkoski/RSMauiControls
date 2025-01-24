@@ -61,20 +61,39 @@ namespace RSChartsMaui
             canvas.StrokeColor = chart.AxisLineColor;
             canvas.StrokeSize = 1;
 
+            // Get data points
+            if (chart.ChartData == null || chart.ChartData.Count == 0) return;
+
+            dataCount = chart.ChartData.Count;
+
             // Draw X-axis
             canvas.DrawLine(margin, height - margin, width - margin, height - margin);
 
             // Draw Y-axis
             canvas.DrawLine(margin, margin, margin, height - margin);
 
-            // Get data points
-            if (chart.ChartData == null || chart.ChartData.Count == 0) return;
 
-            dataCount = chart.ChartData.Count;
+
+
 
             // Calculate scaling factors
             xInterval = chartWidth / (dataCount - 1);
-            maxDataValue = chart.MaxDataValue;
+            maxDataValue = chart.ChartData.Max();
+
+            // Font size and spacing for labels
+            float availableHeight = height - (2 * margin); // Space for Y-axis
+            float fontHeight = 12; // Height of font in pixels
+            float minLabelSpacing = fontHeight * 2; // Minimum spacing between labels
+            int maxSteps = (int)(availableHeight / minLabelSpacing); // Maximum number of steps
+
+            // Calculate step size
+            float stepSize = (float)Math.Ceiling(maxDataValue / maxSteps);
+            maxDataValue += stepSize;
+            stepSize = (float)Math.Ceiling(maxDataValue / maxSteps);
+
+            // Extend max Y value by one step
+            maxDataValue = (float)Math.Ceiling(maxDataValue / stepSize) * stepSize;
+
             yScale = chartHeight / maxDataValue;
 
             // Add axis labels and indicators
@@ -106,8 +125,9 @@ namespace RSChartsMaui
                 canvas.DrawString((i + 1).ToString(), x - stringSize.Width / 2 - labelMarge / 2, y + 12, stringSize.Width + labelMarge, stringSize.Height + labelMarge, HorizontalAlignment.Center, VerticalAlignment.Top);
             }
 
+
             // Y-axis labels and indicators
-            for (int i = 0; i <= maxDataValue; i += 10)
+            for (float i = 0; i <= maxDataValue; i += stepSize)
             {
                 float x = margin;
                 float y = height - margin - (i * yScale);
@@ -127,30 +147,34 @@ namespace RSChartsMaui
             if (dataLinePath == null)
             {
                 dataLinePath = new PathF();
-                dataLinePath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
+                //dataLinePath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
             }
+            dataLinePath = new PathF();
 
 
             // Build path for shadow
             if (chart.ShowShadow && shadowPath == null)
             {
                 shadowPath = new PathF();
-                shadowPath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
+                //shadowPath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
             }
+            shadowPath = new PathF();
 
-            if(dataLinePath.Count <= 1)
+
+            if (dataLinePath.Count <= 1)
             {
                 if(chart.IsCurved)
                 {
-                    for (int i = 0; i < interpolatedPoints.Count; i += 3)
-                    {
-                        dataLinePath.CurveTo(interpolatedPoints[i], interpolatedPoints[i + 1], interpolatedPoints[i + 2]);
+                    //for (int i = 0; i < interpolatedPoints.Count; i += 3)
+                    //{
+                    //    dataLinePath.CurveTo(interpolatedPoints[i], interpolatedPoints[i + 1], interpolatedPoints[i + 2]);
 
-                        if (chart.ShowShadow)
-                            shadowPath.CurveTo(interpolatedPoints[i], interpolatedPoints[i + 1], interpolatedPoints[i + 2]);
-                    }
+                    //    if (chart.ShowShadow)
+                    //        shadowPath.CurveTo(interpolatedPoints[i], interpolatedPoints[i + 1], interpolatedPoints[i + 2]);
+                    //}
 
-                    //CreateSmoothCurve(scaledPoints);
+                    //CreateMonotonicCubicSpline(scaledPoints);
+                    CreateSmoothCurve(scaledPoints);
                     //CreateCubicSpline(scaledPoints);
                 }
                 else
@@ -214,6 +238,70 @@ namespace RSChartsMaui
             }
         }
 
+        private void CreateMonotonicCubicSpline(List<PointF> points)
+        {
+            if (points == null || points.Count < 2)
+                return;
+
+            var n = points.Count;
+            var a = points.Select(p => p.Y).ToArray();
+            var h = new float[n - 1];
+            var m = new float[n];
+
+            // Calculate the differences between x points
+            for (int i = 0; i < n - 1; i++)
+                h[i] = points[i + 1].X - points[i].X;
+
+            // Calculate the slopes (m[i])
+            for (int i = 1; i < n - 1; i++)
+                m[i] = (a[i + 1] - a[i]) / h[i] - (a[i] - a[i - 1]) / h[i - 1];
+
+            // Adjust slopes to ensure monotonicity
+            for (int i = 1; i < n - 1; i++)
+            {
+                if (m[i] * m[i - 1] < 0) // If slopes have different signs
+                    m[i] = 0; // Force the tangent to zero
+            }
+
+            // Start rendering the path
+            dataLinePath.MoveTo(points[0].X, points[0].Y);
+
+            if (chart.ShowShadow)
+            {
+                shadowPath.MoveTo(points[0].X, points[0].Y);
+            }
+
+            for (int i = 0; i < n - 1; i++)
+            {
+                var x0 = points[i].X;
+                var x1 = points[i + 1].X;
+                var y0 = points[i].Y;
+                var y1 = points[i + 1].Y;
+
+                // Tangent slopes
+                var t0 = m[i];
+                var t1 = m[i + 1];
+
+                for (float x = x0; x < x1; x += 1)
+                {
+                    var t = (x - x0) / h[i]; // Normalized distance
+                    var h00 = (1 + 2 * t) * (1 - t) * (1 - t);
+                    var h10 = t * (1 - t) * (1 - t);
+                    var h01 = t * t * (3 - 2 * t);
+                    var h11 = t * t * (t - 1);
+
+                    var y = h00 * y0 + h10 * h[i] * t0 + h01 * y1 + h11 * h[i] * t1;
+                    y = Math.Max(0, y); // Clamp to prevent negative values
+                    dataLinePath.LineTo(x, y);
+
+                    if (chart.ShowShadow)
+                    {
+                        shadowPath.LineTo(x, y);
+                    }
+                }
+            }
+        }
+
         private void CreateCubicSpline(List<PointF> points)
         {
             if (points == null || points.Count < 2)
@@ -258,6 +346,12 @@ namespace RSChartsMaui
             // Build the spline
             dataLinePath.MoveTo(points[0].X, points[0].Y);
 
+            // Build shadow if enabled
+            if (chart.ShowShadow)
+            {
+                shadowPath.MoveTo(points[0].X, points[0].Y);
+            }
+
             for (int i = 0; i < n; i++)
             {
                 for (float x = points[i].X; x < points[i + 1].X; x += 1)
@@ -265,6 +359,11 @@ namespace RSChartsMaui
                     var dx = x - points[i].X;
                     var y = a[i] + b[i] * dx + c[i] * dx * dx + d[i] * dx * dx * dx;
                     dataLinePath.LineTo(x, y);
+
+                    if (chart.ShowShadow)
+                    {
+                        shadowPath.LineTo(x, y);
+                    }
                 }
             }
         }
@@ -276,6 +375,11 @@ namespace RSChartsMaui
 
             // Start at the first point
             dataLinePath.MoveTo(points[0].X, points[0].Y);
+
+            if (chart.ShowShadow)
+            {
+                shadowPath.MoveTo(points[0].X, points[0].Y);
+            }
 
             for (int i = 0; i < points.Count - 1; i++)
             {
@@ -291,6 +395,11 @@ namespace RSChartsMaui
 
                 // Add cubic Bezier curve segment
                 dataLinePath.CurveTo(cp1.X, cp1.Y, cp2.X, cp2.Y, p1.X, p1.Y);
+
+                if (chart.ShowShadow)
+                {
+                    shadowPath.CurveTo(cp1.X, cp1.Y, cp2.X, cp2.Y, p1.X, p1.Y);
+                }
             }
         }
 
