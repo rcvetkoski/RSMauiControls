@@ -13,7 +13,7 @@
         protected float maxDataValue;
         protected float yScale;
         protected PathF shadowPath;
-        public PathF dataLinePath;
+        protected PathF dataLinePath;
         public double ClipProgress;
 
         protected List<PointF> scaledPoints;
