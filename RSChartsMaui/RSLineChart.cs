@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Maui.Graphics;
+using System;
 using System.Collections.Generic;
 
 namespace RSChartsMaui
@@ -85,6 +86,9 @@ namespace RSChartsMaui
 
             SetPoints(chart.ChartData);
 
+            // Fix bug on ios need to add some moe space to bouds to draw string
+            int labelMarge = 4;
+
             // X-axis labels and indicators
             int labelInterval = Math.Max(1, dataCount / 12); // Show ~12 labels
             for (int i = 0; i < dataCount; i += labelInterval)
@@ -99,7 +103,7 @@ namespace RSChartsMaui
                 var stringBounds = new RectF(new PointF(x, y), stringSize);
 
                 // Draw label
-                canvas.DrawString((i + 1).ToString(), x, y + 20, 10, 15, HorizontalAlignment.Center, VerticalAlignment.Center);
+                canvas.DrawString((i + 1).ToString(), x - stringSize.Width / 2 - labelMarge / 2, y + 12, stringSize.Width + labelMarge, stringSize.Height + labelMarge, HorizontalAlignment.Center, VerticalAlignment.Top);
             }
 
             // Y-axis labels and indicators
@@ -111,13 +115,16 @@ namespace RSChartsMaui
                 // Draw indicator
                 canvas.DrawLine(x - 5, y, x, y);
 
+                var stringSize = canvas.GetStringSize(i.ToString(), Microsoft.Maui.Graphics.Font.Default, 12);
+                var stringBounds = new RectF(new PointF(x, y), stringSize);
+
                 // Draw label
-                canvas.DrawString(i.ToString(), x - 20, y + 5, HorizontalAlignment.Center);
+                canvas.DrawString(i.ToString(), 7, y - stringSize.Height / 2, stringSize.Width + labelMarge, stringSize.Height + labelMarge, HorizontalAlignment.Left, VerticalAlignment.Top);
             }
 
 
             // Build path for the partial curve
-            if(dataLinePath == null)
+            if (dataLinePath == null)
             {
                 dataLinePath = new PathF();
                 dataLinePath.MoveTo(interpolatedPoints[0].X, interpolatedPoints[0].Y);
