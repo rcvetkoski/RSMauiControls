@@ -1,4 +1,6 @@
-﻿namespace RSChartsMaui
+﻿using Microsoft.Maui.Graphics;
+
+namespace RSChartsMaui
 {
     public abstract class RSBaseChartDrawable : IDrawable
     {
@@ -101,9 +103,27 @@
             canvas.StrokeSize = 1;
 
             // Get data points
-            if (chart.ChartData == null || chart.ChartData.Count == 0) return;
+            if (chart.ChartData == null || chart.ChartData.Count == 0)
+            {
+                // Draw No Data
+                canvas.FontSize = 24;
+                canvas.FontColor = chart.AxisLabelColor;
+
+                var stringSize = canvas.GetStringSize("Na Data !", Microsoft.Maui.Graphics.Font.Default, 24);
+
+                canvas.DrawString("Na Data !", chartWidth / 2, chartHeight / 2 - stringSize.Height / 2, stringSize.Width, stringSize.Height, HorizontalAlignment.Left, VerticalAlignment.Center);
+                return;
+            }
 
             dataCount = chart.ChartData.Count;
+
+
+            // Label width calculations
+
+
+            var xLabelSize = canvas.GetStringSize(chart.ChartData.Max().ToString(), Microsoft.Maui.Graphics.Font.Default, 12);
+
+
 
             // Draw X-axis
             canvas.DrawLine(margin, height - margin, width - margin, height - margin);
@@ -172,7 +192,6 @@
                 canvas.DrawLine(x - 5, y, x, y);
 
                 var stringSize = canvas.GetStringSize(i.ToString(), Microsoft.Maui.Graphics.Font.Default, 12);
-                var stringBounds = new RectF(new PointF(x, y), stringSize);
 
                 // Draw label
                 canvas.DrawString(i.ToString(), 7, y - stringSize.Height / 2, stringSize.Width + labelMarge, stringSize.Height + labelMarge, HorizontalAlignment.Left, VerticalAlignment.Top);

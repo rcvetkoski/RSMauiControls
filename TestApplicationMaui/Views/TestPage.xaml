@@ -22,7 +22,7 @@
         
         <charts:RSLineChart x:Name="chartLine" Grid.Row="0" Grid.Column="0" ChartData="{Binding ChartData}" HeightRequest="250" IsCurved="True" ShowShadow="True" ShowDataPoints="True"/>
 
-        <charts:RSsplineChart x:Name="chartSpline" Grid.Row="1" Grid.Column="0" ChartData="{Binding ChartData}" HeightRequest="250" ShowShadow="True"/>
+        <!--<charts:RSsplineChart x:Name="chartSpline" Grid.Row="1" Grid.Column="0" ChartData="{Binding ChartData}" HeightRequest="250" ShowShadow="True"/>-->
 
         <Button Grid.Row="2" Grid.Column="0" Text="Animate Bla" Clicked="Button_Clicked" VerticalOptions="End" Margin="40"/>
     </Grid>

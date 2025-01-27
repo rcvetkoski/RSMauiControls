@@ -18,6 +18,12 @@
             base.Draw(canvas, dirtyRect);
 
 
+            if (chart.ChartData == null || chart.ChartData.Count == 0)
+            {
+                return;
+            }
+
+
             // Build path for the partial curve
             if (dataLinePath == null)
             {
