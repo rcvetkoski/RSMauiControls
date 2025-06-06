@@ -119,6 +119,9 @@
             if (canvas == null)
                 return SizeF.Zero;
 
+            if (text == null)
+                text = string.Empty;
+
             return canvas.GetStringSize(text, textFont, fontSize, HorizontalAlignment.Left, VerticalAlignment.Center);
         }
 
@@ -172,44 +175,53 @@
 
         public virtual void Draw(ICanvas canvas, RectF dirtyRect)
         {
-            Color placeholderColor;
-
-            if (InputView.ErrorMessageEnabled)
+            try
             {
-                placeholderColor = Colors.Red;
-                borderColor = Colors.Red;
+                Color placeholderColor;
+
+                if (InputView.ErrorMessageEnabled)
+                {
+                    placeholderColor = Colors.Red;
+                    borderColor = Colors.Red;
+                }
+                else if (InputView.IsActive)
+                {
+                    placeholderColor = InputView.ActiveColor;
+                    borderColor = InputView.ActiveColor;
+                }
+                else
+                {
+                    placeholderColor = InputView.PlaceholderColor;
+                    borderColor = InputView.BorderColor;
+                }
+
+                canvas.StrokeSize = InputView.IsActive ? 2 : InputView.BorderThikness;
+                canvas.Antialias = true;
+                canvas.FontColor = placeholderColor;
+                canvas.Font = TextFont;
+                canvas.FontSize = currentPlaceholderSize;
+
+
+                // Used to measure message label size and add margin to control accordingly
+                if (this.Canvas == null)
+                {
+                    this.Canvas = canvas;
+
+                    InputView.SetBottomMessageMargin(InputView);
+
+
+                    //if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
+                    //    InputView.SetBottomMessageMargin(InputView);
+                    //else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
+                    //    SetContentMargin(BorderMargin.Bottom);
+                }
             }
-            else if (InputView.IsActive)
+            catch(Exception ex)
             {
-                placeholderColor = InputView.ActiveColor;
-                borderColor = InputView.ActiveColor;
-            }
-            else
-            {
-                placeholderColor = InputView.PlaceholderColor;
-                borderColor = InputView.BorderColor;
+
             }
 
-            canvas.StrokeSize = InputView.IsActive ? 2 : InputView.BorderThikness;
-            canvas.Antialias = true;
-            canvas.FontColor = placeholderColor;
-            canvas.Font = TextFont;
-            canvas.FontSize = currentPlaceholderSize;
 
-
-            // Used to measure message label size and add margin to control accordingly
-            if (this.Canvas == null)
-            {
-                this.Canvas = canvas;
-
-                InputView.SetBottomMessageMargin(InputView);
-
-
-                //if (!string.IsNullOrEmpty(InputView.ErrorMessage) || !string.IsNullOrEmpty(InputView.HelperMessage) || !string.IsNullOrEmpty(InputView.characterCounterString))
-                //    InputView.SetBottomMessageMargin(InputView);
-                //else if (!string.IsNullOrEmpty(InputView.Prefix?.ToString()) || !string.IsNullOrEmpty(InputView.Suffix?.ToString()))
-                //    SetContentMargin(BorderMargin.Bottom);
-            }
         }
 
         protected void DrawMessage(ICanvas canvas, RectF dirtyRect)

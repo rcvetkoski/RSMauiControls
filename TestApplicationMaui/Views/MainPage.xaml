@@ -23,6 +23,11 @@
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
 
+
+        <rsInput:RSInputView Placeholder="Lol">
+            <Entry/>
+        </rsInput:RSInputView>
+
         <rsSegmented:RSsegmentedControl x:Name="seg"
                                         SelectedIndex="2"
                                         SelectedItem="{Binding SelectedItemSegment}"

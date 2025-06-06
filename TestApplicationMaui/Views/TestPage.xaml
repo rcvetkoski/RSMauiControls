@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TestApplicationMaui.Views.TestPage"
+             xmlns:rsInput="clr-namespace:RSInputViewMaui;assembly=RSInputViewMaui"
              xmlns:charts="clr-namespace:RSChartsMaui;assembly=RSChartsMaui"
              xmlns:tb="clr-namespace:TabViewMaui;assembly=TabViewMaui"
              xmlns:rsFixedSizePager="clr-namespace:RSFixedSizePagerMaui;assembly=RSFixedSizePagerMaui"
@@ -19,12 +20,9 @@
 
 
     <Grid x:Name="grid" RowDefinitions="Auto, Auto, *" ColumnDefinitions="*">
-        
-        <charts:RSLineChart x:Name="chartLine" Grid.Row="0" Grid.Column="0" ChartData="{Binding ChartData}" HeightRequest="250" IsCurved="True" ShowShadow="True" ShowDataPoints="True"/>
-
-        <!--<charts:RSsplineChart x:Name="chartSpline" Grid.Row="1" Grid.Column="0" ChartData="{Binding ChartData}" HeightRequest="250" ShowShadow="True"/>-->
-
-        <Button Grid.Row="2" Grid.Column="0" Text="Animate Bla" Clicked="Button_Clicked" VerticalOptions="End" Margin="40"/>
+        <rsInput:RSInputView Placeholder="Lol" Grid.Row="0" Grid.Column="0">
+            <Entry Text="qwdwqdqw"/>
+        </rsInput:RSInputView>
     </Grid>
 
 </ContentPage>

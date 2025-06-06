@@ -6,10 +6,4 @@ public partial class TestPage : ContentPage
     {
         InitializeComponent();
     }
-
-    private void Button_Clicked(object sender, EventArgs e)
-    {
-        chartLine.StartAnimation(1);
-        //chartSpline.StartAnimation(1);
-    }
 }
