@@ -177,7 +177,7 @@ namespace RSPickerMaui
             };
             Button button = new Button() 
             { 
-                Text = "Cancel", 
+                Text = "Done", 
                 HorizontalOptions = LayoutOptions.End, 
                 VerticalOptions = LayoutOptions.Center,
                 Command = new Command(async ()=>

@@ -23,29 +23,18 @@
 
     <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
 
+        <rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
+                           EnumType="{x:Type enums:DaysOfWeekEnum}"
+                           Placeholder="Days of week"
+                           HasClearIcon="True"
+                           SelectedItem="{Binding SelectedDayOfWeek}"/>
 
-        <rsInput:RSInputView Placeholder="Lol">
-            <Entry/>
-        </rsInput:RSInputView>
+        
+        
+        <Label Text="{Binding SelectedDayOfWeek}" FontSize="24" VerticalOptions="Center"/>
 
-        <rsSegmented:RSsegmentedControl x:Name="seg"
-                                        SelectedIndex="2"
-                                        SelectedItem="{Binding SelectedItemSegment}"
-                                        HorizontalOptions="Center"
-                                        SelectionMode="Mandatory"
-                                        Orientation="Vertical"
-                                        Margin="10">
-            <rsSegmented:RSsegmentedControl.ItemsSource>
-                <x:Array Type="{x:Type x:Int32}">
-                    <x:Int32>1</x:Int32>
-                    <x:Int32>2</x:Int32>
-                    <x:Int32>3</x:Int32>
-                    <x:Int32>4</x:Int32>
-                </x:Array>
-            </rsSegmented:RSsegmentedControl.ItemsSource>
-        </rsSegmented:RSsegmentedControl>
-        <Label Text="{Binding SelectedIndex, Source={x:Reference seg}}"/>
-        <Label Text="{Binding SelectedItemSegment}" HorizontalOptions="End"/>
+
+      
         <Button Grid.Row="1" Grid.Column="0" Text="GoToTestPage" Clicked="GoToTestPage"/>
         
     </Grid>

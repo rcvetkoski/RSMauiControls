@@ -20,6 +20,23 @@ namespace TestApplicationMaui.ViewModels
         public ObservableCollection<DaysOfWeekEnum> DaysOfWeek { get; set; }
         public ObservableCollection<DaysOfWeekEnum> SelectedDaysOfWeek { get; set; }
 
+        private DaysOfWeekEnum selectedDayOfWeek;
+        public DaysOfWeekEnum SelectedDayOfWeek
+        {
+            get
+            {
+                return selectedDayOfWeek;
+            }
+            set
+            {
+                if (selectedDayOfWeek != value)
+                {
+                    selectedDayOfWeek = value;  
+                    OnPropertyChanged(nameof(SelectedDayOfWeek));   
+                }
+            }
+        }
+
         private TimeSpan time;
         public TimeSpan Time
         {
