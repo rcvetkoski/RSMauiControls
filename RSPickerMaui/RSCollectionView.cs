@@ -1,46 +1,136 @@
 ﻿using System.Collections;
-using System.Collections.Specialized;
-using static Microsoft.Maui.Controls.VisualStateManager;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace RSPickerMaui
 {
-    public class RSCollectionView : CollectionView, IDisposable
+    public class RSCollectionView : CollectionView
     {
+        private bool canUpdateItemsSource = true;
+
+        private ItemSourceHelper previousSelectedItem;
+
+        public string DisplayMemberPath { get; set; }
+
+        public new event EventHandler<SelectionChangedEventArgs> SelectionChanged;
+
+        public static readonly BindableProperty ConverterProperty = BindableProperty.Create(nameof(Converter), typeof(IValueConverter), typeof(RSCollectionView), default(IValueConverter));
+        public IValueConverter Converter
+        {
+            get => (IValueConverter)GetValue(ConverterProperty);
+            set => SetValue(ConverterProperty, value);
+        }
+
         public RSCollectionView()
         {
-            // Set style
-            SetCollectionStyle();
-
-            checkBoxes = new List<CheckBox>();
-
-            // Set default ItemTemplate
             SetDefultDataTemplate();
         }
 
-        // Used to Unsubscribe events 
-        private List<CheckBox> checkBoxes;
-        
-        private void SetCollectionStyle()
+        public static new readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(IList), typeof(RSCollectionView), null);
+        public new IList SelectedItems
         {
-            Setter backgroundColorSetter = new() { Property = BackgroundColorProperty, Value = Colors.Transparent };
-            VisualState stateSelected = new() { Name = CommonStates.Selected, Setters = { backgroundColorSetter } };
-            VisualState stateNormal = new() { Name = CommonStates.Normal };
-            VisualStateGroup visualStateGroup = new() { Name = nameof(CommonStates), States = { stateSelected, stateNormal } };
-            VisualStateGroupList visualStateGroupList = new() { visualStateGroup };
-            Setter vsgSetter = new() { Property = VisualStateGroupsProperty, Value = visualStateGroupList };
-            Style style = new(typeof(Grid)) { Setters = { vsgSetter } };
+            get { return (IList)GetValue(SelectedItemsProperty); }
+            set { SetValue(SelectedItemsProperty, value); }
+        }
 
-            // Add the style to the resource dictionary
-            Resources.Add(style);
+        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+
+
+            if (propertyName == CollectionView.ItemsSourceProperty.PropertyName && canUpdateItemsSource)
+            {
+                List<object> items = new List<object>();
+
+                foreach (var item in ItemsSource)
+                {
+                    bool isSelected = false;
+
+                    if (SelectionMode == SelectionMode.Multiple)
+                    {
+                        if (SelectedItems == null)
+                            isSelected = false;
+                        else if (SelectedItems.Contains(item))
+                            isSelected = true;
+                    }
+                    else
+                    {
+                        if (SelectedItem == null)
+                            isSelected = false;
+                        else if (SelectedItem.Equals(item))
+                            isSelected = true;
+                    }
+
+                    ItemSourceHelper itemSourceHelper = new ItemSourceHelper()
+                    {
+                        Item = item,
+                        IsSelected = isSelected
+                    };
+
+                    items.Add(itemSourceHelper);
+                }
+
+                canUpdateItemsSource = false;
+                ItemsSource = items;
+            }
+            else if (propertyName == RSCollectionView.SelectedItemsProperty.PropertyName)
+            {
+                if (SelectedItems == null || ItemsSource == null || SelectionMode != SelectionMode.Multiple)
+                    return;
+
+                SelectItemsInSource(SelectionMode);
+            }
+            else if (propertyName == RSCollectionView.SelectedItemProperty.PropertyName)
+            {
+                if (SelectedItem == null || ItemsSource == null || SelectionMode == SelectionMode.Multiple)
+                    return;
+
+                SelectItemsInSource(SelectionMode);
+
+            }
+            else if (propertyName == RSCollectionView.SelectionModeProperty.PropertyName)
+            {
+                if (ItemsSource == null || SelectedItem == null || SelectedItems == null)
+                    return;
+
+                SetDefultDataTemplate();
+                SelectItemsInSource(SelectionMode);
+            }
+        }
+
+        /// <summary>
+        /// Selects the items either in Selected Items if multiple choice or SelectedItem if single
+        /// </summary>
+        /// <param name="selectionMode"></param>
+        private void SelectItemsInSource(SelectionMode selectionMode)
+        {
+            foreach (ItemSourceHelper item in ItemsSource)
+            {
+                if (SelectionMode == SelectionMode.Multiple)
+                {
+                    if (SelectedItems.Contains(item.Item))
+                        (item as ItemSourceHelper).IsSelected = true;
+                    else
+                        (item as ItemSourceHelper).IsSelected = false;
+                }
+                else
+                {
+                    if (SelectedItem.Equals(item.Item))
+                        (item as ItemSourceHelper).IsSelected = true;
+                    else
+                        (item as ItemSourceHelper).IsSelected = false;
+                }
+            }
         }
 
         private void SetDefultDataTemplate()
         {
             ItemTemplate = new DataTemplate(() =>
             {
-                // Create the grid and define its columns
+                // Grid with 1 row and 2 columns
                 var grid = new Grid
                 {
+                    RowDefinitions = { new RowDefinition { Height = new GridLength(50) } },
                     ColumnDefinitions =
                     {
                         new ColumnDefinition { Width = GridLength.Auto },
@@ -48,202 +138,141 @@ namespace RSPickerMaui
                     }
                 };
 
-                // Create the CheckBox and set its IsChecked binding
-                var checkBox = new CheckBox();
-                checkBoxes.Add(checkBox);
-                checkBox.CheckedChanged += CheckBox_CheckedChanged;
-                checkBox.SetBinding(CheckBox.IsCheckedProperty, "IsSelected");
-                Grid.SetColumn(checkBox, 0); // Set CheckBox to the first column
-
-                // Create the Label and set its Text binding
-                var label = new Label { VerticalOptions = LayoutOptions.Center };
-                if (string.IsNullOrEmpty(DisplayMemberPath))
+                // checkButton bound to IsSelected
+                View checkButton;
+                if (SelectionMode == SelectionMode.Multiple)
                 {
-                    label.SetBinding(Label.TextProperty, "Item");
+                    checkButton = new CheckBox()
+                    {
+                        VerticalOptions = LayoutOptions.Center
+                    };
+
+                    checkButton.SetBinding(CheckBox.IsCheckedProperty, "IsSelected");
                 }
                 else
                 {
-                    label.SetBinding(Label.TextProperty, "Item." + DisplayMemberPath);
-                }
-                Grid.SetColumn(label, 1); // Set Label to the second column
+                    checkButton = new RadioButton()
+                    {
+                        VerticalOptions = LayoutOptions.Center
+                    };
 
-                // Add the CheckBox and Label to the Grid
-                grid.Children.Add(checkBox);
-                grid.Children.Add(label);
+                    checkButton.SetBinding(RadioButton.IsCheckedProperty, "IsSelected");
+                }
+
+                // Add tap gesture to RadioButton
+                var rbTapGesture = new TapGestureRecognizer()
+                {
+                    Command = new Command(() => ItemClicked(grid.BindingContext as ItemSourceHelper))
+                };
+                checkButton.GestureRecognizers.Add(rbTapGesture);
+
+                // Label bound to Item
+                var label = new Label
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                    TextColor = Application.Current.RequestedTheme == AppTheme.Dark 
+                    ? Colors.White 
+                    : Colors.Black
+                };
+
+                if(DisplayMemberPath != null)
+                    label.SetBinding(Label.TextProperty, $"Item.{DisplayMemberPath}", converter: Converter);
+                else
+                    label.SetBinding(Label.TextProperty, "Item", converter: Converter);
+
+                // Add tap gesture to Grid itself
+                var gridTapGesture = new TapGestureRecognizer()
+                    {
+                        Command = new Command(() => ItemClicked(grid.BindingContext as ItemSourceHelper))
+                    };
+                grid.GestureRecognizers.Add(gridTapGesture);
+
+                // Add elements to Grid
+                grid.Add(checkButton, 0, 0);
+                grid.Add(label, 1, 0);
+
+
+                // Visual States
+                var normalState = new VisualState { Name = "Normal" };
+                var selectedState = new VisualState
+                {
+                    Name = "Selected",
+                    Setters =
+                    {
+                        new Setter
+                        {
+                            Property = VisualElement.BackgroundColorProperty,
+                            Value = Colors.Transparent
+                        }
+                    }
+                };
+                var stateGroup = new VisualStateGroup
+                {
+                    Name = "CommonStates",
+                    States = { normalState, selectedState }
+                };
+                VisualStateManager.SetVisualStateGroups(grid, new VisualStateGroupList { stateGroup });
 
                 return grid;
             });
         }
 
-        private void CheckBox_CheckedChanged(object? sender, CheckedChangedEventArgs e)
+        private void ItemClicked(ItemSourceHelper itemSourceHelper)
         {
-            if (e.Value)
+            if (itemSourceHelper == null)
+                return;
+
+            object item = itemSourceHelper.Item;
+
+            if (SelectionMode == SelectionMode.Multiple)
             {
-                if(!(this as CollectionView).SelectedItems.Contains((sender as CheckBox).BindingContext))
-                    (this as CollectionView).SelectedItems.Add((sender as CheckBox).BindingContext);
+                if (SelectedItems == null)
+                    return;
+
+                if (SelectedItems.Contains(item))
+                {
+                    itemSourceHelper.IsSelected = false;
+                    SelectedItems.Remove(item);
+                }
+                else
+                {
+                    itemSourceHelper.IsSelected = true;
+                    SelectedItems.Add(item);
+                }
+
+
+                List<object> list = new List<object>();
+                foreach(var item2 in SelectedItems)
+                    list.Add(item2); 
+
+                SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(list));
             }
             else
             {
-                if ((this as CollectionView).SelectedItems.Contains((sender as CheckBox).BindingContext))
-                    (this as CollectionView).SelectedItems.Remove((sender as CheckBox).BindingContext);
-            }
-        }
-
-        private List<object>? tempItemsSource;
-
-
-        public static readonly BindableProperty DisplayMemberPathProperty = BindableProperty.Create(nameof(DisplayMemberPath), typeof(string), typeof(RSCollectionView), null, propertyChanged: DisplayMemberPathChanged);
-        public string DisplayMemberPath
-        {
-            get { return (string)GetValue(DisplayMemberPathProperty); }
-            set { SetValue(DisplayMemberPathProperty, value); }
-        }
-        private static void DisplayMemberPathChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable == null)
-                return;
-        }
-
-
-        new public static readonly BindableProperty SelectedItemsProperty = BindableProperty.Create(nameof(SelectedItems), typeof(IList), typeof(RSCollectionView), null, propertyChanged: SelectedItemsChanged);
-        new public IList SelectedItems
-        {
-            get { return (IList)GetValue(SelectedItemsProperty); }
-            set { SetValue(SelectedItemsProperty, value); }
-        }
-        private static void SelectedItemsChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable == null)
-                return;
-
-            RSCollectionView rsCollectionView = (bindable as RSCollectionView);
-
-            if (newValue != null && rsCollectionView.ItemsSource != null)
-                rsCollectionView.FillOriginalItemsSource();
-        }
-
-        private void FillOriginalItemsSource()
-        {
-            List<object> tempList = new List<object>();
-
-            foreach (var item in SelectedItems)
-            {
-                foreach (var item2 in (this as CollectionView).ItemsSource)
+                if (SelectedItem != item)
                 {
-                    if ((item2 as RSItem).Item.Equals(item))
-                    {
-                        (item2 as RSItem).IsSelected = true;
-                        tempList.Add(item2);
-                    }
-                }
-            }
+                    SelectedItem = item;
+                    itemSourceHelper.IsSelected = true;
 
-            SelectedItems.Clear();
-            (this as CollectionView).SelectedItems = tempList;
-        }
+                    if (previousSelectedItem != null && previousSelectedItem != itemSourceHelper)
+                        previousSelectedItem.IsSelected = false;
 
-        new public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IList), typeof(RSCollectionView), null, propertyChanged: ItemsSourceChanged);
-        new public IList ItemsSource
-        {
-            get { return (IList)GetValue(ItemsSourceProperty); }
-            set { SetValue(ItemsSourceProperty, value); }
-        }
-        private static void ItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
-        {
-            if (bindable == null)
-                return;
-
-            if (newValue != null)
-            {
-                RSCollectionView rsCollectionView = (bindable as RSCollectionView);
-                rsCollectionView.tempItemsSource = new List<object>();
-
-                foreach (var item in rsCollectionView.ItemsSource)
-                {
-                    RSItem rSItem = new RSItem(item);
-                    rsCollectionView.tempItemsSource.Add(rSItem);
-                }
-
-                (bindable as CollectionView).ItemsSource = rsCollectionView.tempItemsSource;
+                    previousSelectedItem = itemSourceHelper;
 
 
-                // Fill SelectedItems
-                if (rsCollectionView.SelectedItems != null)
-                    rsCollectionView.FillOriginalItemsSource();
-
-
-                if (rsCollectionView.ItemsSource is INotifyCollectionChanged observableDataSource)
-                    rsCollectionView.Add_ItemsSource_ObservableDataSource_CollectionChanged_Event(observableDataSource);
-            }
-        }
-
-        public void Add_ItemsSource_ObservableDataSource_CollectionChanged_Event(INotifyCollectionChanged source)
-        {
-            source.CollectionChanged -= ItemsSourceDataSource_CollectionChanged;
-            source.CollectionChanged += ItemsSourceDataSource_CollectionChanged;
-        }
-        private void ItemsSourceDataSource_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (var item in e.NewItems)
-                    {
-                        RSItem rSItem = new RSItem(item);
-                        tempItemsSource.Add(rSItem);
-                    }
-                    OnPropertyChanged("ItemsSource");
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (var item in e.OldItems)
-                    {
-                        var itemToRemove = tempItemsSource.First(x => (x as RSItem).Item == item);
-                        tempItemsSource.Remove(itemToRemove);
-                    }
-                    OnPropertyChanged("ItemsSource");
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        protected override void OnSelectionChanged(SelectionChangedEventArgs args)
-        {
-            foreach (var item in args.CurrentSelection)
-            {
-                if (!args.PreviousSelection.Contains(item))
-                {
-                    (item as RSItem).IsSelected = true;
-                    SelectedItems?.Add((item as RSItem).Item);
-                }
-            }
-
-            foreach (var item in args.PreviousSelection)
-            {
-                if (!args.CurrentSelection.Contains(item))
-                {
-                    (item as RSItem).IsSelected = false;
-                    SelectedItems?.Remove((item as RSItem).Item);
+                    SelectionChanged?.Invoke(this, new SelectionChangedEventArgs(new List<object>() { SelectedItem }));
                 }
             }
         }
+    }
 
-        public void ClearSelectedItems()
+    public class SelectionChangedEventArgs : EventArgs
+    {
+        public SelectionChangedEventArgs(List<object> list) 
         {
-            foreach (RSItem item in tempItemsSource)
-                item.IsSelected = false;
-        }
+            CurrentSelection = list;    
+        }  
 
-        public void Dispose()
-        {
-            if (ItemsSource != null && ItemsSource is INotifyCollectionChanged observableDataSource)
-                observableDataSource.CollectionChanged -= ItemsSourceDataSource_CollectionChanged;
-
-            // Unsubscribe event
-            foreach (CheckBox checkBox in checkBoxes)
-                checkBox.CheckedChanged -= CheckBox_CheckedChanged;
-        }
+        public IList CurrentSelection { get;set; }           
     }
 }

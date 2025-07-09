@@ -6,6 +6,7 @@
              xmlns:vp="clr-namespace:ViewPagerMaui;assembly=ViewPagerMaui"
              xmlns:rsInput="clr-namespace:RSInputViewMaui;assembly=RSInputViewMaui"
              xmlns:rsPicker="clr-namespace:RSPickerMaui;assembly=RSPickerMaui"
+             xmlns:converters="clr-namespace:TestApplicationMaui.Helpers.Converters"
              xmlns:rsCircle="clr-namespace:RSCircleCountdownMaui;assembly=RSCircleCountdownMaui"
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:model="clr-namespace:TestApplicationMaui.Models"
@@ -20,22 +21,34 @@
         <vm:MainViewModel/>
     </ContentPage.BindingContext>
 
+    <ContentPage.Resources>
+        <converters:EnumToFriendlyStringConverter x:Key="EnumToFriendlyStringConverter" />
+    </ContentPage.Resources>
 
-    <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
+
+    <Grid RowDefinitions="*, *" ColumnDefinitions="*" Margin="20">
 
         <rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
-                           EnumType="{x:Type enums:DaysOfWeekEnum}"
+                           Converter="{StaticResource EnumToFriendlyStringConverter}"
+                           ItemsSource="{Binding DaysOfWeek}"
+                           SelectedItems="{Binding SelectedDaysOfWeek}"
                            Placeholder="Days of week"
-                           HasClearIcon="True"
-                           SelectedItem="{Binding SelectedDayOfWeek}"/>
+                           HasClearIcon="True" 
+                           SelectionMode="Multiple" VerticalOptions="Start"
+                           IsVisible="True"
+                           />
 
-        
-        
-        <Label Text="{Binding SelectedDayOfWeek}" FontSize="24" VerticalOptions="Center"/>
+
+        <Label Grid.Row="0" Grid.Column="0"
+               Text="{Binding SelectedPeople.Count}"
+               FontSize="24" 
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               BackgroundColor="Red"/>
 
 
       
-        <Button Grid.Row="1" Grid.Column="0" Text="GoToTestPage" Clicked="GoToTestPage"/>
+        <Button Grid.Row="1" Grid.Column="0" VerticalOptions="End" Text="GoToTestPage" Clicked="GoToTestPage"/>
         
     </Grid>
 

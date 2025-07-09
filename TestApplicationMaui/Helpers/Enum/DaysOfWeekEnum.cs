@@ -8,6 +8,7 @@
         Thursday,
         Friday,
         Saturday,
-        Sunday
+        Sunday,
+        TrollMehe
     }
 }

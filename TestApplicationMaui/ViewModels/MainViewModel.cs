@@ -13,7 +13,22 @@ namespace TestApplicationMaui.ViewModels
     public class MainViewModel : BaseViewModel
     {
         public ObservableCollection<Person> People { get; set; }
-        public Person SelectedPerson { get; set; }  
+        private Person selectedPerson;
+        public Person SelectedPerson         
+        { 
+            get
+            {
+                return selectedPerson;
+            }
+            set
+            {
+                if(selectedPerson != value)
+                {
+                    selectedPerson = value;
+                    OnPropertyChanged(nameof(SelectedPerson));
+                }
+            }
+        }  
         public ObservableCollection<Person> SelectedPeople { get; set; }
 
 
@@ -87,7 +102,8 @@ namespace TestApplicationMaui.ViewModels
                 DaysOfWeekEnum.Thursday,
                 DaysOfWeekEnum.Friday,
                 DaysOfWeekEnum.Saturday,
-                DaysOfWeekEnum.Sunday
+                DaysOfWeekEnum.Sunday,
+                DaysOfWeekEnum.TrollMehe
             };
 
             SelectedDaysOfWeek = new ObservableCollection<DaysOfWeekEnum>();
