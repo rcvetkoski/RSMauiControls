@@ -11,7 +11,7 @@
              xmlns:vm="clr-namespace:TestApplicationMaui.ViewModels"
              xmlns:model="clr-namespace:TestApplicationMaui.Models"
              xmlns:views="clr-namespace:TestApplicationMaui.Views"
-             xmlns:rsSegmented="clr-namespace:RSsegmentedControlMaui;assembly=RSsegmentedControlMaui"
+             xmlns:segmented="clr-namespace:RSsegmentedControlMaui;assembly=RSsegmentedControlMaui"
              xmlns:enums="clr-namespace:TestApplicationMaui.Helpers.Enum"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Name="page"
@@ -26,7 +26,7 @@
     </ContentPage.Resources>
 
 
-    <Grid RowDefinitions="*, *" ColumnDefinitions="*" Margin="20">
+    <Grid RowDefinitions="Auto, *" ColumnDefinitions="*" Margin="20">
 
         <rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
                            Converter="{StaticResource EnumToFriendlyStringConverter}"
@@ -46,8 +46,29 @@
                HorizontalOptions="Center"
                BackgroundColor="Red"/>
 
+        <segmented:RSsegmentedControl Grid.Row="1" Grid.Column="0" 
+                                              Stroke="{StaticResource Gray600}"
+                                              SelectedIndex="{Binding SelectedProductType}"
+                                              SelectionMode="Mandatory" VerticalOptions="Center"
+                                              Orientation="Horizontal"
+                                              Margin="20, 0, 0, 5">
+            <segmented:RSsegmentedControl.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>All</x:String>
+                    <x:String>Common</x:String>
+                    <x:String>Branded</x:String>
+                    <x:String>User</x:String>
+                </x:Array>
+            </segmented:RSsegmentedControl.ItemsSource>
+            <segmented:RSsegmentedControl.ItemTemplate>
+                <DataTemplate>
+                    <Label Style="{StaticResource Label15Bold}" Padding="10, 7, 10, 7" Text="{Binding .}"/>
+                </DataTemplate>
+            </segmented:RSsegmentedControl.ItemTemplate>
+        </segmented:RSsegmentedControl>
 
-      
+
+
         <Button Grid.Row="1" Grid.Column="0" VerticalOptions="End" Text="GoToTestPage" Clicked="GoToTestPage"/>
         
     </Grid>
