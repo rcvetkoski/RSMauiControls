@@ -26,7 +26,7 @@
     </ContentPage.Resources>
 
 
-    <Grid RowDefinitions="Auto, *" ColumnDefinitions="*" Margin="20">
+    <Grid RowDefinitions="Auto, *" ColumnDefinitions="*" Margin="20" RowSpacing="10">
 
         <rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
                            Converter="{StaticResource EnumToFriendlyStringConverter}"
@@ -39,34 +39,30 @@
                            />
 
 
-        <Label Grid.Row="0" Grid.Column="0"
-               Text="{Binding SelectedPeople.Count}"
+        <Label Grid.Row="1" Grid.Column="0"
+               Text="{Binding SelectedItemSegment}"
                FontSize="24" 
                VerticalOptions="Center"
                HorizontalOptions="Center"
                BackgroundColor="Red"/>
 
-        <segmented:RSsegmentedControl Grid.Row="1" Grid.Column="0" 
-                                              Stroke="{StaticResource Gray600}"
-                                              SelectedIndex="{Binding SelectedProductType}"
-                                              SelectionMode="Mandatory" VerticalOptions="Center"
-                                              Orientation="Horizontal"
-                                              Margin="20, 0, 0, 5">
-            <segmented:RSsegmentedControl.ItemsSource>
+        <segmented:SegmentedControl Grid.Row="1" Grid.Column="0"
+                                    StyleMode="Underline" 
+                                    Orientation="Horizontal"
+                                    VerticalOptions="Center"
+                                    LayoutMode="Auto"
+                                    SelectedIndex="{Binding SelectedItemSegment}">
+            <segmented:SegmentedControl.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                     <x:String>All</x:String>
                     <x:String>Common</x:String>
                     <x:String>Branded</x:String>
                     <x:String>User</x:String>
                 </x:Array>
-            </segmented:RSsegmentedControl.ItemsSource>
-            <segmented:RSsegmentedControl.ItemTemplate>
-                <DataTemplate>
-                    <Label Style="{StaticResource Label15Bold}" Padding="10, 7, 10, 7" Text="{Binding .}"/>
-                </DataTemplate>
-            </segmented:RSsegmentedControl.ItemTemplate>
-        </segmented:RSsegmentedControl>
+            </segmented:SegmentedControl.ItemsSource>
+        </segmented:SegmentedControl>
 
+        <Image Grid.Row="1" Grid.Column="0" HorizontalOptions="End"  VerticalOptions="Center" HeightRequest="30" WidthRequest="30" Source="eye.png"/>
 
 
         <Button Grid.Row="1" Grid.Column="0" VerticalOptions="End" Text="GoToTestPage" Clicked="GoToTestPage"/>
