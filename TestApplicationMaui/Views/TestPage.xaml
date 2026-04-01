@@ -20,9 +20,22 @@
 
 
     <Grid x:Name="grid" RowDefinitions="Auto, Auto, *" ColumnDefinitions="*">
-        <rsInput:RSInputView Placeholder="Lol" Grid.Row="0" Grid.Column="0">
-            <Entry Text="qwdwqdqw"/>
-        </rsInput:RSInputView>
+        <tb:TabView Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" 
+             ItemsSource="{Binding ChartData}" 
+             VerticalOptions="Fill" 
+             TabsItemBindingPath="Name" 
+             ContentItemBindingPath="Name"
+             BackgroundColor="LightBlue">
+            <tb:TabView.ContentItemTemplate>
+                <DataTemplate>
+                    <CollectionView ItemsSource="{Binding BindingContext.ChartData, Source={x:Reference testPage}}">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical"/>
+                        </CollectionView.ItemsLayout>
+                    </CollectionView>
+                </DataTemplate>
+            </tb:TabView.ContentItemTemplate>
+        </tb:TabView>
     </Grid>
 
 </ContentPage>

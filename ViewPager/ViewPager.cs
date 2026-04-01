@@ -1,4 +1,4 @@
-﻿namespace ViewPagerMaui
+namespace ViewPagerMaui
 {
     public class ViewPager : CollectionView
     {
@@ -8,6 +8,8 @@
             get { return (string)GetValue(ItemBindingPathProperty); }
             set { SetValue(ItemBindingPathProperty, value); }
         }
+
+
 
         public int CurrentIndex
         {
@@ -23,7 +25,7 @@
 
         private int currentIndex = 0;
 
-        public double offsetX = 0;
+        public double OffsetX { get; set; } = 0;
 
         public event EventHandler CurrentIndexChanged;
 
@@ -37,31 +39,40 @@
 
         public ViewPager()
         {
-            this.ItemsLayout = LinearItemsLayout.Horizontal;
+            ItemsLayout = LinearItemsLayout.Horizontal;
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
             SetDefaultContentItemTemplate();
+        }
 
+        static ViewPager()
+        {
             Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("viewPager", (handler, view) =>
             {
-                if (view != this)
-                    return;
+                if (view is ViewPager viewPager)
+                {
 #if ANDROID
-                recyclerView = handler.PlatformView;
-                var pagerSnapHelper = new AndroidX.RecyclerView.Widget.PagerSnapHelper();
-                pagerSnapHelper.AttachToRecyclerView(recyclerView);
+                    viewPager.recyclerView = handler.PlatformView;
+
+                    if (viewPager.recyclerView.GetOnFlingListener() == null)
+                    {
+                        var pagerSnapHelper = new AndroidX.RecyclerView.Widget.PagerSnapHelper();
+                        pagerSnapHelper.AttachToRecyclerView(viewPager.recyclerView);
+                    }
 #endif
 
 #if IOS
-                var platformView = handler.PlatformView;
-                var nativeControl = platformView.Subviews.FirstOrDefault();
+                    var platformView = handler.PlatformView;
+                    var nativeControl = platformView.Subviews.FirstOrDefault();
 
-                if (nativeControl != null) 
-                {
-                    uICollectionView = nativeControl as UIKit.UICollectionView;
-                    uICollectionView.PagingEnabled = true;
-                    uICollectionView.Bounces = false;
-                    uICollectionView.ShowsHorizontalScrollIndicator = false;    
-                }
+                    if (nativeControl != null) 
+                    {
+                        viewPager.uICollectionView = nativeControl as UIKit.UICollectionView;
+                        viewPager.uICollectionView.PagingEnabled = true;
+                        viewPager.uICollectionView.Bounces = false;
+                        viewPager.uICollectionView.ShowsHorizontalScrollIndicator = false;    
+                    }
 #endif
+                }
             });
         }
 
@@ -92,12 +103,12 @@
             double leftX = currentIndex > 0 ? (this.Width * currentIndex) - this.Width : -this.Width;
             double rightX = currentIndex > 0 ? (this.Width * (currentIndex + 1)) : this.Width;
 
-            if ((e.HorizontalOffset + offsetX) >= rightX)
+            if ((e.HorizontalOffset + OffsetX) >= rightX)
             {
                 currentIndex++;
                 OnCurrentIndexChanged();
             }
-            else if ((e.HorizontalOffset + offsetX) <= leftX)
+            else if ((e.HorizontalOffset + OffsetX) <= leftX)
             {
                 currentIndex--;
                 OnCurrentIndexChanged();
@@ -119,13 +130,15 @@
         public void ScrollTo(int position)
         {
 #if ANDROID
+            if (recyclerView == null) return;
             var xOffset = recyclerView.ComputeHorizontalScrollOffset();
             var scrollX = (int)(recyclerView.Width * position) - xOffset;
             recyclerView.SmoothScrollBy(scrollX, 0);
 #endif
 #if IOS
-        var scrollX = uICollectionView.Frame.Width * position;
-        uICollectionView.SetContentOffset(new CoreGraphics.CGPoint(scrollX, 0), true);
+            if (uICollectionView == null) return;
+            var scrollX = uICollectionView.Frame.Width * position;
+            uICollectionView.SetContentOffset(new CoreGraphics.CGPoint(scrollX, 0), true);
 #endif
         }
 

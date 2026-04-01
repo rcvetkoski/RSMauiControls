@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Windows.Input;
 using ViewPagerMaui;
 
 namespace TabViewMaui
 {
-    public class TabView : Grid, IDisposable
+    public class TabView : Grid
     {
         public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(TabView), null, propertyChanged: OnPropertyChanged);
         public IEnumerable ItemsSource
@@ -14,8 +14,11 @@ namespace TabViewMaui
         }
         private static void OnPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as TabView).viewPager.ItemsSource = (IEnumerable)newValue;
-            BindableLayout.SetItemsSource((bindable as TabView).tabsContent, (IEnumerable)newValue);
+            if (bindable is TabView tabView && tabView.viewPager != null)
+            {
+                tabView.viewPager.ItemsSource = (IEnumerable)newValue;
+                BindableLayout.SetItemsSource(tabView.tabsContent, (IEnumerable)newValue);
+            }
         }
 
         public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(TabView), null, BindingMode.TwoWay, propertyChanged: OnSelectedItemPropertyChanged);
@@ -26,7 +29,10 @@ namespace TabViewMaui
         }
         private static void OnSelectedItemPropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-             //(bindable as TabView).SetCurrentIndex(newValue);
+            if (bindable is TabView tabView && !tabView.IsSelectedItemInternallySet)
+            {
+                tabView.SetCurrentIndex(newValue);
+            }
         }
 
         public static readonly BindableProperty ContentItemTemplateProperty = BindableProperty.Create(nameof(ContentItemTemplate), typeof(DataTemplate), typeof(TabView), propertyChanged: OnContentItemTemplatePropertyChanged);
@@ -37,7 +43,10 @@ namespace TabViewMaui
         }
         private static void OnContentItemTemplatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            (bindable as TabView).viewPager.ItemTemplate = (DataTemplate)newValue;
+            if (bindable is TabView tabView && tabView.viewPager != null)
+            {
+                tabView.viewPager.ItemTemplate = (DataTemplate)newValue;
+            }
         }
 
 
@@ -49,7 +58,10 @@ namespace TabViewMaui
         }
         private static void OnTabsItemTemplatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
         {
-            BindableLayout.SetItemTemplate((bindable as TabView).tabsContent, (DataTemplate)newValue);
+            if (bindable is TabView tabView && tabView.tabsContent != null)
+            {
+                BindableLayout.SetItemTemplate(tabView.tabsContent, (DataTemplate)newValue);
+            }
         }
 
 
@@ -88,6 +100,7 @@ namespace TabViewMaui
             get { return (string)GetValue(ContentItemBindingPathProperty); }
             set { SetValue(ContentItemBindingPathProperty, value); }
         }
+
 
 
         private ScrollView tabsHolder;
@@ -212,6 +225,12 @@ namespace TabViewMaui
         {
             viewPager = new ViewPager();
             viewPager.SetBinding(ViewPager.ItemBindingPathProperty, new Binding(nameof(TabView.ContentItemBindingPath), source: this));
+            
+            if (this.ContentItemTemplate != null) 
+                viewPager.ItemTemplate = this.ContentItemTemplate;
+            if (this.ItemsSource != null) 
+                viewPager.ItemsSource = this.ItemsSource;
+                
             viewPager.Scrolled += ViewPager_Scrolled;
             viewPager.CurrentIndexChanged += ViewPager_CurrentIndexChanged;
         }
@@ -223,12 +242,12 @@ namespace TabViewMaui
 
         private void TabsHolder_MeasureInvalidated(object sender, EventArgs e)
         {
-            if (!tabsContent.Any())
+            if (tabsContent.Children.Count == 0)
                 return;
 
             var item = sender as IView;
             var position = viewPager.CurrentIndex < tabsContent.Count ? viewPager.CurrentIndex : tabsContent.Count - 1;
-            slider.WidthRequest = tabsContent.ElementAt(position).Measure(double.PositiveInfinity, double.PositiveInfinity).Width;
+            slider.WidthRequest = (tabsContent.Children[position] as IView).Measure(double.PositiveInfinity, double.PositiveInfinity).Width;
         }
 
         private void TabsContent_ChildAdded(object sender, ElementEventArgs e)
@@ -247,7 +266,7 @@ namespace TabViewMaui
             if (DeviceInfo.Current.Platform == DevicePlatform.Android)
             {
                 if (pos < tabsContent.Count - 1 && pos <= viewPager.CurrentIndex)
-                    viewPager.offsetX += this.viewPager.Width;
+                    viewPager.OffsetX += this.viewPager.Width;
             }
             else if (DeviceInfo.Current.Platform == DevicePlatform.iOS)
             {
@@ -283,7 +302,7 @@ namespace TabViewMaui
 
                         // fix horizontalScrollOffset on Android
                         if (DeviceInfo.Current.Platform == DevicePlatform.Android)
-                            viewPager.offsetX -= viewPager.Width;
+                            viewPager.OffsetX -= viewPager.Width;
                     }
                 }
             }
@@ -335,11 +354,11 @@ namespace TabViewMaui
 
         private void Tap(View item)
         {
-            ApplyRippleEffect(item);
+            _ = ApplyRippleEffect(item);
             var position = tabsContent.Children.IndexOf(item);
             viewPager.ScrollTo(position);
         }
-        private async void ApplyRippleEffect(View targetView)
+        private async Task ApplyRippleEffect(View targetView)
         {
             // Store the original scale of the view
             var originalScale = targetView.Scale;
@@ -406,7 +425,7 @@ namespace TabViewMaui
 
         private void HighLightItem()
         {
-            var item = tabsContent.ElementAt(viewPager.CurrentIndex) as VisualElement;
+            var item = tabsContent.Children[viewPager.CurrentIndex] as VisualElement;
 
             IsSelectedItemInternallySet = true;
             SelectedItem = item.BindingContext;
@@ -433,20 +452,23 @@ namespace TabViewMaui
 
         private void ViewPager_Scrolled(object sender, ItemsViewScrolledEventArgs e)
         {
-            if (!tabsContent.Children.Any())
+            if (tabsContent.Children.Count == 0)
                 return;
 
             itemsViewScrolledEventArgs = e;
             var currentIndex = viewPager.CurrentIndex;
-            sign = Math.Sign(e.HorizontalOffset + viewPager.offsetX - viewPager.Width * currentIndex);
-            var currentItem = tabsContent.Children.ElementAt(currentIndex) as View;
-            View nextItem = tabsContent.Children.Count > (currentIndex + sign) && (currentIndex + sign) >= 0 ? tabsContent.Children.ElementAt(currentIndex + sign) as View : null;
+            sign = Math.Sign(e.HorizontalOffset + viewPager.OffsetX - viewPager.Width * currentIndex);
+            var currentItem = tabsContent.Children[currentIndex] as View;
+            View nextItem = tabsContent.Children.Count > (currentIndex + sign) && (currentIndex + sign) >= 0 ? tabsContent.Children[currentIndex + sign] as View : null;
 
             // scrollRatio
-            scrollRatio = (e.HorizontalOffset + viewPager.offsetX - viewPager.Width * currentIndex) / viewPager.Width;
+            scrollRatio = (e.HorizontalOffset + viewPager.OffsetX - viewPager.Width * currentIndex) / viewPager.Width;
 
-            double currentItemWidth = currentItem.Width < 0 ? (currentItem as IView).Measure(double.PositiveInfinity, double.PositiveInfinity).Width : currentItem.Width;
-            double nextItemWidth = nextItem != null ? nextItem.Width : currentItem.Width;
+            double currentItemWidth = currentItem.Width;
+            if (currentItemWidth <= 0) currentItemWidth = (currentItem as IView).Measure(double.PositiveInfinity, double.PositiveInfinity).Width;
+            
+            double nextItemWidth = nextItem != null ? nextItem.Width : currentItemWidth;
+            if (nextItemWidth <= 0 && nextItem != null) nextItemWidth = (nextItem as IView).Measure(double.PositiveInfinity, double.PositiveInfinity).Width;
 
             if (sign > 0)
                 translateX = currentItem.Bounds.X + scrollRatio * currentItemWidth;
@@ -461,7 +483,7 @@ namespace TabViewMaui
             if (currentIndex == 0)
                 toScrollX = currentItem.Bounds.X + tx / 2;
             else if (currentIndex > 0)
-                toScrollX = currentItem.Bounds.X + tx - (tabsContent.Children.ElementAt(0) as View).Bounds.Width / 2;
+                toScrollX = currentItem.Bounds.X + tx - (tabsContent.Children[0] as View).Bounds.Width / 2;
             else
                 toScrollX = currentItem.Bounds.X + tx;
 
@@ -482,31 +504,37 @@ namespace TabViewMaui
             slider.TranslationX = translateX - tabsHolder.ScrollX;
         }
 
-        public async void SetCurrentIndex(object item)
+        public void SetCurrentIndex(object item)
         {
-            //if (IsSelectedItemInternallySet)
-            //    return;
+            if (IsSelectedItemInternallySet || item == null)
+                return;
 
-            //await Task.Delay(500);
-            //MainThread.BeginInvokeOnMainThread(() =>
-            //{
-            //    var child = tabsContent.Children.FirstOrDefault(x => (x as View).BindingContext == item);
-            //    var index = child != null ? tabsContent.Children.IndexOf(child) : 0;
-            //    viewPager.ScrollTo(index);
-            //});
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var child = tabsContent.Children.FirstOrDefault(x => (x as View).BindingContext == item);
+                if (child != null)
+                {
+                    var index = tabsContent.Children.IndexOf(child);
+                    viewPager.ScrollTo(index);
+                }
+            });
         }
 
-        public void Dispose()
+        protected override void OnHandlerChanging(HandlerChangingEventArgs args)
         {
-            tabsHolder.Scrolled -= TabsHolder_Scrolled;
-            tabsHolder.MeasureInvalidated -= TabsHolder_MeasureInvalidated;
-            tabsContent.ChildAdded -= TabsContent_ChildAdded;
-            tabsContent.ChildRemoved -= TabsContent_ChildRemoved;
-            viewPager.Scrolled -= ViewPager_Scrolled;
-            viewPager.CurrentIndexChanged -= ViewPager_CurrentIndexChanged;
+            base.OnHandlerChanging(args);
+            if (args.NewHandler == null)
+            {
+                tabsHolder.Scrolled -= TabsHolder_Scrolled;
+                tabsHolder.MeasureInvalidated -= TabsHolder_MeasureInvalidated;
+                tabsContent.ChildAdded -= TabsContent_ChildAdded;
+                tabsContent.ChildRemoved -= TabsContent_ChildRemoved;
+                viewPager.Scrolled -= ViewPager_Scrolled;
+                viewPager.CurrentIndexChanged -= ViewPager_CurrentIndexChanged;
 
-            foreach (View item in tabsContent.Children)
-                item.SizeChanged -= Item_SizeChanged;
+                foreach (View item in tabsContent.Children)
+                    item.SizeChanged -= Item_SizeChanged;
+            }
         }
     }
 }

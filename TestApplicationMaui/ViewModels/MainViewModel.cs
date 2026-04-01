@@ -84,7 +84,7 @@ namespace TestApplicationMaui.ViewModels
                 new Person(){Name = "Tom", Age = 26, TestList = strings},
                 new Person(){Name = "Natalie", Age = 20, TestList = strings},
                 new Person(){Name = "Yukari", Age = 16, TestList = strings},
-                new Person(){Name = "Mitsuru", Age = 19, TestList = strings}
+                new Person(){Name = "Mitsuru Nakamura", Age = 19, TestList = strings}
             };
 
             SelectedPerson = People.ElementAt(2);

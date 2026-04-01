@@ -28,7 +28,194 @@
 
     <Grid RowDefinitions="Auto, *" ColumnDefinitions="*" Margin="20" RowSpacing="10">
 
-        <rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
+        <tb:TabView Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" 
+                    ItemsSource="{Binding People}" 
+                    SelectedItem="{Binding SelectedPerson}" 
+                    VerticalOptions="Fill"
+                    TabsItemBindingPath="Name" 
+                    ContentItemBindingPath="Name"
+                    BackgroundColor="LightBlue">
+            <tb:TabView.ContentItemTemplate>
+                <DataTemplate>
+                    <ScrollView>
+                        <StackLayout Spacing="12" Padding="10">
+
+                            <!-- REPEATED COMPLEX HEADER BLOCK -->
+                            <StackLayout BindableLayout.ItemsSource="{Binding HeaderItems}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame CornerRadius="20" HasShadow="True" Padding="10" Margin="5">
+                                            <Grid ColumnSpacing="10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <Image Source="{Binding Avatar}" HeightRequest="70" WidthRequest="70"/>
+
+                                                <StackLayout Grid.Column="1" Spacing="2">
+                                                    <Label Text="{Binding Name}" FontSize="18"/>
+                                                    <Label Text="{Binding Description}" FontSize="12"/>
+                                                    <ProgressBar Progress="{Binding Progress}" />
+
+                                                    <!-- Nested horizontal list -->
+                                                    <CollectionView ItemsSource="{Binding Tags}" HeightRequest="40" ItemsLayout="HorizontalList">
+                                                        <CollectionView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Frame Padding="5" Margin="2" BackgroundColor="LightGray">
+                                                                    <Label Text="{Binding}" FontSize="10"/>
+                                                                </Frame>
+                                                            </DataTemplate>
+                                                        </CollectionView.ItemTemplate>
+                                                    </CollectionView>
+                                                </StackLayout>
+
+                                                <Switch Grid.Column="2" IsToggled="{Binding IsActive}"/>
+                                            </Grid>
+                                        </Frame>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </StackLayout>
+
+                            <!-- NESTED COLLECTIONVIEW WITH GRID INSIDE -->
+                            <CollectionView ItemsSource="{Binding Sections}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame Margin="5" Padding="5" BackgroundColor="#EEEEEE">
+
+                                            <StackLayout>
+
+                                                <Label Text="{Binding Title}" FontAttributes="Bold"/>
+
+                                                <!-- Inner CollectionView -->
+                                                <CollectionView ItemsSource="{Binding Items}">
+                                                    <CollectionView.ItemTemplate>
+                                                        <DataTemplate>
+
+                                                            <Grid Padding="5">
+                                                                <Grid.RowDefinitions>
+                                                                    <RowDefinition Height="Auto"/>
+                                                                    <RowDefinition Height="Auto"/>
+                                                                </Grid.RowDefinitions>
+
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <Image Grid.RowSpan="2"
+                                                       Source="{Binding Icon}"
+                                                       HeightRequest="40"
+                                                       WidthRequest="40"/>
+
+                                                                <StackLayout Grid.Column="1">
+                                                                    <Label Text="{Binding Name}"/>
+                                                                    <Label Text="{Binding Detail}" FontSize="10"/>
+                                                                </StackLayout>
+
+                                                                <StackLayout Grid.Column="2">
+                                                                    <Button Text="Action"
+                                                            Command="{Binding BindingContext.GlobalCommand, Source={x:Reference Name=RootPage}}"/>
+                                                                    <Switch IsToggled="{Binding Enabled}"/>
+                                                                </StackLayout>
+
+                                                                <!-- EVEN MORE NESTING -->
+                                                                <CollectionView Grid.Row="1" Grid.ColumnSpan="3"
+                                                                ItemsSource="{Binding SubItems}"
+                                                                ItemsLayout="HorizontalList"
+                                                                HeightRequest="60">
+                                                                    <CollectionView.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Frame Padding="3" Margin="2">
+                                                                                <StackLayout>
+                                                                                    <Image Source="{Binding Image}" HeightRequest="30"/>
+                                                                                    <Label Text="{Binding Label}" FontSize="8"/>
+                                                                                </StackLayout>
+                                                                            </Frame>
+                                                                        </DataTemplate>
+                                                                    </CollectionView.ItemTemplate>
+                                                                </CollectionView>
+
+                                                            </Grid>
+
+                                                        </DataTemplate>
+                                                    </CollectionView.ItemTemplate>
+                                                </CollectionView>
+
+                                            </StackLayout>
+
+                                        </Frame>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                            <!-- FORM WITH TRIGGERS -->
+                            <Frame Padding="10" BackgroundColor="White">
+                                <StackLayout>
+                                    <Entry Placeholder="First Name" Text="{Binding FirstName}">
+                                        <Entry.Triggers>
+                                            <DataTrigger TargetType="Entry"
+                                         Binding="{Binding FirstName.Length}"
+                                         Value="0">
+                                                <Setter Property="BackgroundColor" Value="LightPink"/>
+                                            </DataTrigger>
+                                        </Entry.Triggers>
+                                    </Entry>
+
+                                    <Entry Placeholder="Last Name" Text="{Binding LastName}"/>
+
+                                    <Editor Text="{Binding Notes}" HeightRequest="100"/>
+
+                                    <Slider Minimum="0" Maximum="100" Value="{Binding Progress}"/>
+
+                                    <ProgressBar Progress="{Binding Progress}"/>
+
+                                    <Button Text="Save" Command="{Binding SaveCommand}"/>
+                                </StackLayout>
+                            </Frame>
+
+                            <!-- MASSIVE REPEATED BLOCK -->
+                            <StackLayout BindableLayout.ItemsSource="{Binding HugeList}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Padding="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackLayout>
+                                                <Label Text="{Binding Title}"/>
+                                                <Image Source="{Binding Image}" HeightRequest="100"/>
+                                                <ProgressBar Progress="{Binding Value}"/>
+                                            </StackLayout>
+
+                                            <StackLayout Grid.Column="1">
+                                                <Label Text="{Binding Subtitle}"/>
+                                                <CollectionView ItemsSource="{Binding InnerList}" HeightRequest="120">
+                                                    <CollectionView.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Label Text="{Binding}" FontSize="10"/>
+                                                        </DataTemplate>
+                                                    </CollectionView.ItemTemplate>
+                                                </CollectionView>
+                                            </StackLayout>
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </StackLayout>
+
+                        </StackLayout>
+                    </ScrollView>
+                </DataTemplate>
+            </tb:TabView.ContentItemTemplate>
+        </tb:TabView>
+
+
+
+        <!--<rsPicker:RSPicker Grid.Row="0" Grid.Column="0"
                            Converter="{StaticResource EnumToFriendlyStringConverter}"
                            ItemsSource="{Binding DaysOfWeek}"
                            SelectedItems="{Binding SelectedDaysOfWeek}"
@@ -36,7 +223,7 @@
                            HasClearIcon="True" 
                            SelectionMode="Multiple" VerticalOptions="Start"
                            IsVisible="True"
-                           />
+                           />-->
 
 
         <Label Grid.Row="1" Grid.Column="0"
