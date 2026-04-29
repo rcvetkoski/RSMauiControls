@@ -50,6 +50,9 @@ namespace RSsegmentedControlMaui
                 Content = _grid
             };
 
+            _border.SetBinding(Border.BackgroundProperty, new Binding(nameof(FillColor), source: this));
+            _border.SetBinding(Border.PaddingProperty, new Binding(nameof(IndicatorPadding), source: this));
+
             Content = _border;
         }
 
@@ -344,6 +347,44 @@ namespace RSsegmentedControlMaui
         }
 
         // =========================
+        // FillColor
+        // =========================
+        public static readonly BindableProperty FillColorProperty =
+            BindableProperty.Create(nameof(FillColor), typeof(Color), typeof(SegmentedControl), Colors.Transparent);
+
+        public Color FillColor
+        {
+            get => (Color)GetValue(FillColorProperty);
+            set => SetValue(FillColorProperty, value);
+        }
+
+        // =========================
+        // CornerRadius
+        // =========================
+        public static readonly BindableProperty CornerRadiusProperty =
+            BindableProperty.Create(nameof(CornerRadius), typeof(CornerRadius), typeof(SegmentedControl), new CornerRadius(8),
+                propertyChanged: (b, o, n) => ((SegmentedControl)b).ApplyStyle());
+
+        public CornerRadius CornerRadius
+        {
+            get => (CornerRadius)GetValue(CornerRadiusProperty);
+            set => SetValue(CornerRadiusProperty, value);
+        }
+
+        // =========================
+        // IndicatorPadding
+        // =========================
+        public static readonly BindableProperty IndicatorPaddingProperty =
+            BindableProperty.Create(nameof(IndicatorPadding), typeof(Thickness), typeof(SegmentedControl), new Thickness(0),
+                propertyChanged: (b, o, n) => ((SegmentedControl)b).BuildSegments());
+
+        public Thickness IndicatorPadding
+        {
+            get => (Thickness)GetValue(IndicatorPaddingProperty);
+            set => SetValue(IndicatorPaddingProperty, value);
+        }
+
+        // =========================
         // Build UI
         // =========================
         private void BuildSegments()
@@ -605,12 +646,14 @@ namespace RSsegmentedControlMaui
             {
                 _border.StrokeThickness = 1;
                 _border.Stroke = new SolidColorBrush(BorderColor);
-                _border.StrokeShape = new RoundRectangle { CornerRadius = 8 };
+                _border.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
+                _indicator.CornerRadius = CornerRadius;
             }
             else
             {
                 _border.StrokeThickness = 0;
-                _border.StrokeShape = new RoundRectangle { CornerRadius = 0 };
+                _border.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
+                _indicator.CornerRadius = 0;
             }
 
             BuildSegments();

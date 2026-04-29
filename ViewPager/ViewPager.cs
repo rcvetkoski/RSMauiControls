@@ -9,8 +9,6 @@ namespace ViewPagerMaui
             set { SetValue(ItemBindingPathProperty, value); }
         }
 
-
-
         public int CurrentIndex
         {
             get
@@ -44,13 +42,13 @@ namespace ViewPagerMaui
             SetDefaultContentItemTemplate();
         }
 
+#if ANDROID
         static ViewPager()
         {
             Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler.Mapper.AppendToMapping("viewPager", (handler, view) =>
             {
                 if (view is ViewPager viewPager)
                 {
-#if ANDROID
                     viewPager.recyclerView = handler.PlatformView;
 
                     if (viewPager.recyclerView.GetOnFlingListener() == null)
@@ -58,23 +56,42 @@ namespace ViewPagerMaui
                         var pagerSnapHelper = new AndroidX.RecyclerView.Widget.PagerSnapHelper();
                         pagerSnapHelper.AttachToRecyclerView(viewPager.recyclerView);
                     }
-#endif
-
-#if IOS
-                    var platformView = handler.PlatformView;
-                    var nativeControl = platformView.Subviews.FirstOrDefault();
-
-                    if (nativeControl != null) 
-                    {
-                        viewPager.uICollectionView = nativeControl as UIKit.UICollectionView;
-                        viewPager.uICollectionView.PagingEnabled = true;
-                        viewPager.uICollectionView.Bounces = false;
-                        viewPager.uICollectionView.ShowsHorizontalScrollIndicator = false;    
-                    }
-#endif
                 }
             });
         }
+#endif
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+#if IOS
+            if (Handler?.PlatformView is UIKit.UIView platformView)
+            {
+                uICollectionView = FindUICollectionView(platformView);
+
+                if (uICollectionView != null)
+                {
+                    uICollectionView.PagingEnabled = true;
+                    uICollectionView.Bounces = false;
+                    uICollectionView.ShowsHorizontalScrollIndicator = false;
+                }
+            }
+#endif
+        }
+
+#if IOS
+        private static UIKit.UICollectionView FindUICollectionView(UIKit.UIView view)
+        {
+            if (view is UIKit.UICollectionView cv) return cv;
+            foreach (var sub in view.Subviews)
+            {
+                var result = FindUICollectionView(sub);
+                if (result != null) return result;
+            }
+            return null;
+        }
+#endif
 
         private void SetDefaultContentItemTemplate()
         {
@@ -136,6 +153,10 @@ namespace ViewPagerMaui
             recyclerView.SmoothScrollBy(scrollX, 0);
 #endif
 #if IOS
+            // Refresh reference in case OnHandlerChanged ran before the subview was ready
+            if (uICollectionView == null && Handler?.PlatformView is UIKit.UIView pv)
+                uICollectionView = FindUICollectionView(pv);
+
             if (uICollectionView == null) return;
             var scrollX = uICollectionView.Frame.Width * position;
             uICollectionView.SetContentOffset(new CoreGraphics.CGPoint(scrollX, 0), true);
