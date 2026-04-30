@@ -49,12 +49,12 @@
 
         <segmented:SegmentedControl Grid.Row="1" Grid.Column="0"
                                     StyleMode="Outlined" 
-                                    Orientation="Horizontal"
+                                    Orientation="Horizontal" 
                                     VerticalOptions="Center"
-                                    FillColor="Blue" CornerRadius="8"
+                                    FillColor="Blue" CornerRadius="8" SegmentHeight="50"
                                     SeparatorThickness="0"
                                     BorderColor="Transparent"
-                                    IndicatorPadding="3"
+                                    IndicatorPadding="4"
                                     IndicatorColor="AntiqueWhite"
                                     LayoutMode="Fill"
                                     SelectedIndex="{Binding SelectedItemSegment}">

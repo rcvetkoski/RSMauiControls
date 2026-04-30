@@ -13,7 +13,7 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 
 		<Authors>Cvetkoski Radoslav</Authors>
-		<Version>1.1.3</Version>
+		<Version>1.1.4</Version>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Description>A segmented control for .net maui</Description>
 		<PackageTags>segmented control;.net maui</PackageTags>

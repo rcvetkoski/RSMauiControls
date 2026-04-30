@@ -347,6 +347,19 @@ namespace RSsegmentedControlMaui
         }
 
         // =========================
+        // SegmentHeight
+        // =========================
+        public static readonly BindableProperty SegmentHeightProperty =
+            BindableProperty.Create(nameof(SegmentHeight), typeof(double), typeof(SegmentedControl), -1.0,
+                propertyChanged: (b, o, n) => ((SegmentedControl)b).BuildSegments());
+
+        public double SegmentHeight
+        {
+            get => (double)GetValue(SegmentHeightProperty);
+            set => SetValue(SegmentHeightProperty, value);
+        }
+
+        // =========================
         // FillColor
         // =========================
         public static readonly BindableProperty FillColorProperty =
@@ -408,23 +421,23 @@ namespace RSsegmentedControlMaui
 
             if (Orientation == StackOrientation.Horizontal)
             {
-                _grid.HorizontalOptions = layoutOption;
-                _border.HorizontalOptions = layoutOption;
                 this.HorizontalOptions = layoutOption;
+                this.VerticalOptions = LayoutOptions.Start;
 
-                // Secondary axis: Fill parent bounds. Do NOT overwrite 'this.VerticalOptions'
+                _grid.HorizontalOptions = LayoutOptions.Fill;
+                _border.HorizontalOptions = LayoutOptions.Fill;
                 _grid.VerticalOptions = LayoutOptions.Fill;
                 _border.VerticalOptions = LayoutOptions.Fill;
             }
             else
             {
-                _grid.VerticalOptions = layoutOption;
-                _border.VerticalOptions = layoutOption;
                 this.VerticalOptions = layoutOption;
+                this.HorizontalOptions = LayoutOptions.Start;
 
-                // Secondary axis: Fill parent bounds. Do NOT overwrite 'this.HorizontalOptions'
                 _grid.HorizontalOptions = LayoutOptions.Fill;
                 _border.HorizontalOptions = LayoutOptions.Fill;
+                _grid.VerticalOptions = LayoutOptions.Fill;
+                _border.VerticalOptions = LayoutOptions.Fill;
             }
 
             // =========================
@@ -432,14 +445,15 @@ namespace RSsegmentedControlMaui
             // =========================
             if (Orientation == StackOrientation.Horizontal)
             {
+                var rowHeight = SegmentHeight > 0 ? new GridLength(SegmentHeight) : GridLength.Auto;
                 if (StyleMode == SegmentedControlStyle.Underline)
                 {
-                    _grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                    _grid.RowDefinitions.Add(new RowDefinition(rowHeight));
                     _grid.RowDefinitions.Add(new RowDefinition(2));
                 }
                 else
                 {
-                    _grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                    _grid.RowDefinitions.Add(new RowDefinition(rowHeight));
                 }
             }
             else
@@ -539,7 +553,8 @@ namespace RSsegmentedControlMaui
                 }
                 else
                 {
-                    _grid.RowDefinitions.Add(new RowDefinition(length));
+                    var rowHeight = SegmentHeight > 0 ? new GridLength(SegmentHeight) : length;
+                    _grid.RowDefinitions.Add(new RowDefinition(rowHeight));
                 }
 
                 var container = new Grid();
