@@ -24,7 +24,7 @@ namespace RSsegmentedControlMaui
     public class SegmentedControl : ContentView
     {
         private readonly Grid _grid;
-        private readonly BoxView _indicator;
+        private readonly Border _indicator;
         private readonly Border _border;
 
         private bool _isLoaded;
@@ -36,10 +36,11 @@ namespace RSsegmentedControlMaui
 
             _grid = new Grid { ColumnSpacing = 0 };
 
-            _indicator = new BoxView
+            _indicator = new Border
             {
                 HorizontalOptions = LayoutOptions.Start,
-                VerticalOptions = LayoutOptions.Start
+                VerticalOptions = LayoutOptions.Start,
+                StrokeThickness = 0
             };
 
             _border = new Border
@@ -50,7 +51,7 @@ namespace RSsegmentedControlMaui
                 Content = _grid
             };
 
-            _border.SetBinding(Border.BackgroundProperty, new Binding(nameof(FillColor), source: this));
+            _border.SetBinding(Border.BackgroundColorProperty, new Binding(nameof(FillColor), source: this));
             _border.SetBinding(Border.PaddingProperty, new Binding(nameof(IndicatorPadding), source: this));
 
             Content = _border;
@@ -261,34 +262,18 @@ namespace RSsegmentedControlMaui
             set => SetValue(UnselectedTextColorProperty, value);
         }
 
-        public static readonly BindableProperty SelectedBackgroundColorProperty =
-            BindableProperty.Create(nameof(SelectedBackgroundColor), typeof(Color), typeof(SegmentedControl), Colors.SteelBlue,
+        public static readonly BindableProperty SelectionColorProperty =
+            BindableProperty.Create(nameof(SelectionColor), typeof(Color), typeof(SegmentedControl), Colors.SteelBlue,
                 propertyChanged: (b, o, n) =>
                 {
                     var c = (SegmentedControl)b;
-                    if (c.StyleMode == SegmentedControlStyle.Outlined)
-                        c._indicator.BackgroundColor = (Color)n;
+                    c._indicator.Background = new SolidColorBrush((Color)n);
                 });
 
-        public Color SelectedBackgroundColor
+        public Color SelectionColor
         {
-            get => (Color)GetValue(SelectedBackgroundColorProperty);
-            set => SetValue(SelectedBackgroundColorProperty, value);
-        }
-
-        public static readonly BindableProperty IndicatorColorProperty =
-            BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(SegmentedControl), Colors.SteelBlue,
-                propertyChanged: (b, o, n) =>
-                {
-                    var c = (SegmentedControl)b;
-                    if (c.StyleMode == SegmentedControlStyle.Underline)
-                        c._indicator.BackgroundColor = (Color)n;
-                });
-
-        public Color IndicatorColor
-        {
-            get => (Color)GetValue(IndicatorColorProperty);
-            set => SetValue(IndicatorColorProperty, value);
+            get => (Color)GetValue(SelectionColorProperty);
+            set => SetValue(SelectionColorProperty, value);
         }
 
         public static readonly BindableProperty BorderColorProperty =
@@ -417,13 +402,24 @@ namespace RSsegmentedControlMaui
             // LayoutMode handling (FIX)
             // =========================
             var isFill = LayoutMode == SegmentedControlLayoutMode.Fill;
-            var layoutOption = isFill ? LayoutOptions.Fill : LayoutOptions.Start;
 
             if (Orientation == StackOrientation.Horizontal)
             {
-                this.HorizontalOptions = layoutOption;
-                this.VerticalOptions = LayoutOptions.Start;
+                if (HorizontalOptions.Alignment == LayoutAlignment.Start)
+                    this.HorizontalOptions = isFill ? LayoutOptions.Fill : LayoutOptions.Start;
+                if (VerticalOptions.Alignment == LayoutAlignment.Start)
+                    this.VerticalOptions = LayoutOptions.Start;
+            }
+            else
+            {
+                if (VerticalOptions.Alignment == LayoutAlignment.Start)
+                    this.VerticalOptions = isFill ? LayoutOptions.Fill : LayoutOptions.Start;
+                if (HorizontalOptions.Alignment == LayoutAlignment.Start)
+                    this.HorizontalOptions = LayoutOptions.Start;
+            }
 
+            if (Orientation == StackOrientation.Horizontal)
+            {
                 _grid.HorizontalOptions = LayoutOptions.Fill;
                 _border.HorizontalOptions = LayoutOptions.Fill;
                 _grid.VerticalOptions = LayoutOptions.Fill;
@@ -431,9 +427,6 @@ namespace RSsegmentedControlMaui
             }
             else
             {
-                this.VerticalOptions = layoutOption;
-                this.HorizontalOptions = LayoutOptions.Start;
-
                 _grid.HorizontalOptions = LayoutOptions.Fill;
                 _border.HorizontalOptions = LayoutOptions.Fill;
                 _grid.VerticalOptions = LayoutOptions.Fill;
@@ -477,7 +470,7 @@ namespace RSsegmentedControlMaui
 
             if (StyleMode == SegmentedControlStyle.Underline)
             {
-                _indicator.Color = IndicatorColor;
+                _indicator.Background = new SolidColorBrush(SelectionColor);
                 if (Orientation == StackOrientation.Horizontal)
                 {
                     _indicator.HeightRequest = 2;
@@ -495,7 +488,7 @@ namespace RSsegmentedControlMaui
             }
             else
             {
-                _indicator.Color = SelectedBackgroundColor;
+                _indicator.Background = new SolidColorBrush(SelectionColor);
                 if (Orientation == StackOrientation.Horizontal)
                 {
                     _indicator.HeightRequest = -1;
@@ -662,13 +655,13 @@ namespace RSsegmentedControlMaui
                 _border.StrokeThickness = 1;
                 _border.Stroke = new SolidColorBrush(BorderColor);
                 _border.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
-                _indicator.CornerRadius = CornerRadius;
+                _indicator.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
             }
             else
             {
                 _border.StrokeThickness = 0;
                 _border.StrokeShape = new RoundRectangle { CornerRadius = CornerRadius };
-                _indicator.CornerRadius = 0;
+                _indicator.StrokeShape = new RoundRectangle { CornerRadius = 0 };
             }
 
             BuildSegments();

@@ -55,7 +55,7 @@
                                     SeparatorThickness="0"
                                     BorderColor="Transparent"
                                     IndicatorPadding="4"
-                                    IndicatorColor="AntiqueWhite"
+                                    SelectionColor="Purple"
                                     LayoutMode="Fill"
                                     SelectedIndex="{Binding SelectedItemSegment}">
             <segmented:SegmentedControl.ItemsSource>
