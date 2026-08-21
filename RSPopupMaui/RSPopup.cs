@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Behaviors;
+using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace RSPopupMaui;
@@ -14,6 +16,7 @@ public class RSPopup : ContentPage
     private readonly BoxView scrim;
     private readonly Border popup;
     private readonly PanGestureRecognizer? panGesture;
+    private readonly StatusBarBehavior? statusBarBehavior;
     private bool isClosing;
     private double panStartTranslation;
 
@@ -67,7 +70,23 @@ public class RSPopup : ContentPage
             popup.Scale = 0.9;
         }
 
-        ApplyThemeSpecificStyleToPopup(popup);
+        var (backgroundColor, statusBarStyle) = GetThemeAppearance();
+#if IOS
+        if (OperatingSystem.IsIOSVersionAtLeast(15))
+#endif
+        {
+#pragma warning disable CA1416 // Guarded above on iOS; always supported on Android.
+            statusBarBehavior = new StatusBarBehavior
+            {
+                ApplyOn = StatusBarApplyOn.OnPageNavigatedTo,
+                StatusBarColor = backgroundColor,
+                StatusBarStyle = statusBarStyle
+            };
+            Behaviors.Add(statusBarBehavior);
+#pragma warning restore CA1416
+        }
+
+        popup.BackgroundColor = backgroundColor;
         Loaded += OnLoaded;
 
         if (Application.Current is not null)
@@ -179,17 +198,19 @@ public class RSPopup : ContentPage
 
     public void ApplyThemeSpecificStyleToPopup(Border border)
     {
-        var application = Application.Current;
-        if (application is null)
-            return;
-
-        var effectiveTheme = application.UserAppTheme == AppTheme.Unspecified
-            ? application.RequestedTheme
-            : application.UserAppTheme;
-
-        border.BackgroundColor = effectiveTheme == AppTheme.Dark
-            ? darkBackgroundColor
-            : lightBackgroundColor;
+        var (backgroundColor, statusBarStyle) = GetThemeAppearance();
+        border.BackgroundColor = backgroundColor;
+#if IOS
+        if (OperatingSystem.IsIOSVersionAtLeast(15) && statusBarBehavior is not null)
+#else
+        if (statusBarBehavior is not null)
+#endif
+        {
+#pragma warning disable CA1416 // Guarded above on iOS; always supported on Android.
+            statusBarBehavior.StatusBarColor = backgroundColor;
+            statusBarBehavior.StatusBarStyle = statusBarStyle;
+#pragma warning restore CA1416
+        }
     }
 
     public async Task ClosePopup()
@@ -259,6 +280,26 @@ public class RSPopup : ContentPage
     private void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
     {
         Dispatcher.Dispatch(() => ApplyThemeSpecificStyleToPopup(popup));
+    }
+
+    private (Color BackgroundColor, StatusBarStyle StatusBarStyle) GetThemeAppearance()
+    {
+        var application = Application.Current;
+        var effectiveTheme = application?.UserAppTheme == AppTheme.Unspecified
+            ? application.RequestedTheme
+            : application?.UserAppTheme ?? AppTheme.Light;
+
+        var isDarkTheme = effectiveTheme == AppTheme.Dark;
+        var resourceKey = isDarkTheme ? "CardBackgroundDark" : "CardBackground";
+        var fallbackColor = isDarkTheme ? darkBackgroundColor : lightBackgroundColor;
+        var backgroundColor = application?.Resources.TryGetValue(resourceKey, out var resource) == true
+                              && resource is Color resourceColor
+            ? resourceColor
+            : fallbackColor;
+
+        return (
+            backgroundColor,
+            isDarkTheme ? StatusBarStyle.LightContent : StatusBarStyle.DarkContent);
     }
 
     protected void OnPopupClosedInternal(EventArgs e)
