@@ -1,303 +1,268 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Controls.Shapes;
 
-namespace RSPopupMaui
+namespace RSPopupMaui;
+
+public class RSPopup : ContentPage
 {
-    // All the code in this file is included in all platforms.
-    public class RSPopup : ContentPage
+    private const uint AnimationLength = 250;
+    private const double ScrimOpacity = 0.4;
+
+    private readonly bool isModal;
+    private readonly RSPopupAnimationTypeEnum animationType;
+    private readonly Color lightBackgroundColor = Colors.White;
+    private readonly Color darkBackgroundColor = Color.FromArgb("#212121");
+    private readonly BoxView scrim;
+    private readonly Border popup;
+    private readonly PanGestureRecognizer? panGesture;
+    private bool isClosing;
+    private double panStartTranslation;
+
+    public event EventHandler? PopupClosed;
+
+    public RSPopup(IView view, RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum, bool isModal)
     {
-        private bool isModal;
+        if (view is not View popupContent)
+            throw new ArgumentException("Popup content must be a MAUI View.", nameof(view));
 
-        private Color lightBackgroundColor = Colors.White;
+        animationType = rSPopupAnimationTypeEnum;
+        this.isModal = isModal;
+        BackgroundColor = Colors.Transparent;
 
-        private Color darkBackgroundColor = Color.FromRgba("#212121");
-
-        private RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum;
-
-        private PanGestureRecognizer panGesture;
-
-        private Grid holder { get; set; }
-
-        private Border popup { get; set; }
-
-        public event EventHandler PopupClosed;
-
-        public RSPopup(IView view, RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum, bool isModal)
+        var holder = new Grid
         {
-            base.Loaded += RSPopup_Loaded;
-            base.BackgroundColor = Colors.Transparent;
-            this.isModal = isModal;
-            this.rSPopupAnimationTypeEnum = rSPopupAnimationTypeEnum;
-            holder = new Grid
-            {
-                BackgroundColor = Colors.Transparent
-            };
-            if (!isModal)
-            {
-                TapGestureRecognizer item = new TapGestureRecognizer
-                {
-                    Command = new Command((Action)async delegate
-                    {
-                        await ClosePopup();
-                    })
-                };
-                holder.GestureRecognizers.Add(item);
-            }
+            BackgroundColor = Colors.Transparent
+        };
 
-            LayoutOptions horizontalOptions = ((rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect) ? LayoutOptions.Center : LayoutOptions.Fill);
-            LayoutOptions verticalOptions = ((rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect) ? LayoutOptions.Center : LayoutOptions.End);
-            Thickness margin = ((rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect) ? new Thickness(30.0) : new Thickness(0.0));
-            RoundRectangle strokeShape = ((rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect) ? new RoundRectangle
-            {
-                CornerRadius = new CornerRadius(10.0, 10.0, 10.0, 10.0)
-            } : new RoundRectangle
-            {
-                CornerRadius = new CornerRadius(25.0, 25.0, 0.0, 0.0)
-            });
-            Thickness padding = ((rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect) ? new Thickness(20.0) : new Thickness(20.0, 10.0, 20.0, 20.0));
-            popup = new Border
-            {
-                StrokeThickness = 0.0,
-                Padding = padding,
-                StrokeShape = strokeShape,
-                VerticalOptions = verticalOptions,
-                HorizontalOptions = horizontalOptions,
-                Margin = margin
-            };
-            popup.GestureRecognizers.Add(new TapGestureRecognizer());
-            if (rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.BottomToTop)
-            {
-                panGesture = new PanGestureRecognizer();
-                panGesture.PanUpdated += PanGesture_PanUpdated;
-                popup.GestureRecognizers.Add(panGesture);
-            }
-
-            Grid grid = null;
-            if (rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.BottomToTop)
-            {
-                grid = new Grid
-                {
-                    RowDefinitions =
-                {
-                    new RowDefinition
-                    {
-                        Height = GridLength.Auto
-                    },
-                    new RowDefinition
-                    {
-                        Height = GridLength.Auto
-                    }
-                },
-                    ColumnDefinitions =
-                {
-                    new ColumnDefinition
-                    {
-                        Width = GridLength.Star
-                    }
-                },
-                    RowSpacing = 15.0
-                };
-                BoxView view2 = new BoxView
-                {
-                    Color = Colors.Gray,
-                    WidthRequest = 40.0,
-                    HeightRequest = 4.0,
-                    CornerRadius = 20.0
-                };
-                GridExtensions.Add(grid, view2);
-                grid.Add((View)view, 0, 1);
-            }
-
-            holder.Children.Add(popup);
-            popup.Content = ((rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect) ? ((View)view) : grid);
-            base.Content = holder;
-            ApplyThemeSpecificStyleToPopup(popup);
-            if (Application.Current != null)
-            {
-                Application.Current.RequestedThemeChanged += delegate
-                {
-                    ApplyThemeSpecificStyleToPopup(popup);
-                };
-            }
-        }
-
-        private async void PanGesture_PanUpdated(object? sender, PanUpdatedEventArgs e)
+        scrim = new BoxView
         {
-            switch (e.StatusType)
-            {
-                case GestureStatus.Running:
-                    popup.TranslationY = Math.Max(0.0, popup.TranslationY += e.TotalY);
-                    break;
-                case GestureStatus.Completed:
-                    if (popup.TranslationY > 55.0)
-                    {
-                        await ClosePopup();
-                    }
-                    else
-                    {
-                        await popup.TranslateTo(0.0, 0.0, 250u, Easing.Linear);
-                    }
+            Color = Colors.Black,
+            Opacity = 0
+        };
 
-                    break;
-                case GestureStatus.Started:
-                    break;
-            }
-        }
-
-        public void ApplyThemeSpecificStyleToPopup(Border border)
+        if (!isModal)
         {
-            switch (Application.Current.PlatformAppTheme)
+            scrim.GestureRecognizers.Add(new TapGestureRecognizer
             {
-                case AppTheme.Light:
-                    border.BackgroundColor = lightBackgroundColor;
-                    break;
-                case AppTheme.Dark:
-                    border.BackgroundColor = darkBackgroundColor;
-                    break;
-            }
-        }
-
-        private async void RSPopup_Loaded(object? sender, EventArgs e)
-        {
-            base.Loaded -= RSPopup_Loaded;
-            await OpenAnimatePopup();
-        }
-
-        protected override bool OnBackButtonPressed()
-        {
-            if (!isModal)
-            {
-                ClosePopup();
-            }
-
-            return true;
-        }
-
-        public async Task ClosePopup()
-        {
-            await CloseAnimatePopup();
-            await Shell.Current.Navigation.PopAsync(animated: false);
-            OnPopupClosedInternal(EventArgs.Empty);
-        }
-
-        private Task OpenAnimatePopup()
-        {
-            TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-            if (rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect)
-            {
-                AnimatePopupPopInEffect(taskCompletionSource);
-            }
-            else
-            {
-                AnimatePopupFromBottom(taskCompletionSource);
-            }
-
-            return taskCompletionSource.Task;
-        }
-
-        public Task CloseAnimatePopup()
-        {
-            TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
-            if (rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.PopInEffect)
-            {
-                DismissPopupPopInEffect(taskCompletionSource);
-            }
-            else
-            {
-                DismissPopupFromBottom(taskCompletionSource);
-            }
-
-            if (panGesture != null)
-            {
-                panGesture.PanUpdated -= PanGesture_PanUpdated;
-            }
-
-            return taskCompletionSource.Task;
-        }
-
-        private void AnimatePopupPopInEffect(TaskCompletionSource<bool> done)
-        {
-            TaskCompletionSource<bool> done2 = done;
-            this.Animate("BackgroundFadeIn", delegate (double v)
-            {
-                base.Background = new SolidColorBrush(Colors.Black.WithAlpha((float)v));
-            }, 0.0, 0.4, 16u, 250u, Easing.Linear);
-            double num = 0.8;
-            double end = 1.0;
-            base.Content.Opacity = 0.0;
-            base.Content.Scale = num;
-            base.Content.Animate("ContentFadeIn", new Animation(delegate (double v)
-            {
-                base.Content.Opacity = v;
-            }, 0.0, 1.0, Easing.CubicInOut));
-            base.Content.Animate("ContentScaleIn", new Animation(delegate (double v)
-            {
-                base.Content.Scale = v;
-            }, num, end, Easing.SpringOut), 16u, 250u, null, delegate
-            {
-                done2.SetResult(result: true);
+                Command = new Command(async () => await ClosePopup())
             });
         }
 
-        private void AnimatePopupFromBottom(TaskCompletionSource<bool> done)
+        popup = CreatePopupContainer(popupContent);
+        holder.Add(scrim);
+        holder.Add(popup);
+        Content = holder;
+
+        // Keep the popup invisible until it has its final arranged size. Newer
+        // MAUI versions can render a frame before Loaded handlers finish.
+        popup.Opacity = 0;
+
+        if (rSPopupAnimationTypeEnum == RSPopupAnimationTypeEnum.BottomToTop)
         {
-            TaskCompletionSource<bool> done2 = done;
-            this.Animate("BackgroundFadeIn", delegate (double v)
-            {
-                base.Background = new SolidColorBrush(Colors.Black.WithAlpha((float)v));
-            }, 0.0, 0.4, 16u, 250u, Easing.Linear);
-            double height = popup.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request.Height;
-            base.Content.TranslationY = height;
-            base.Content.Animate("ContentMoveUp", new Animation(delegate (double v)
-            {
-                base.Content.TranslationY = v;
-            }, height, 0.0, Easing.CubicInOut), 16u, 250u, null, delegate
-            {
-                done2.SetResult(result: true);
-            });
+            panGesture = new PanGestureRecognizer();
+            panGesture.PanUpdated += OnPanUpdated;
+            popup.GestureRecognizers.Add(panGesture);
+        }
+        else
+        {
+            popup.Scale = 0.9;
         }
 
-        private void DismissPopupFromBottom(TaskCompletionSource<bool> done)
+        ApplyThemeSpecificStyleToPopup(popup);
+        Loaded += OnLoaded;
+
+        if (Application.Current is not null)
+            Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+    }
+
+    private Border CreatePopupContainer(View popupContent)
+    {
+        var isBottomSheet = animationType == RSPopupAnimationTypeEnum.BottomToTop;
+        var container = new Border
         {
-            TaskCompletionSource<bool> done2 = done;
-            this.Animate("BackgroundFadeOut", delegate (double v)
+            StrokeThickness = 0,
+            Padding = isBottomSheet ? new Thickness(20, 10, 20, 20) : new Thickness(20),
+            StrokeShape = new RoundRectangle
             {
-                base.Background = new SolidColorBrush(Colors.Black.WithAlpha((float)v));
-            }, 0.4, 0.0, 16u, 250u, Easing.Linear);
-            double height = popup.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins).Request.Height;
-            base.Content.TranslationY = height;
-            base.Content.Animate("ContentMoveUp", new Animation(delegate (double v)
-            {
-                base.Content.TranslationY = v;
-            }, 0.0, height, Easing.CubicInOut), 16u, 250u, null, delegate
-            {
-                done2.SetResult(result: true);
-            });
+                CornerRadius = isBottomSheet
+                    ? new CornerRadius(25, 25, 0, 0)
+                    : new CornerRadius(10)
+            },
+            VerticalOptions = isBottomSheet ? LayoutOptions.End : LayoutOptions.Center,
+            HorizontalOptions = isBottomSheet ? LayoutOptions.Fill : LayoutOptions.Center,
+            Margin = isBottomSheet ? new Thickness(0) : new Thickness(30)
+        };
+
+        // Consume taps inside the popup so they do not dismiss it.
+        container.GestureRecognizers.Add(new TapGestureRecognizer());
+
+        if (!isBottomSheet)
+        {
+            container.Content = popupContent;
+            return container;
         }
 
-        private void DismissPopupPopInEffect(TaskCompletionSource<bool> done)
+        var bottomSheetContent = new Grid
         {
-            TaskCompletionSource<bool> done2 = done;
-            this.Animate("BackgroundFadeOut", delegate (double v)
+            RowDefinitions =
             {
-                base.Background = new SolidColorBrush(Colors.Black.WithAlpha((float)v));
-            }, 0.4, 0.0, 16u, 250u, Easing.Linear);
-            double end = 0.8;
-            base.Content.Animate("ContentFadeOut", new Animation(delegate (double v)
-            {
-                base.Content.Opacity = v;
-            }, 1.0, 0.0, Easing.CubicInOut), 16u, 300u);
-            base.Content.Animate("ContentScaleOut", new Animation(delegate (double v)
-            {
-                base.Content.Scale = v;
-            }, 1.0, end, Easing.CubicInOut), 16u, 300u, null, delegate
-            {
-                done2.SetResult(result: true);
-            });
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto)
+            },
+            RowSpacing = 15
+        };
+
+        bottomSheetContent.Add(new BoxView
+        {
+            Color = Colors.Gray,
+            WidthRequest = 40,
+            HeightRequest = 4,
+            CornerRadius = 2,
+            HorizontalOptions = LayoutOptions.Center
+        }, 0, 0);
+        bottomSheetContent.Add(popupContent, 0, 1);
+        container.Content = bottomSheetContent;
+
+        return container;
+    }
+
+    private async void OnLoaded(object? sender, EventArgs e)
+    {
+        Loaded -= OnLoaded;
+
+        // Let MAUI finish arranging the modal page before reading Height.
+        await Task.Yield();
+
+        if (animationType == RSPopupAnimationTypeEnum.BottomToTop)
+        {
+            popup.TranslationY = GetPopupHeight();
+            popup.Opacity = 1;
+
+            await Task.WhenAll(
+                scrim.FadeToAsync(ScrimOpacity, AnimationLength, Easing.Linear),
+                popup.TranslateToAsync(0, 0, AnimationLength, Easing.CubicOut));
+        }
+        else
+        {
+            await Task.WhenAll(
+                scrim.FadeToAsync(ScrimOpacity, AnimationLength, Easing.Linear),
+                popup.FadeToAsync(1, AnimationLength, Easing.CubicOut),
+                popup.ScaleToAsync(1, AnimationLength, Easing.CubicOut));
+        }
+    }
+
+    private async void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
+    {
+        if (isClosing)
+            return;
+
+        switch (e.StatusType)
+        {
+            case GestureStatus.Started:
+                panStartTranslation = popup.TranslationY;
+                break;
+
+            case GestureStatus.Running:
+                // TotalY is cumulative from the gesture start; do not add it on
+                // every event or the sheet accelerates and jumps.
+                popup.TranslationY = Math.Max(0, panStartTranslation + e.TotalY);
+                break;
+
+            case GestureStatus.Completed:
+            case GestureStatus.Canceled:
+                if (popup.TranslationY > 55)
+                    await ClosePopup();
+                else
+                    await popup.TranslateToAsync(0, 0, AnimationLength, Easing.CubicOut);
+                break;
+        }
+    }
+
+    public void ApplyThemeSpecificStyleToPopup(Border border)
+    {
+        var application = Application.Current;
+        if (application is null)
+            return;
+
+        var effectiveTheme = application.UserAppTheme == AppTheme.Unspecified
+            ? application.RequestedTheme
+            : application.UserAppTheme;
+
+        border.BackgroundColor = effectiveTheme == AppTheme.Dark
+            ? darkBackgroundColor
+            : lightBackgroundColor;
+    }
+
+    public async Task ClosePopup()
+    {
+        if (isClosing)
+            return;
+
+        isClosing = true;
+
+        await CloseAnimatePopup();
+
+        // The popup is pushed modally, so it must be removed from the modal stack.
+        if (Navigation.ModalStack.Contains(this))
+            await Navigation.PopModalAsync(animated: false);
+
+        OnPopupClosedInternal(EventArgs.Empty);
+    }
+
+    public async Task CloseAnimatePopup()
+    {
+        if (animationType == RSPopupAnimationTypeEnum.BottomToTop)
+        {
+            await Task.WhenAll(
+                scrim.FadeToAsync(0, AnimationLength, Easing.Linear),
+                popup.TranslateToAsync(0, GetPopupHeight(), AnimationLength, Easing.CubicIn));
+        }
+        else
+        {
+            await Task.WhenAll(
+                scrim.FadeToAsync(0, AnimationLength, Easing.Linear),
+                popup.FadeToAsync(0, AnimationLength, Easing.CubicIn),
+                popup.ScaleToAsync(0.9, AnimationLength, Easing.CubicIn));
         }
 
-        protected void OnPopupClosedInternal(EventArgs e)
-        {
-            this.PopupClosed?.Invoke(this, e);
-        }
+        if (panGesture is not null)
+            panGesture.PanUpdated -= OnPanUpdated;
+    }
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (!isModal)
+            _ = ClosePopup();
+
+        return true;
+    }
+
+    protected override void OnDisappearing()
+    {
+        if (Application.Current is not null)
+            Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+
+        if (panGesture is not null)
+            panGesture.PanUpdated -= OnPanUpdated;
+
+        base.OnDisappearing();
+    }
+
+    private double GetPopupHeight()
+    {
+        if (popup.Height > 0)
+            return popup.Height;
+
+        var availableWidth = Width > 0 ? Width : double.PositiveInfinity;
+        return Math.Max(1, popup.Measure(availableWidth, double.PositiveInfinity).Height);
+    }
+
+    private void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs e)
+    {
+        Dispatcher.Dispatch(() => ApplyThemeSpecificStyleToPopup(popup));
+    }
+
+    protected void OnPopupClosedInternal(EventArgs e)
+    {
+        PopupClosed?.Invoke(this, e);
     }
 }

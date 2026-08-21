@@ -1,36 +1,48 @@
-﻿namespace RSPopupMaui
+namespace RSPopupMaui;
+
+public class RSpopupManager
 {
-    public class RSpopupManager
+    public static List<RSPopup> PopupStack = new();
+
+    public static RSPopup? GetCurrentPopup()
     {
-        public static List<RSPopup> PopupStack = new List<RSPopup>();
+        return PopupStack.LastOrDefault();
+    }
 
-        public static RSPopup GetCurrentPopup()
-        {
-            return PopupStack.LastOrDefault();
-        }
+    public static async void ShowPopup(
+        IView view,
+        RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum = RSPopupAnimationTypeEnum.PopInEffect,
+        bool isModal = false)
+    {
+        var popup = new RSPopup(view, rSPopupAnimationTypeEnum, isModal);
+        PopupStack.Add(popup);
+        popup.PopupClosed += OnPopupClosed;
 
-        public static void ShowPopup(IView view, RSPopupAnimationTypeEnum rSPopupAnimationTypeEnum = RSPopupAnimationTypeEnum.PopInEffect, bool isModal = false)
+        try
         {
-            RSPopup rSPopup = new RSPopup(view, rSPopupAnimationTypeEnum, isModal);
-            PopupStack.Add(rSPopup);
-            rSPopup.PopupClosed += RsPopup_PopupClosed;
-            Shell.Current.Navigation.PushModalAsync(rSPopup, animated: false);
+            await Shell.Current.Navigation.PushModalAsync(popup, animated: false);
         }
+        catch
+        {
+            popup.PopupClosed -= OnPopupClosed;
+            PopupStack.Remove(popup);
+            throw;
+        }
+    }
 
-        private static void RsPopup_PopupClosed(object? sender, EventArgs e)
-        {
-            (sender as RSPopup).PopupClosed -= RsPopup_PopupClosed;
-            PopupStack.Remove(sender as RSPopup);
-        }
+    public static async Task ClosePopup()
+    {
+        var popup = GetCurrentPopup();
+        if (popup is not null)
+            await popup.ClosePopup();
+    }
 
-        public static async Task ClosePopup()
-        {
-            RSPopup currentPopup = GetCurrentPopup();
-            if (currentPopup != null)
-            {
-                PopupStack.Remove(currentPopup);
-                await currentPopup.ClosePopup();
-            }
-        }
+    private static void OnPopupClosed(object? sender, EventArgs e)
+    {
+        if (sender is not RSPopup popup)
+            return;
+
+        popup.PopupClosed -= OnPopupClosed;
+        PopupStack.Remove(popup);
     }
 }
