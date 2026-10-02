@@ -181,6 +181,7 @@ namespace RSsegmentedControlMaui
 
         private async void OnSelectedIndexChanged()
         {
+            UpdateVisualState();
             if (SelectedIndex < 0)
             {
                 // Fade out indicator when unselected
@@ -194,7 +195,6 @@ namespace RSsegmentedControlMaui
                 await MoveIndicator(true);
             }
 
-            UpdateVisualState();
         }
 
         // =========================
@@ -763,7 +763,8 @@ namespace RSsegmentedControlMaui
                     int index = Orientation == StackOrientation.Horizontal ? Grid.GetColumn(container) : Grid.GetRow(container);
                     bool isSelected = index == SelectedIndex;
 
-                    var label = container.Children.OfType<Label>().FirstOrDefault(l => l.Opacity > 0);
+                    // ItemTemplate may wrap its label in a Border or another layout.
+                    var label = FindVisibleLabel(container);
                     if (label != null)
                     {
                         label.TextColor = isSelected ? SelectedTextColor : UnselectedTextColor;
@@ -773,6 +774,29 @@ namespace RSsegmentedControlMaui
             }
         }
 
+        private static Label? FindVisibleLabel(View view)
+        {
+            if (view is Label label)
+                return label.Opacity > 0 ? label : null;
+
+            if (view is Border border && border.Content is View borderContent)
+                return FindVisibleLabel(borderContent);
+
+            if (view is ContentView contentView && contentView.Content is View content)
+                return FindVisibleLabel(content);
+
+            if (view is Layout layout)
+            {
+                foreach (var child in layout.Children.OfType<View>())
+                {
+                    var nestedLabel = FindVisibleLabel(child);
+                    if (nestedLabel != null)
+                        return nestedLabel;
+                }
+            }
+
+            return null;
+        }
         // =========================
         // Layout
         // =========================
